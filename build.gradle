@@ -1,0 +1,128 @@
+buildscript {
+	ext {
+		springBootVersion = '2.3.1.RELEASE'
+		set('springCloudVersion', "Hoxton.SR5")
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+plugins {
+	id "org.sonarqube" version "2.8"
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'org.springframework.boot' version '2.3.1.RELEASE'
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'jacoco'
+
+//added to accept systemproperties while executing gradlew test cmd
+test {
+	systemProperties = System.properties
+}
+
+jar {
+	archivesBaseName = 'phase4-scsb-core'
+	archiveVersion = '0.0.1-SNAPSHOT'
+}
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
+
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+	/*implementation('org.recap:phase4-scsb-common:1.0') {
+		version  {
+			branch = 'development'
+		}
+	}*/
+	compile fileTree(dir: '/data/commonjar', include: '*1.1.jar')
+	implementation 'org.projectlombok:lombok:1.18.12'
+	annotationProcessor 'org.projectlombok:lombok:1.18.12'
+	testImplementation 'org.projectlombok:lombok:1.18.12'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+	implementation('org.springframework.boot:spring-boot-starter-web-services')
+	compile('org.springframework.boot:spring-boot-starter-data-jpa')
+	implementation("org.springframework.boot:spring-boot-starter-data-rest")
+
+	implementation('commons-beanutils:commons-beanutils:1.9.4')
+	implementation('org.apache.commons:commons-lang3:3.10')
+	implementation('commons-io:commons-io:2.6')
+	implementation('io.springfox:springfox-swagger-ui:2.9.2')
+	implementation('io.springfox:springfox-swagger2:2.9.2')
+	implementation('org.codehaus.jettison:jettison:1.4.1')
+	implementation('org.apache.camel.springboot:camel-spring-boot-starter:3.2.0')
+	implementation('org.apache.camel:camel-activemq:3.2.0')
+	implementation('org.apache.camel:camel-core-engine:3.2.0')
+	implementation('org.apache.camel:camel-core:3.2.0')
+	implementation('org.apache.camel:camel-support:3.2.0')
+	implementation('org.apache.camel:camel-bindy:3.2.0')
+	implementation('org.apache.camel:camel-mail:3.2.0')
+	implementation('org.apache.camel:camel-ftp:3.2.0')
+	implementation('org.apache.camel:camel-jms:3.2.0')
+	implementation('org.apache.camel:camel-zipfile:3.2.0')
+	implementation('org.apache.activemq:activemq-camel:5.15.12')
+	implementation('org.apache.activemq:activemq-pool:5.15.12')
+	implementation('org.apache.activemq:activemq-broker:5.15.12')
+	implementation('org.apache.activemq:activemq-client:5.15.12')
+	implementation('info.freelibrary:freelib-marc4j:2.6.12')
+	implementation('org.apache.poi:poi:4.1.2')
+	implementation('org.apache.camel:camel-zip-deflater:3.0.0');
+	implementation('org.apache.commons:commons-text:1.8');
+
+	implementation('org.apache.poi:poi-ooxml:4.1.2')
+	implementation 'io.micrometer:micrometer-registry-prometheus'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.cloud:spring-cloud-starter-sleuth'
+	implementation 'org.springframework.cloud:spring-cloud-starter-zipkin'
+	implementation 'org.springframework.amqp:spring-rabbit'
+	implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
+	compileOnly('org.projectlombok:lombok:1.18.12')
+	annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+	testCompile group: 'org.powermock', name: 'powermock-api-mockito2', version: '2.0.7'
+	testCompile group: 'org.powermock', name: 'powermock-module-junit4', version: '2.0.7'
+
+	runtime('mysql:mysql-connector-java')
+	runtime("org.springframework.boot:spring-boot-starter-actuator")
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+jacocoTestReport {
+	group = "Reporting"
+	reports {
+		xml.enabled true
+		csv.enabled false
+		html.enabled = true
+		html.destination file("${buildDir}/jacocoHtml")
+	}
+}
+
+task scsbCoreJavadocs(type: Javadoc) {
+	source = sourceSets.main.java
+	classpath = configurations.compile
+	options.addStringOption('Xdoclint:none', '-quiet')
+	String home = System.getProperty("user.home");
+	destinationDir = new File(home+"/scsb-javadocs/scsb-core");
+
+}
+
+bootJar {
+	layered()
+}
