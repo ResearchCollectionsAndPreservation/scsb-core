@@ -71,5 +71,14 @@ public interface BibliographicDetailsRepository extends JpaRepository<Bibliograp
      */
     BibliographicEntity findByOwningInstitutionIdAndOwningInstitutionBibId(@Param("owningInstitutionId") Integer owningInstitutionId, @Param("owningInstitutionBibId") String owningInstitutionBibId);
 
+    /**
+     * Find the bibliographic entity by using owning institution id,owning institution bib id and is deleted field which has false value.
+     *
+     * @param owningInstitutionId    the owning institution id
+     * @param owningInstitutionBibId the owning institution bib id
+     * @return the bibliographic entity
+     */
+    BibliographicEntity findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(Integer owningInstitutionId, String owningInstitutionBibId);
+
 
 }

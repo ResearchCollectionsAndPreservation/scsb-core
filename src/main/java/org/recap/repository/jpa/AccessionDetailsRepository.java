@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by rajeshbabuk on 8/5/17.
@@ -17,4 +18,12 @@ public interface AccessionDetailsRepository extends BaseRepository<AccessionEnti
     @Modifying(clearAutomatically = true)
     @Query(value = "DELETE accessionRequest from recap.accession_t accessionRequest where accessionRequest.ACCESSION_STATUS=?1 AND DATEDIFF(?2,accessionRequest.CREATED_DATE)>=?3", nativeQuery = true)
     int purgeAccessionRequests(@Param("accessionStatus") String accessionStatus, @Param("createdDate") Date createdDate, @Param("dateDifference") Integer dateDifference);
+
+    /**
+     * Find by accession status and return a list of accession entity.
+     *
+     * @param accessionStatus the accession status
+     * @return the list
+     */
+    List<AccessionEntity> findByAccessionStatus(String accessionStatus);
 }
