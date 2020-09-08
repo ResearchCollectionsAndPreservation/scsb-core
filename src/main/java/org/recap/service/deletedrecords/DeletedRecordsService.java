@@ -2,7 +2,7 @@ package org.recap.service.deletedrecords;
 
 import org.recap.RecapConstants;
 import org.recap.repository.jpa.DeletedRecordsRepository;
-import org.recap.request.EmailService;
+import org.recap.service.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

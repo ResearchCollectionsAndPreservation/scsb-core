@@ -106,6 +106,22 @@ public class CommonUtil {
     }
 
     /**
+     * Add Holdings Entity to Map
+     * @param map
+     * @param holdingsEntity
+     * @param owningInstitutionHoldingsId
+     * @return
+     */
+    public Map<String, Object> addHoldingsEntityToMap(Map<String, Object> map, HoldingsEntity holdingsEntity, String owningInstitutionHoldingsId) {
+        if (StringUtils.isBlank(owningInstitutionHoldingsId) || owningInstitutionHoldingsId.length() > 100) {
+            owningInstitutionHoldingsId = UUID.randomUUID().toString();
+        }
+        holdingsEntity.setOwningInstitutionHoldingsId(owningInstitutionHoldingsId);
+        map.put("holdingsEntity", holdingsEntity);
+        return map;
+    }
+
+    /**
      * Gets item status map.
      *
      * @return the item status map

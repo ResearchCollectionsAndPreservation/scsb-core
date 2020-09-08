@@ -13,8 +13,7 @@ import org.recap.RecapConstants;
 import org.recap.model.jaxb.BibRecord;
 import org.recap.model.jaxb.Holding;
 import org.recap.model.jaxb.Items;
-import org.recap.model.jaxb.marc.CollectionType;
-import org.recap.model.jaxb.marc.ContentType;
+import org.recap.model.jaxb.marc.*;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.marc.BibMarcRecord;
 import org.recap.model.marc.HoldingsMarcRecord;
@@ -30,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -320,6 +320,28 @@ public class MarcUtil {
         return false;
     }
 
+    public boolean isSubFieldExists(RecordType marcRecord, String field) {
+        List<DataFieldType> dataFields = marcRecord.getDatafield();
+        for (Iterator<DataFieldType> dataFieldIterator = dataFields.iterator(); dataFieldIterator.hasNext(); ) {
+            DataFieldType dataField = dataFieldIterator.next();
+            if (dataField != null && dataField.getTag().equals(field)) {
+                List<SubfieldatafieldType> subFields = dataField.getSubfield();
+                for (Iterator<SubfieldatafieldType> subfieldIterator = subFields.iterator(); subfieldIterator.hasNext(); ) {
+                    SubfieldatafieldType subfieldatafieldType = subfieldIterator.next();
+                    String data = subfieldatafieldType.getCode();
+                    if (StringUtils.isNotBlank(data)) {
+                        String value = subfieldatafieldType.getValue();
+                        if (StringUtils.isNotBlank(value)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+
     /**
      * Gets data field.
      *
@@ -529,6 +551,64 @@ public class MarcUtil {
             logger.info(String.valueOf(e.getCause()));
             logger.error(RecapCommonConstants.LOG_ERROR, e);
             return RecapConstants.INVALID_MARC_XML_FORMAT_MESSAGE;
+        }
+        return null;
+    }
+
+    public String getDataFieldValueForRecordType(RecordType marcRecord, String field, String ind1, String ind2, String subField) {
+        List<String> strings = resolveValueForRecordType(marcRecord, field, ind1, ind2, subField);
+        return CollectionUtils.isEmpty(strings) ? "" : strings.get(0);
+    }
+
+    private List<String> resolveValueForRecordType(RecordType marcRecord, String field, String ind1, String ind2, String subField) {
+        List<String> values = new ArrayList<>();
+        String indicator1 = StringUtils.isNotBlank(ind1) ? String.valueOf(ind1.charAt(0)) : " ";
+        String indicator2 = StringUtils.isNotBlank(ind2) ? String.valueOf(ind2.charAt(0)) : " ";
+        List<DataFieldType> dataFields = marcRecord.getDatafield();
+
+        for (Iterator<DataFieldType> dataFieldIterator = dataFields.iterator(); dataFieldIterator.hasNext(); ) {
+            DataFieldType dataField = dataFieldIterator.next();
+            if (dataField != null && dataField.getTag().equals(field) && doIndicatorsMatchForDataFieldType(indicator1, indicator2, dataField)) {
+                List<SubfieldatafieldType> subFields = dataField.getSubfield();
+                for (Iterator<SubfieldatafieldType> subfieldIterator = subFields.iterator(); subfieldIterator.hasNext(); ) {
+                    SubfieldatafieldType subfieldatafieldType = subfieldIterator.next();
+                    if (subField != null && subfieldatafieldType.getCode().equals(subField)) {
+                        String data = subfieldatafieldType.getCode();
+                        if (StringUtils.isNotBlank(data)) {
+                            values.add(subfieldatafieldType.getValue());
+                        }
+                    }
+                }
+            }
+        }
+        return values;
+    }
+
+    private boolean doIndicatorsMatchForDataFieldType(String indicator1, String indicator2, DataFieldType dataField) {
+        boolean result = true;
+        if (StringUtils.isNotBlank(indicator1)) {
+            result = dataField.getInd1().equals(indicator1.charAt(0));
+        }
+        if (StringUtils.isNotBlank(indicator2)) {
+            result &= dataField.getInd2().equals(indicator2.charAt(0));
+        }
+        return result;
+    }
+
+    public String getInd1ForRecordType(RecordType marcRecord, String field, String subField) {
+        List<DataFieldType> dataFields = marcRecord.getDatafield();
+
+        for (Iterator<DataFieldType> dataFieldIterator = dataFields.iterator(); dataFieldIterator.hasNext(); ) {
+            DataFieldType dataField = dataFieldIterator.next();
+            if (dataField != null && dataField.getTag().equals(field)) {
+                List<SubfieldatafieldType> subFields = dataField.getSubfield();
+                for (Iterator<SubfieldatafieldType> subfieldIterator = subFields.iterator(); subfieldIterator.hasNext(); ) {
+                    SubfieldatafieldType subfieldatafieldType = subfieldIterator.next();
+                    if (subField != null && subfieldatafieldType.getCode().equals(subField)) {
+                        return dataField.getInd1();
+                    }
+                }
+            }
         }
         return null;
     }

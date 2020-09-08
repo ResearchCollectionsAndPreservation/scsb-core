@@ -75,6 +75,15 @@ public interface ItemDetailsRepository extends JpaRepository<ItemEntity, ItemPK>
     ItemEntity findByOwningInstitutionItemId(@Param("owningInstitutionItemId") String owningInstitutionItemId);
 
     /**
+     * Finds a list of item entities based on the given barcode and list of customer codes.
+     *
+     * @param barcode      the barcode
+     * @param customerCode the customer code
+     * @return the list
+     */
+    List<ItemEntity> findByBarcodeAndCustomerCode(String barcode, String customerCode);
+
+    /**
      * Find by barcode in list.
      *
      * @param barcodes the barcodes
@@ -212,4 +221,13 @@ public interface ItemDetailsRepository extends JpaRepository<ItemEntity, ItemPK>
      * @return the list
      */
     List<ItemEntity> findByOwningInstitutionItemIdInAndOwningInstitutionId(List<String> owningInstitutionItemIdList, Integer owningInstitutionId);
+
+    /**
+     * Finds the item entity by using owning institution item id and owning institution id.
+     *
+     * @param owningInstitutionItemId the owning institution item id
+     * @param owningInstitutionId     the owning institution id
+     * @return the item entity
+     */
+    ItemEntity findByOwningInstitutionItemIdAndOwningInstitutionId(String owningInstitutionItemId, Integer owningInstitutionId);
 }

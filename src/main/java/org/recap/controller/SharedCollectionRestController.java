@@ -1,23 +1,29 @@
 package org.recap.controller;
 
+import org.apache.camel.Exchange;
+import org.apache.commons.collections.CollectionUtils;
 import org.recap.RecapConstants;
 import org.recap.RecapCommonConstants;
+import org.recap.model.accession.AccessionRequest;
+import org.recap.model.accession.AccessionResponse;
+import org.recap.model.accession.AccessionSummary;
+import org.recap.model.jpa.AccessionEntity;
 import org.recap.model.submitcollection.SubmitCollectionResponse;
+import org.recap.service.accession.AccessionService;
+import org.recap.service.accession.BulkAccessionService;
 import org.recap.service.common.SetupDataService;
 import org.recap.service.submitcollection.SubmitCollectionBatchService;
 import org.recap.service.submitcollection.SubmitCollectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StopWatch;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +49,135 @@ public class SharedCollectionRestController {
 
     @Autowired
     private SetupDataService setupDataService;
+
+    @Value("${ongoing.accession.input.limit}")
+    private Integer inputLimit;
+
+    @Autowired
+    AccessionService accessionService;
+
+    @Autowired
+    BulkAccessionService bulkAccessionService;
+
+    /**
+     * Gets input limit.
+     *
+     * @return the input limit
+     */
+    public Integer getInputLimit() {
+        return inputLimit;
+    }
+
+    /**
+     * Gets AccessionService object..
+     *
+     * @return the AccessionService object.
+     */
+    public AccessionService getAccessionService() {
+        return accessionService;
+    }
+
+    /**
+     * Gets BulkAccessionService object..
+     *
+     * @return the BulkAccessionService object.
+     */
+    public BulkAccessionService getBulkAccessionService() {
+        return bulkAccessionService;
+    }
+
+    /**
+     * This method is used to save the accession and send the response.
+     *
+     * @param accessionRequestList the accession request list
+     * @return the response entity
+     */
+    @PostMapping(value = "/accessionBatch", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity accessionBatch(@RequestBody List<AccessionRequest> accessionRequestList) {
+        String responseMessage = getAccessionService().saveRequest(accessionRequestList);
+        return new ResponseEntity(responseMessage, getHttpHeaders(), HttpStatus.OK);
+    }
+
+    /**
+     * This method is used to perform accession for the given list of accessionRequests.
+     *
+     * @param accessionRequestList the accession request list
+     * @return the response entity
+     */
+    @PostMapping(value = "/accession", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity accession(@RequestBody List<AccessionRequest> accessionRequestList, Exchange exchange) {
+        ResponseEntity responseEntity;
+        List<AccessionResponse> accessionResponsesList;
+        if (accessionRequestList.size() > getInputLimit()) {
+            accessionResponsesList = getAccessionResponses();
+            return new ResponseEntity(accessionResponsesList, getHttpHeaders(), HttpStatus.OK);
+        } else {
+            String accessionType = RecapConstants.ACCESSION_SUMMARY;
+            AccessionSummary accessionSummary = new AccessionSummary(accessionType);
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start();
+            logger.info("Total record for Accession : {}" , accessionRequestList.size());
+            accessionResponsesList = getAccessionService().doAccession(accessionRequestList, accessionSummary,exchange);
+            stopWatch.stop();
+            accessionSummary.setTimeElapsed(stopWatch.getTotalTimeSeconds() + " Secs");
+            logger.info(accessionSummary.toString());
+            getBulkAccessionService().createSummaryReport(accessionSummary.toString(), accessionType);
+            responseEntity = new ResponseEntity(accessionResponsesList, getHttpHeaders(), HttpStatus.OK);
+        }
+        return responseEntity;
+    }
+
+    /**
+     * This method performs ongoing accession job.
+     *
+     * @return the string
+     */
+    @GetMapping(value = "/ongoingAccessionJob")
+    @ResponseBody
+    public String ongoingAccessionJob(Exchange exchange) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
+        String status;
+        List<AccessionEntity> accessionEntities = getBulkAccessionService().getAccessionEntities(RecapConstants.PENDING);
+        List<AccessionRequest> accessionRequestList = getBulkAccessionService().getAccessionRequest(accessionEntities);
+        String accessionType = RecapConstants.BULK_ACCESSION_SUMMARY;
+        AccessionSummary accessionSummary = new AccessionSummary(accessionType);
+
+        if (CollectionUtils.isNotEmpty(accessionRequestList)) {
+            logger.info("Total record for Bulk Accession : {}", accessionRequestList.size());
+            getAccessionService().updateStatusForAccessionEntities(accessionEntities, RecapConstants.PROCESSING);
+            getBulkAccessionService().doAccession(accessionRequestList, accessionSummary,exchange);
+            if (accessionSummary.getSuccessRecords() != 0) {
+                status = RecapCommonConstants.SUCCESS;
+            } else {
+                status = RecapCommonConstants.FAILURE;
+            }
+        } else {
+            status = RecapCommonConstants.ACCESSION_NO_PENDING_REQUESTS;
+        }
+        getAccessionService().updateStatusForAccessionEntities(accessionEntities, RecapCommonConstants.COMPLETE_STATUS);
+        stopWatch.stop();
+        accessionSummary.setTimeElapsed(stopWatch.getTotalTimeSeconds() + " Secs");
+
+        getBulkAccessionService().createSummaryReport(accessionSummary.toString(), accessionType);
+        logger.info("Total time taken for processing {} records : {} secs", accessionRequestList.size(), stopWatch.getTotalTimeSeconds());
+        logger.info(accessionSummary.toString());
+
+        return status;
+    }
+
+    private List<AccessionResponse> getAccessionResponses() {
+        List<AccessionResponse> accessionResponsesList;
+        accessionResponsesList = new ArrayList<>();
+        AccessionResponse accessionResponse = new AccessionResponse();
+        accessionResponse.setItemBarcode("");
+        accessionResponsesList.add(accessionResponse);
+        accessionResponse.setMessage(RecapConstants.ONGOING_ACCESSION_LIMIT_EXCEED_MESSAGE + inputLimit);
+        return accessionResponsesList;
+    }
 
     /**
      * This controller method is the entry point for submit collection which receives
