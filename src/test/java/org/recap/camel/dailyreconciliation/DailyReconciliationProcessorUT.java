@@ -1,7 +1,10 @@
 package org.recap.camel.dailyreconciliation;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.support.DefaultExchange;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -13,6 +16,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Test;
 import org.recap.BaseTestCase;
 import org.recap.camel.dailyreconciliation.DailyReconciliationProcessor;
+import org.recap.model.csv.DailyReconcilationRecord;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.jpa.HoldingsEntity;
 import org.recap.model.jpa.InstitutionEntity;
@@ -25,9 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -142,6 +144,31 @@ public class DailyReconciliationProcessorUT extends BaseTestCase {
         assertEquals("Matched",compareSheet.getRow(2).getCell(6).getStringCellValue());
     }
 
+
+    @Test
+    public void processInput(){
+        List<DailyReconcilationRecord> dailyReconcilationRecords = new ArrayList<>();
+        DailyReconcilationRecord dailyReconcilationRecord = getDailyReconcilationRecord();
+        dailyReconcilationRecords.add(dailyReconcilationRecord);
+        CamelContext ctx = new DefaultCamelContext();
+        Exchange exchange = new DefaultExchange(ctx);
+        exchange.getIn().setHeader("CamelFileName", "DailyReconciliationFile");
+        exchange.getIn().setBody(dailyReconcilationRecords);
+        exchange.setProperty("CamelSplitIndex",0);
+        exchange.setProperty("CamelFileNameProduced","test");
+        dailyReconciliationProcessor.processInput(exchange);
+    }
+
+    private DailyReconcilationRecord getDailyReconcilationRecord() {
+        DailyReconcilationRecord dailyReconcilationRecord = new DailyReconcilationRecord();
+        dailyReconcilationRecord.setBarcode("124353");
+        dailyReconcilationRecord.setCreateDate(new Date().toString());
+        dailyReconcilationRecord.setCustomerCode("PA");
+        dailyReconcilationRecord.setDeliveryMethod("PLWD");
+        dailyReconcilationRecord.setEmail("test@gmail.com");
+        dailyReconcilationRecord.setLastUpdatedDate(new Date().toString());
+        return dailyReconcilationRecord;
+    }
 
     private BibliographicEntity saveBibHoldingItemEntity() throws Exception {
         Random random = new Random();

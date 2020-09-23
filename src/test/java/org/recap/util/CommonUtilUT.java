@@ -8,14 +8,21 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.recap.RecapCommonConstants;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.jpa.HoldingsEntity;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.model.jpa.ItemStatusEntity;
+import org.recap.model.jpa.ReportEntity;
 import org.recap.model.report.SubmitCollectionReportInfo;
+import org.recap.repository.jpa.ItemChangeLogDetailsRepository;
+import org.recap.repository.jpa.ItemDetailsRepository;
 import org.recap.repository.jpa.ItemStatusDetailsRepository;
 
 import java.util.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CommonUtilUT {
@@ -24,9 +31,26 @@ public class CommonUtilUT {
 
     @Mock
     ItemStatusDetailsRepository itemStatusDetailsRepository;
+
+    @Mock
+    ItemDetailsRepository itemDetailsRepository;
+
+    @Mock
+    ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
+
     @Before
     public  void setup(){
         MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void buildHoldingsEntity(){
+        BibliographicEntity bibliographicEntity= new BibliographicEntity();
+        Date currentDate = new Date();
+        StringBuilder errorMessage = new StringBuilder();
+        String holdingsContent = null;
+        HoldingsEntity holdingsEntity = commonUtil.buildHoldingsEntity(bibliographicEntity,currentDate,errorMessage,holdingsContent);
+        assertNotNull(holdingsEntity);
     }
     @Test
     public void buildSubmitCollectionReportInfoAndAddFailures(){
@@ -50,16 +74,55 @@ public class CommonUtilUT {
         commonUtil.buildSubmitCollectionReportInfoWhenNoGroupIdAndAddFailures(incomingBibliographicEntity,failureSubmitCollectionReportInfoList,owningInstitution,incomingItemEntity);
     }
     @Test
+    public void addItemAndReportEntities(){
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        List<ReportEntity > reportEntities = new ArrayList<>();
+        ReportEntity reportEntity = new ReportEntity();
+        reportEntity.setCreatedDate(new Date());
+        reportEntity.setId(1);
+        boolean processHoldings = false;
+        HoldingsEntity holdingsEntity = getHoldingsEntity();
+        Map<String, Object> itemMap = new HashMap<>();
+        itemMap.put("itemEntity",getBibliographicEntity().getItemEntities().get(0));
+        itemMap.put("itemReportEntity",reportEntity);
+        commonUtil.addItemAndReportEntities(itemEntities,reportEntities,processHoldings,holdingsEntity,itemMap);
+    }
+    @Test
+    public void rollbackUpdateItemAvailabilutyStatus(){
+        ItemEntity itemEntity = getBibliographicEntity().getItemEntities().get(0);
+        String userName = "Test";
+        Mockito.when(itemStatusDetailsRepository.findByStatusCode(RecapCommonConstants.AVAILABLE)).thenReturn(getItemStatusEntity());
+        commonUtil.rollbackUpdateItemAvailabilutyStatus(itemEntity,userName);
+    }
+    @Test
     public void getItemStatusMap(){
         List<ItemStatusEntity> itemStatusEntities = new ArrayList<>();
+        ItemStatusEntity itemStatusEntity = getItemStatusEntity();
+        itemStatusEntities.add(itemStatusEntity);
+        Mockito.when(itemStatusDetailsRepository.findAll()).thenReturn(itemStatusEntities);
+        commonUtil.getItemStatusMap();
+        commonUtil.getCollectionGroupMap();
+        commonUtil.getInstitutionEntityMap();
+        CommonUtil commonUtil = new CommonUtil();
+        commonUtil.getItemStatusMap();
+    }
+    @Test
+    public void getUser(){
+        String user1 = commonUtil.getUser("1");
+        String user2 = commonUtil.getUser("");
+        assertNotNull(user1);
+        assertEquals("1",user1);
+        assertNotNull(user2);
+        assertEquals("Discovery",user2);
+    }
+    private ItemStatusEntity getItemStatusEntity() {
         ItemStatusEntity itemStatusEntity = new ItemStatusEntity();
         itemStatusEntity.setId(1);
         itemStatusEntity.setStatusCode("SUCCESS");
         itemStatusEntity.setStatusDescription("AVAILABLE");
-        itemStatusEntities.add(itemStatusEntity);
-        Mockito.when(itemStatusDetailsRepository.findAll()).thenReturn(itemStatusEntities);
-        commonUtil.getItemStatusMap();
+        return itemStatusEntity;
     }
+
     private SubmitCollectionReportInfo getSubmitCollectionReportInfo(){
         SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
         submitCollectionReportInfo.setOwningInstitution("PUL");
@@ -102,6 +165,7 @@ public class CommonUtilUT {
         holdingsEntity.setDeleted(false);
 
         ItemEntity itemEntity = new ItemEntity();
+        itemEntity.setItemId(1);
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setOwningInstitutionItemId("843617540");
         itemEntity.setOwningInstitutionId(1);

@@ -20,8 +20,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Created by premkb on 18/6/17.
@@ -59,7 +58,11 @@ public class SetupDataServiceUT {
         String itemStatusCode = itemStatusIdCodeMap.get(1);
         assertEquals(RecapCommonConstants.AVAILABLE,itemStatusCode);
     }
-
+    @Test
+    public void getItemStatusIdCodeMapForException(){
+        Map<Integer,String> itemStatusIdCodeMap = setupDataService.getItemStatusIdCodeMap();
+        assertNotNull(itemStatusIdCodeMap);
+    }
     @Test
     public void getItemStatusCodeIdMap(){
         ItemStatusEntity itemStatusEntity = getItemStatusEntity();
@@ -68,9 +71,13 @@ public class SetupDataServiceUT {
         Map<String,Integer> itemStatusCodeIdMap = setupDataService.getItemStatusCodeIdMap();
         assertNotNull(itemStatusCodeIdMap);
         Integer itemStatusId = itemStatusCodeIdMap.get(RecapCommonConstants.AVAILABLE);
-        assertEquals(new Integer(1),itemStatusId);
+        assertEquals("1",itemStatusId.toString());
     }
-
+    @Test
+    public void getItemStatusCodeIdMapForException(){
+        Map<String,Integer> itemStatusCodeIdMap = setupDataService.getItemStatusCodeIdMap();
+        assertNotNull(itemStatusCodeIdMap);
+    }
     @Test
     public void getInstitutionIdCodeMap(){
         InstitutionEntity institutionEntity = getInstitutionEntity();
@@ -81,7 +88,11 @@ public class SetupDataServiceUT {
         String itemStatusCode = institutionEntityMap.get(1);
         assertEquals(RecapCommonConstants.PRINCETON,itemStatusCode);
     }
-
+    @Test
+    public void getInstitutionIdCodeMapForException(){
+        Map<Integer,String> institutionEntityMap = setupDataService.getInstitutionIdCodeMap();
+        assertNotNull(institutionEntityMap);
+    }
     @Test
     public void getInstitutionCodeIdMap(){
         InstitutionEntity institutionEntity = getInstitutionEntity();
@@ -90,14 +101,23 @@ public class SetupDataServiceUT {
         Map<String,Integer> institutionEntityMapId = setupDataService.getInstitutionCodeIdMap();
         assertNotNull(institutionEntityMapId);
         Integer itemStatusId = institutionEntityMapId.get(RecapCommonConstants.PRINCETON);
-        assertEquals(new Integer(1),itemStatusId);
+        assertEquals("1",itemStatusId.toString());
     }
-
+    @Test
+    public void getInstitutionCodeIdMapForException(){
+        Map<String,Integer> institutionEntityMapId = setupDataService.getInstitutionCodeIdMap();
+        assertNotNull(institutionEntityMapId);
+    }
     @Test
     public void getCollectionGroupMap(){
         CollectionGroupEntity collectionGroupEntity = getCollectionGroupEntity();
         Mockito.when(repositoryService.getCollectionGroupDetailsRepository()).thenReturn(collectionGroupDetailsRepository);
         Mockito.when(repositoryService.getCollectionGroupDetailsRepository().findAll()).thenReturn(Arrays.asList(collectionGroupEntity));
+        Map<Integer,String> collectionGroupMap = setupDataService.getCollectionGroupMap();
+        assertNotNull(collectionGroupMap);
+    }
+    @Test
+    public void getCollectionGroupMapForException(){
         Map<Integer,String> collectionGroupMap = setupDataService.getCollectionGroupMap();
         assertNotNull(collectionGroupMap);
     }

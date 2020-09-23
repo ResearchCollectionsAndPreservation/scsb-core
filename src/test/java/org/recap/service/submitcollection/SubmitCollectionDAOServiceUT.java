@@ -1,7 +1,6 @@
 package org.recap.service.submitcollection;
 
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.recap.RecapConstants;
 import org.recap.model.jpa.*;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.model.submitcollection.BoundWithBibliographicEntityObject;
@@ -19,16 +17,13 @@ import org.recap.repository.jpa.ItemChangeLogDetailsRepository;
 import org.recap.repository.jpa.ItemDetailsRepository;
 import org.recap.service.common.RepositoryService;
 import org.recap.service.common.SetupDataService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SubmitCollectionDAOServiceUT {
@@ -165,7 +160,10 @@ public class SubmitCollectionDAOServiceUT {
         fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity().getItemEntities().get(0));
         List<BibliographicEntity> fetchedBibliographicEntityList = new ArrayList<>();
         fetchedBibliographicEntityList.add(getBibliographicEntity());
-//        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountIsSameAsExistingItem(submitCollectionReportInfoMap,fetchedBarcodeItemEntityMap,boundWithBibliographicEntityObject.getBibliographicEntityList())).thenReturn(true);
+        Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap = new HashMap<>();
+        fetchedOwnInstBibIdBibliographicEntityMap.put("34558",getBibliographicEntity());
+        Mockito.when(submitCollectionValidationService.getOwnInstBibIdBibliographicEntityMap(any())).thenReturn(fetchedOwnInstBibIdBibliographicEntityMap);
+        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountIsSameAsExistingItem(any(),any(),any())).thenReturn(true);
         Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
         Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,owningInstitutionId)).thenReturn(itemEntity);
         List<BibliographicEntity> bibliographicEntities = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
@@ -201,11 +199,24 @@ public class SubmitCollectionDAOServiceUT {
         fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity().getItemEntities().get(0));
         List<BibliographicEntity> fetchedBibliographicEntityList = new ArrayList<>();
         fetchedBibliographicEntityList.add(getBibliographicEntity());
-//        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountIsSameAsExistingItem(submitCollectionReportInfoMap,fetchedBarcodeItemEntityMap,boundWithBibliographicEntityObject.getBibliographicEntityList())).thenReturn(true);
+        Map institutionEntityMap1 = new HashMap();
+        institutionEntityMap1.put(1,"Available");
+        institutionEntityMap1.put(2,"NYPL");
+        Mockito.when(setupDataService.getItemStatusIdCodeMap().get(1)).thenReturn(institutionEntityMap1);
+        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountGreaterThanExistingItem(any(),any(),any())).thenReturn(true);
         Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
         Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,owningInstitutionId)).thenReturn(itemEntity);
+        Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
+        Mockito.when(repositoryService.getBibliographicDetailsRepository().saveAndFlush(any())).thenReturn(getBibliographicEntity());
         List<BibliographicEntity> bibliographicEntities1 = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
         assertNotNull(bibliographicEntities1);
+        Mockito.when(submitCollectionHelperService.getBibliographicEntityIfExist(any(),any())).thenReturn(getBibliographicEntity());
+        Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap = new HashMap<>();
+        fetchedOwnInstBibIdBibliographicEntityMap.put("245466",getBibliographicEntity());
+        Mockito.when(submitCollectionValidationService.getOwnInstBibIdBibliographicEntityMap(any())).thenReturn(fetchedOwnInstBibIdBibliographicEntityMap);
+        Mockito.when(repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(any(),any())).thenReturn(getBibliographicEntity());
+        List<BibliographicEntity> bibliographicEntities2 = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        assertNotNull(bibliographicEntities2);
     }
     @Test
     public void updateBibliographicEntityInBatchForBoundWithGreaterExistingBibliographicEntity(){
@@ -405,6 +416,153 @@ public class SubmitCollectionDAOServiceUT {
         return itemChangeLogEntity;
     }
 
+    String content = "<?xml version=\"1.0\" ?>\n" +
+            "<bibRecords>\n" +
+            "    <bibRecord>\n" +
+            "        <bib>\n" +
+            "            <owningInstitutionId>NYPL</owningInstitutionId>\n" +
+            "            <owningInstitutionBibId>.b153286131</owningInstitutionBibId>\n" +
+            "            <content>\n" +
+            "                <collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n" +
+            "                    <record>\n" +
+            "                        <controlfield tag=\"001\">47764496</controlfield>\n" +
+            "                        <controlfield tag=\"003\">OCoLC</controlfield>\n" +
+            "                        <controlfield tag=\"005\">20021018083242.7</controlfield>\n" +
+            "                        <controlfield tag=\"008\">010604s2000 it a bde 000 0cita</controlfield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"010\">\n" +
+            "                            <subfield code=\"a\">2001386785</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"020\">\n" +
+            "                            <subfield code=\"a\">8880898620</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"040\">\n" +
+            "                            <subfield code=\"a\">DLC</subfield>\n" +
+            "                            <subfield code=\"c\">DLC</subfield>\n" +
+            "                            <subfield code=\"d\">NYP</subfield>\n" +
+            "                            <subfield code=\"d\">OCoLC</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"042\">\n" +
+            "                            <subfield code=\"a\">pcc</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"043\">\n" +
+            "                            <subfield code=\"a\">e-it---</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"049\">\n" +
+            "                            <subfield code=\"a\">NYPG</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\"0\" ind2=\"0\" tag=\"050\">\n" +
+            "                            <subfield code=\"a\">GV942.7.A1</subfield>\n" +
+            "                            <subfield code=\"b\">D59 2000</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\"0\" ind2=\"0\" tag=\"245\">\n" +
+            "                            <subfield code=\"a\">Dizionario biografico enciclopedico di un secolo del calcio italiano /\n" +
+            "                            </subfield>\n" +
+            "                            <subfield code=\"c\">a cura di Marco Sappino.</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\"1\" ind2=\"4\" tag=\"246\">\n" +
+            "                            <subfield code=\"a\">Dizionario del calcio italiano</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"260\">\n" +
+            "                            <subfield code=\"a\">Milano :</subfield>\n" +
+            "                            <subfield code=\"b\">Baldini &amp; Castoldi,</subfield>\n" +
+            "                            <subfield code=\"c\">c2000.</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"300\">\n" +
+            "                            <subfield code=\"a\">2 v., (2147 p.) :</subfield>\n" +
+            "                            <subfield code=\"b\">ill. ;</subfield>\n" +
+            "                            <subfield code=\"c\">22 cm.</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\"3\" tag=\"440\">\n" +
+            "                            <subfield code=\"a\">Le boe ;</subfield>\n" +
+            "                            <subfield code=\"v\">43</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"504\">\n" +
+            "                            <subfield code=\"a\">Includes bibliographical references (p. [2004]-2038).</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\"1\" ind2=\" \" tag=\"505\">\n" +
+            "                            <subfield code=\"a\">1. Protagonisti -- 2. club e trofei.</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\"0\" tag=\"650\">\n" +
+            "                            <subfield code=\"a\">Soccer players</subfield>\n" +
+            "                            <subfield code=\"z\">Italy</subfield>\n" +
+            "                            <subfield code=\"v\">Biography</subfield>\n" +
+            "                            <subfield code=\"v\">Dictionaries.</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\"0\" tag=\"650\">\n" +
+            "                            <subfield code=\"a\">Soccer</subfield>\n" +
+            "                            <subfield code=\"z\">Italy</subfield>\n" +
+            "                            <subfield code=\"v\">Biography</subfield>\n" +
+            "                            <subfield code=\"v\">Dictionaries.</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\"0\" tag=\"650\">\n" +
+            "                            <subfield code=\"a\">Soccer</subfield>\n" +
+            "                            <subfield code=\"z\">Italy</subfield>\n" +
+            "                            <subfield code=\"v\">Encyclopedias.</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\"1\" ind2=\" \" tag=\"700\">\n" +
+            "                            <subfield code=\"a\">Sappino, Marco.</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"907\">\n" +
+            "                            <subfield code=\"a\">.b153286131</subfield>\n" +
+            "                            <subfield code=\"c\">m</subfield>\n" +
+            "                            <subfield code=\"d\">a</subfield>\n" +
+            "                            <subfield code=\"e\">-</subfield>\n" +
+            "                            <subfield code=\"f\">ita</subfield>\n" +
+            "                            <subfield code=\"g\">it</subfield>\n" +
+            "                            <subfield code=\"h\">0</subfield>\n" +
+            "                            <subfield code=\"i\">2</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"952\">\n" +
+            "                            <subfield code=\"h\">JFD 02-22709</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <datafield ind1=\" \" ind2=\" \" tag=\"035\">\n" +
+            "                            <subfield code=\"a\">(OCoLC)47764496</subfield>\n" +
+            "                        </datafield>\n" +
+            "                        <leader>01184nam a22003494a 4500</leader>\n" +
+            "                    </record>\n" +
+            "                </collection>\n" +
+            "            </content>\n" +
+            "        </bib>\n" +
+            "        <holdings>\n" +
+            "            <holding>\n" +
+            "                <owningInstitutionHoldingsId/>\n" +
+            "                <content>\n" +
+            "                    <collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n" +
+            "                        <record>\n" +
+            "                            <datafield ind1=\" \" ind2=\"8\" tag=\"852\">\n" +
+            "                                <subfield code=\"b\">rc2ma</subfield>\n" +
+            "                                <subfield code=\"h\">JFD 02-22709</subfield>\n" +
+            "                            </datafield>\n" +
+            "                            <datafield ind1=\" \" ind2=\" \" tag=\"866\">\n" +
+            "                                <subfield code=\"a\">v. 1</subfield>\n" +
+            "                            </datafield>\n" +
+            "                        </record>\n" +
+            "                    </collection>\n" +
+            "                </content>\n" +
+            "                <items>\n" +
+            "                    <content>\n" +
+            "                        <collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n" +
+            "                            <record>\n" +
+            "                                <datafield ind1=\" \" ind2=\" \" tag=\"876\">\n" +
+            "                                    <subfield code=\"p\">33433031684909</subfield>\n" +
+            "                                    <subfield code=\"h\">In Library Use</subfield>\n" +
+            "                                    <subfield code=\"a\">.i116690355</subfield>\n" +
+            "                                    <subfield code=\"j\">Available</subfield>\n" +
+            "                                    <subfield code=\"t\">1</subfield>\n" +
+            "                                    <subfield code=\"3\">v. 1</subfield>\n" +
+            "                                </datafield>\n" +
+            "                                <datafield ind1=\" \" ind2=\" \" tag=\"900\">\n" +
+            "                                    <subfield code=\"a\">Shared</subfield>\n" +
+            "                                    <subfield code=\"b\">NA</subfield>\n" +
+            "                                </datafield>\n" +
+            "                            </record>\n" +
+            "                        </collection>\n" +
+            "                    </content>\n" +
+            "                </items>\n" +
+            "            </holding>\n" +
+            "        </holdings>\n" +
+            "    </bibRecord>\n" +
+            "</bibRecords>\n";
     private BibliographicEntity getBibliographicEntity(){
         InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setId(1);
@@ -413,7 +571,7 @@ public class SubmitCollectionDAOServiceUT {
 
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setBibliographicId(123456);
-        bibliographicEntity.setContent("Test".getBytes());
+        bibliographicEntity.setContent(content.getBytes());
         bibliographicEntity.setCreatedDate(new Date());
         bibliographicEntity.setLastUpdatedDate(new Date());
         bibliographicEntity.setCreatedBy("tst");

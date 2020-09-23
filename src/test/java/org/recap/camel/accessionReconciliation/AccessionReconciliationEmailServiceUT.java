@@ -7,8 +7,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.recap.RecapConstants;
 import org.recap.camel.EmailPayLoad;
 import org.recap.camel.accessionreconciliation.AccessionReconciliationEmailService;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -43,8 +43,11 @@ public class AccessionReconciliationEmailServiceUT {
 
     String ccEmailAddress = "testcc@mail.com";
 
+    String institutionCode = "CUL";
+
     @Before
     public  void setup(){
+        MockitoAnnotations.initMocks(this);
         ReflectionTestUtils.setField(accessionReconciliationEmailService,"pulEmailTo",emailAddress);
         ReflectionTestUtils.setField(accessionReconciliationEmailService,"pulEmailCC",ccEmailAddress);
     }
@@ -52,14 +55,14 @@ public class AccessionReconciliationEmailServiceUT {
     @Test
     public void testEmailIdTo() throws Exception{
         String institution = "PUL";
-        AccessionReconciliationEmailService accessionReconciliationEmailService = new AccessionReconciliationEmailService(institution,producerTemplate);
+        AccessionReconciliationEmailService accessionReconciliationEmailService = new AccessionReconciliationEmailService(institution);
         String result = accessionReconciliationEmailService.emailIdTo(institution, emailPayLoad);
         assertNull(result);
     }
     @Test
     public void getEmailPayLoad(){
         String institutionCode = "NYPL";
-        AccessionReconciliationEmailService accessionReconciliationEmailService1 = new AccessionReconciliationEmailService(institutionCode,producerTemplate);
+        AccessionReconciliationEmailService accessionReconciliationEmailService1 = new AccessionReconciliationEmailService(institutionCode);
         emailPayLoad.setTo(emailAddress);
         emailPayLoad.setCc(ccEmailAddress);
         message.setHeader("CamelFileNameProduced",dataheader);
@@ -68,16 +71,12 @@ public class AccessionReconciliationEmailServiceUT {
         assertNotNull(emailPayLoad);
     }
 
-    /*@Test
+    @Test
     public void processInput(){
-        producerTemplate.setThreadedAsyncMode(true);
-        producerTemplate.setDefaultEndpointUri("endpoint.com");
-        producerTemplate.setEventNotifierEnabled(true);
-        AccessionReconciliationEmailService accessionReconciliationEmailService1 = new AccessionReconciliationEmailService("CUL",producerTemplate);
-        message.setHeader("CamelFileNameProduced",dataheader);
+        ReflectionTestUtils.setField(accessionReconciliationEmailService,"institutionCode",institutionCode);
+        message.setHeader("CamelFileNameProduced","AccessionReconciliationFile");
+        exchange.setIn(message);
         Mockito.when(exchange.getIn()).thenReturn(message);
-        Mockito.doNothing().when(producerTemplate).sendBodyAndHeader(RecapConstants.EMAIL_Q, emailPayLoad, RecapConstants.EMAIL_BODY_FOR, "AccessionReconcilation");
-        accessionReconciliationEmailService1.processInput(exchange);
-    }*/
-
+        accessionReconciliationEmailService.processInput(exchange);
+    }
 }

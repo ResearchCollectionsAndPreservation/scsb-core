@@ -1,15 +1,13 @@
-package org.recap.model;
+package org.recap.model.jpa;
 
 import org.junit.Test;
-import org.recap.BaseTestCase;
-import org.recap.model.jpa.SearchItemResultRow;
 
 import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by hemalathas on 20/3/17.
  */
-public class SearchItemResultRowUT extends BaseTestCase{
+public class SearchItemResultRowUT {
 
     @Test
     public void testSearchItemResultRow(){
@@ -24,6 +22,11 @@ public class SearchItemResultRowUT extends BaseTestCase{
         searchItemResultRow.setAvailability("Available");
         searchItemResultRow.setSelectedItem(false);
         searchItemResultRow.setItemId(1);
+        searchItemResultRow.compareTo(searchItemResultRow);
+        searchItemResultRow.equals(searchItemResultRow);
+        searchItemResultRow.hashCode();
+        SearchItemResultRow searchItemResultRow1 = new SearchItemResultRow();
+        searchItemResultRow1.equals(searchItemResultRow);
         assertNotNull(searchItemResultRow.getCallNumber());
         assertNotNull(searchItemResultRow.getChronologyAndEnum());
         assertNotNull(searchItemResultRow.getCustomerCode());

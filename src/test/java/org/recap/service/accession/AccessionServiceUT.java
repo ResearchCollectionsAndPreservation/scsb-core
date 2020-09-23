@@ -2,8 +2,6 @@ package org.recap.service.accession;
 
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.marc4j.MarcReader;
@@ -94,8 +92,8 @@ public class AccessionServiceUT extends BaseTestCase {
     @Mock
     private NYPLService nyplService;
 
-    @Mock
-    private SolrIndexService solrIndexService;
+   /* @Mock
+    private SolrIndexService solrIndexService;*/
 
     @Mock
     AccessionDetailsRepository accessionDetailsRepository;
@@ -150,7 +148,7 @@ public class AccessionServiceUT extends BaseTestCase {
         Mockito.when(mockAccessionService.getMarcToBibEntityConverter()).thenCallRealMethod();
         Mockito.when(mockAccessionService.getScsbToBibEntityConverter()).thenCallRealMethod();
         Mockito.when(mockAccessionService.getReportDetailRepository()).thenCallRealMethod();
-        Mockito.when(mockAccessionService.getSolrIndexService()).thenCallRealMethod();
+        //Mockito.when(mockAccessionService.getSolrIndexService()).thenCallRealMethod();
         Mockito.when(mockAccessionService.getCustomerCodeDetailsRepository()).thenCallRealMethod();
         Mockito.when(mockAccessionService.getBibliographicDetailsRepository()).thenCallRealMethod();
         Mockito.when(mockAccessionService.getInstitutionDetailsRepository()).thenCallRealMethod();
@@ -163,7 +161,7 @@ public class AccessionServiceUT extends BaseTestCase {
         assertNotEquals(marcToBibEntityConverter,mockAccessionService.getMarcToBibEntityConverter());
         assertNotEquals(scsbToBibEntityConverter,mockAccessionService.getScsbToBibEntityConverter());
         assertNotEquals(reportDetailRepository,mockAccessionService.getReportDetailRepository());
-        assertNotEquals(solrIndexService,mockAccessionService.getSolrIndexService());
+       // assertNotEquals(solrIndexService,mockAccessionService.getSolrIndexService());
         assertNotEquals(mockedCustomerCodeDetailsRepository,mockAccessionService.getCustomerCodeDetailsRepository());
         assertNotEquals(mockedBibliographicDetailsRepository,mockAccessionService.getBibliographicDetailsRepository());
         assertNotEquals(mockedInstitutionDetailsRepository,mockAccessionService.getInstitutionDetailsRepository());
@@ -218,10 +216,10 @@ public class AccessionServiceUT extends BaseTestCase {
                 accessionResponseList.get(0).getMessage());
     }
 
-    public void deleteByDocId(String docIdParam, String docIdValue) throws IOException, SolrServerException {
+    /*public void deleteByDocId(String docIdParam, String docIdValue) throws IOException, SolrServerException {
         UpdateResponse updateResponse = solrTemplate.getSolrClient().deleteByQuery(docIdParam+":"+docIdValue);
         solrTemplate.commit(solrCore);
-    }
+    }*/
 
     @Test
     public void accessionUnavilableBarcode() throws Exception {

@@ -29,7 +29,7 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(MockitoJUnitRunner.class)
 public class EncryptEmailAddressUT {
 
-   @InjectMocks
+    @InjectMocks
     EncryptEmailAddressService mockedEncryptEmailAddressService;
 
     @Mock
@@ -61,17 +61,17 @@ public class EncryptEmailAddressUT {
 
     @Test
     public void checkEmailAddressEncryption() {
-         try {
-             RequestItemEntity requestItem = createRequestItem();
-             String encryptedValue = securityUtil.getEncryptedValue("test@gmail.com");
-             encryptEmailAddressService.encryptEmailAddress();
-             System.out.println(requestItem.getId());
-             RequestItemEntity requestItemEntity = requestItemDetailsRepository.findById(requestItem.getId()).orElse(null);
-             String decryptedValue = securityUtil.getDecryptedValue(encryptedValue);
-         }
-         catch (Exception e){
-             e.printStackTrace();
-         }
+        try {
+            RequestItemEntity requestItem = createRequestItem();
+            String encryptedValue = securityUtil.getEncryptedValue("test@gmail.com");
+            encryptEmailAddressService.encryptEmailAddress();
+            System.out.println(requestItem.getId());
+            RequestItemEntity requestItemEntity = requestItemDetailsRepository.findById(requestItem.getId()).orElse(null);
+            String decryptedValue = securityUtil.getDecryptedValue(encryptedValue);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
     @Test
     public void encryptEmailAddress(){
@@ -87,6 +87,13 @@ public class EncryptEmailAddressUT {
         String encryptEmailAddress = mockedEncryptEmailAddressService.encryptEmailAddress();
         assertNotNull(encryptEmailAddress);
 
+    }
+    @Test
+    public void encryptEmailAddressException(){
+        Mockito.when(mockedRequestItemDetailsRepository.count()).thenReturn(10L);
+        RequestItemEntity requestItemEntity = createRequestItem();
+        String encryptEmailAddress = mockedEncryptEmailAddressService.encryptEmailAddress();
+        assertNotNull(encryptEmailAddress);
     }
 
     private RequestItemEntity createRequestItem(){
@@ -107,7 +114,7 @@ public class EncryptEmailAddressUT {
         RequestItemEntity requestItemEntity = new RequestItemEntity();
         requestItemEntity.setItemId(bibliographicEntity.getItemEntities().get(0).getItemId());
         requestItemEntity.setRequestTypeId(requestTypeEntity.getId());
-       // requestItemEntity.setRequestStatusEntity(requestStatusEntity);
+        // requestItemEntity.setRequestStatusEntity(requestStatusEntity);
         requestItemEntity.setRequestingInstitutionId(2);
         requestItemEntity.setStopCode("test");
         requestItemEntity.setNotes("test");
@@ -122,7 +129,7 @@ public class EncryptEmailAddressUT {
         requestItemEntity.setEmailId("test@gmail.com");
         requestItemEntity.setLastUpdatedDate(new Date());
         //RequestItemEntity savedRequestItemEntity = requestItemDetailsRepository.saveAndFlush(requestItemEntity);
-       // entityManager.refresh(savedRequestItemEntity);
+        // entityManager.refresh(savedRequestItemEntity);
         return requestItemEntity;
     }
 
@@ -163,7 +170,7 @@ public class EncryptEmailAddressUT {
         bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
         //BibliographicEntity savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(bibliographicEntity);
-       // entityManager.refresh(savedBibliographicEntity);
+        // entityManager.refresh(savedBibliographicEntity);
         return bibliographicEntity;
 
     }

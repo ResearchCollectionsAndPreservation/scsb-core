@@ -1,9 +1,10 @@
 package org.recap.service.purge;
 
 import org.junit.Test;
-import org.recap.BaseTestCase;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.recap.RecapCommonConstants;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
@@ -12,9 +13,10 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by hemalathas on 13/4/17.
  */
-public class PurgeServiceUT extends BaseTestCase {
+@RunWith(MockitoJUnitRunner.class)
+public class PurgeServiceUT{
 
-    @Autowired
+    @InjectMocks
     PurgeService purgeService;
 
     @Test
@@ -22,8 +24,13 @@ public class PurgeServiceUT extends BaseTestCase {
         Map<String, String> responseMap = purgeService.purgeEmailAddress();
         assertNotNull(responseMap);
         assertNotNull(responseMap.get(RecapCommonConstants.STATUS));
-        assertNotNull(responseMap.get(RecapCommonConstants.PURGE_EDD_REQUEST));
-        assertNotNull(responseMap.get(RecapCommonConstants.PURGE_PHYSICAL_REQUEST));
+    }
+    @Test
+    public void testPurgeEmailAddressForException() {
+        PurgeService purgeService = new PurgeService();
+        Map<String, String> responseMap = purgeService.purgeEmailAddress();
+        assertNotNull(responseMap);
+        assertNotNull(responseMap.get(RecapCommonConstants.STATUS));
     }
 
     @Test
@@ -32,9 +39,23 @@ public class PurgeServiceUT extends BaseTestCase {
         assertNotNull(responseMap);
         assertNotNull(responseMap.get(RecapCommonConstants.STATUS));
     }
+    @Test
+    public void testPurgeExceptionRequestsForException() {
+        PurgeService purgeService = new PurgeService();
+        Map<String, String> responseMap = purgeService.purgeExceptionRequests();
+        assertNotNull(responseMap);
+        assertNotNull(responseMap.get(RecapCommonConstants.STATUS));
+    }
 
     @Test
     public void testPurgeAccessionRequests() {
+        Map<String, String> responseMap = purgeService.purgeAccessionRequests();
+        assertNotNull(responseMap);
+        assertNotNull(responseMap.get(RecapCommonConstants.STATUS));
+    }
+    @Test
+    public void testPurgeAccessionRequestsForException() {
+        PurgeService purgeService = new PurgeService();
         Map<String, String> responseMap = purgeService.purgeAccessionRequests();
         assertNotNull(responseMap);
         assertNotNull(responseMap.get(RecapCommonConstants.STATUS));

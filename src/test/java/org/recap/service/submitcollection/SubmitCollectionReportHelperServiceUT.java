@@ -34,7 +34,8 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Collections;
-import static org.junit.Assert.assertNotNull;
+
+import static org.junit.Assert.*;
 
 
 /**
@@ -81,10 +82,13 @@ public class SubmitCollectionReportHelperServiceUT{
         BibliographicEntity incomingBibliographicEntity = getBibliographicEntity();
         incomingBibliographicEntity.setOwningInstitutionBibId("2345");
         Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();
+        List<SubmitCollectionReportInfo> submitCollectionExceptionInfos = new ArrayList<>();
+        SubmitCollectionReportInfo submitCollectionReportInfo = getSubmitCollectionReportInfo();
+        submitCollectionReportInfo.setItemBarcode("35789");
+        submitCollectionReportInfoMap.put("SUCCESS",Arrays.asList(submitCollectionReportInfo));
         Map institutionEntityMap = new HashMap();
         institutionEntityMap.put(1,"PUL");
-        List<SubmitCollectionReportInfo> submitCollectionExceptionInfos = new ArrayList<>();
-        submitCollectionExceptionInfos.add(getSubmitCollectionReportInfo());
+        submitCollectionExceptionInfos.add(submitCollectionReportInfo);
         submitCollectionReportInfoMap.put("submitCollectionFailureList",submitCollectionExceptionInfos);
         Mockito.when(setupDataService.getInstitutionIdCodeMap().get(fetchedBibliographicEntity.getOwningInstitutionId())).thenReturn(institutionEntityMap);
         submitCollectionReportHelperService.setSubmitCollectionReportInfoForOwningInstitutionBibIdMismatch(fetchedBibliographicEntity,incomingBibliographicEntity,submitCollectionReportInfoMap);
@@ -126,6 +130,53 @@ public class SubmitCollectionReportHelperServiceUT{
         submitCollectionExceptionInfos.add(getSubmitCollectionReportInfo());
         String message = "SUBMIT COLLECTION";
         submitCollectionReportHelperService.setSubmitCollectionReportInfoForInvalidXml(institutionCode,submitCollectionExceptionInfos,message);
+    }
+    @Test
+    public void isBarcodeAlreadyAddedToReport(){
+        String barcode = "123456";
+        String barcode1 ="24566";
+        List<SubmitCollectionReportInfo> submitCollectionReportInfoList = new ArrayList<>();
+        submitCollectionReportInfoList.add(getSubmitCollectionReportInfo());
+        boolean result= submitCollectionReportHelperService.isBarcodeAlreadyAddedToReport(barcode,submitCollectionReportInfoList);
+        assertTrue(result);
+        boolean result1= submitCollectionReportHelperService.isBarcodeAlreadyAddedToReport(barcode1,submitCollectionReportInfoList);
+        assertFalse(result1);
+
+    }
+    @Test
+    public void setSubmitCollectionReportInfo(){
+        String barcode = "123456";
+        String customerCode ="PA";
+        String owningInstitution = "PUL";
+        String message = "test";
+        List<SubmitCollectionReportInfo> submitCollectionReportInfoList = new ArrayList<>();
+        submitCollectionReportInfoList.add(getSubmitCollectionReportInfo());
+        submitCollectionReportHelperService.setSubmitCollectionReportInfo(submitCollectionReportInfoList,barcode,customerCode,owningInstitution,message);
+    }
+    @Test
+    public void setFailureSubmitCollectionReportInfoListWithMismatch(){
+        List<SubmitCollectionReportInfo> failureSubmitCollectionReportInfoList = new ArrayList<>();
+        String owningInstitution = "PUL";
+        Map<String, ItemEntity> fetchedOwningItemIdEntityMap = new HashMap<>();
+        ItemEntity fetchedOwningItemIdEntity = getItemEntity();
+        fetchedOwningItemIdEntity.setBarcode("54u224");
+        fetchedOwningItemIdEntityMap.put("fetchedItemEntity",fetchedOwningItemIdEntity);
+        String incomingOwningInstHoldingsId = "123456";
+        ItemEntity incomingItemEntity = getItemEntity();
+        ItemEntity fetchedItemEntity = null;
+        Mockito.when(itemDetailsRepository.findByBarcode(incomingItemEntity.getBarcode())).thenReturn(Arrays.asList(incomingItemEntity));
+        submitCollectionReportHelperService.setFailureSubmitCollectionReportInfoList(failureSubmitCollectionReportInfoList,owningInstitution,fetchedOwningItemIdEntityMap,incomingOwningInstHoldingsId,incomingItemEntity,fetchedItemEntity);
+    }
+    @Test
+    public void setFailureSubmitCollectionReportInfoListWithoutMismatch(){
+        List<SubmitCollectionReportInfo> failureSubmitCollectionReportInfoList = new ArrayList<>();
+        String owningInstitution = "PUL";
+        Map<String, ItemEntity> fetchedOwningItemIdEntityMap = new HashMap<>();
+        fetchedOwningItemIdEntityMap.put("fetchedItemEntity",getItemEntity());
+        String incomingOwningInstHoldingsId = "123456";
+        ItemEntity incomingItemEntity = getItemEntity();
+        ItemEntity fetchedItemEntity = getItemEntity();
+        submitCollectionReportHelperService.setFailureSubmitCollectionReportInfoList(failureSubmitCollectionReportInfoList,owningInstitution,fetchedOwningItemIdEntityMap,incomingOwningInstHoldingsId,incomingItemEntity,fetchedItemEntity);
     }
     @Test
     public void buildSubmitCollectionReportInfo(){
@@ -452,6 +503,7 @@ public class SubmitCollectionReportHelperServiceUT{
         itemEntity.setDeleted(false);
         itemEntity.setInstitutionEntity(institutionEntity);
         itemEntity.setBibliographicEntities(Arrays.asList(getBibliographicEntity()));
+        itemEntity.setHoldingsEntities(Arrays.asList(getHoldingsEntity()));
         return itemEntity;
     }
 
