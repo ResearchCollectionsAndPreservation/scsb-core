@@ -240,6 +240,46 @@ public final class RecapConstants {
     public static final String REQUEST_REFILE_BODY = "The following item has been requested and was found to be under Refile in LAS.";
     public static final String REQUEST_REFILE_SUBJECT = "Request for Item on Refile WO - ";
 
+    public static class SERVICE_PATH {
+        public static final String CHECKIN_ITEM = "requestItem/checkinItem";
+        public static final String REFILE_ITEM_IN_ILS = "requestItem/refileItemInILS";
+        public static final String REPLACE_REQUEST = "requestItem/replaceRequest";
+    }
+
+    //Accession
+    public static final String BULK_ACCESSION_SUMMARY = "BULK_ACCESSION_SUMMARY";
+    public static final String ACCESSION_SUMMARY = "ACCESSION_SUMMARY";
+    public static final String ACCESSION_JOB_FAILURE = "Exception occurred in SCSB Ongoing Accession Job";
+    public static final String ONGOING_ACCESSION_LIMIT_EXCEED_MESSAGE = "Input limit exceeded, maximum allowed input limit is ";
+    public static final String PENDING = "pending";
+    public static final String PROCESSING = "Processing";
+    public static final String MARC_FORMAT_PARSER_ERROR = "Unable to parse input";
+    public static final String INVALID_MARC_XML_ERROR_MSG = "Unable to parse input, xml is having invalid marc tag";
+    public static final String OWNING_INST = "owningInstitution";
+    public static final String ITEM_ALREADY_ACCESSIONED = "Item already accessioned - Existing item details : ";
+    public static final String OWN_INST_BIB_ID = " OwningInstBibId-";
+    public static final String OWN_INST_HOLDING_ID = " OwningInstHoldingId-";
+    public static final String OWN_INST_ITEM_ID = " OwningInstItemId-";
+    public static final String REACCESSION = "re-accession";
+    public static final String ITEM_ISDELETED_TRUE_TO_FALSE = "Item isdeleted true to false";
+    public static final String ACCESSION_SAVE_SUCCESS_STATUS = "The accession request is successfully processed.";
+    public static final String ACCESSION_SAVE_FAILURE_STATUS = "Failed to process accession request.";
+    public static final String ITEM_BARCODE_EMPTY = "Item Barcode is Blank.";
+    public static final String CUSTOMER_CODE_EMPTY = "Customer Code is Blank.";
+    public static final String OWNING_INST_EMPTY = "Owning Institution is Blank.";
+    public static final String INVALID_BARCODE_LENGTH="Barcode length should not exceed 45 characters";
+    public static final String INVALID_BOUNDWITH_RECORD = "Bound-with item having invalid data";
+    public static final String UNKNOWN_INSTITUTION = "UN";
+    public static final String ONGOING_ACCESSION_REPORT = "Ongoing_Accession_Report";
+    public static final String ACCESSION_DUMMY_RECORD = "Dummy record created";
+    public static final String SUCCESS_INCOMPLETE_RECORD = "Success - Incomplete record";
+    public static final String INCOMPLETE_RESPONSE = "incompleteResponse";
+    public static final String ITEM_BARCODE_ALREADY_ACCESSIONED_MSG = "Unavailable barcode from partner is already accessioned";
+    public static final String FAILED = "Failed";
+    public static final String DUMMY_CALL_NUMBER_TYPE = "dummycallnumbertype";
+    public static final String DUMMY_BIB_CONTENT_XML = "dummybibcontent.xml";
+    public static final String DUMMY_HOLDING_CONTENT_XML = "dummyholdingcontent.xml";
+
     //Deaccession
     public static final String DEACCESSION_IN_SOLR_URL = "deaccessionInSolrService/deaccessionInSolr";
     public static final String DEACCESSION_NO_BARCODE_ERROR = "Provide one or more barcodes to deaccession";
@@ -489,5 +529,10 @@ public final class RecapConstants {
     }
 
     public static final String ETL_DATA_LOAD_NAMESPACE = "http://www.loc.gov/MARC21/slim";
+
+    public static final String FAILURE_BIB_REASON = "ReasonForFailureBib";
+    public static final String FAILURE_ITEM_REASON = "ReasonForFailureItem";
+
+    public static final String EXCEPTION = "exception->";
 
 }

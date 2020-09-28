@@ -6,11 +6,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.recap.BaseTestCase;
 import org.recap.RecapConstants;
 import org.recap.repository.jpa.DeletedRecordsRepository;
-import org.recap.request.EmailService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.recap.service.EmailService;
 
 import static org.junit.Assert.assertTrue;
 

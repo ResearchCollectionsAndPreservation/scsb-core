@@ -34,11 +34,11 @@ public class StopRouteProcessor implements Processor {
                             routeId.equalsIgnoreCase(RecapConstants.ACCESSION_RECONCILATION_FTP_CUL_ROUTE) ||
                             routeId.equalsIgnoreCase(RecapConstants.ACCESSION_RECONCILATION_FTP_NYPL_ROUTE)) {
                         stopRouteWithTimeOutOption();
-                    } else if (routeId.equalsIgnoreCase(RecapConstants.REQUEST_INITIAL_LOAD_PUL_FTP_ROUTE) ||
+                    } /*else if (routeId.equalsIgnoreCase(RecapConstants.REQUEST_INITIAL_LOAD_PUL_FTP_ROUTE) ||
                             routeId.equalsIgnoreCase(RecapConstants.REQUEST_INITIAL_LOAD_CUL_FTP_ROUTE) ||
                             routeId.equalsIgnoreCase(RecapConstants.REQUEST_INITIAL_LOAD_CUL_FS_ROUTE)) {
                         stopRouteWithTimeOutOption();
-                    } else {
+                    } */else {
                         exchange.getContext().getRouteController().stopRoute(routeId);
                     }
                     logger.info("Stop Route {}" , routeId);

@@ -30,7 +30,15 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.transaction.Transactional;
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -186,7 +194,18 @@ public class SubmitCollectionService {
         format = RecapConstants.FORMAT_SCSB;
         BibRecords bibRecords = null;
         try {
-            bibRecords = (BibRecords) JAXBHandler.getInstance().unmarshal(inputRecords, BibRecords.class);
+            JAXBContext context = JAXBContext.newInstance(BibRecords.class);
+            XMLInputFactory xif = XMLInputFactory.newFactory();
+            xif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
+            InputStream stream = new ByteArrayInputStream(inputRecords.getBytes(StandardCharsets.UTF_8));
+            XMLStreamReader xsr = null;
+            try {
+                xsr = xif.createXMLStreamReader(stream);
+            } catch (XMLStreamException e) {
+                e.printStackTrace();
+            }
+            Unmarshaller um = context.createUnmarshaller();
+            bibRecords = (BibRecords) um.unmarshal(xsr);
             logger.info("bibrecord size {}", bibRecords.getBibRecordList().size());
             if (checkLimit && bibRecords.getBibRecordList().size() > inputLimit) {
                 return RecapConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE + " " + inputLimit;
