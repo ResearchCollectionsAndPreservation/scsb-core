@@ -49,7 +49,7 @@ public class AccessionReconciliationEmailService {
      *
      * @param institutionCode the institution code
      */
-    public AccessionReconciliationEmailService(String institutionCode, ProducerTemplate producerTemplate) {
+    public AccessionReconciliationEmailService(String institutionCode) {
         this.institutionCode = institutionCode;
     }
 

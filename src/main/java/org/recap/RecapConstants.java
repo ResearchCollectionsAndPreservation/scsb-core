@@ -269,7 +269,7 @@ public final class RecapConstants {
     public static final String OWNING_INST_EMPTY = "Owning Institution is Blank.";
     public static final String INVALID_BARCODE_LENGTH="Barcode length should not exceed 45 characters";
     public static final String INVALID_BOUNDWITH_RECORD = "Bound-with item having invalid data";
-    public static final String UNKNOWN_INSTITUTION = "Unknow institution";
+    public static final String UNKNOWN_INSTITUTION = "UN";
     public static final String ONGOING_ACCESSION_REPORT = "Ongoing_Accession_Report";
     public static final String ACCESSION_DUMMY_RECORD = "Dummy record created";
     public static final String SUCCESS_INCOMPLETE_RECORD = "Success - Incomplete record";

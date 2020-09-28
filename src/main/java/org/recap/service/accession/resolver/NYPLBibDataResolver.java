@@ -19,7 +19,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +62,18 @@ public class NYPLBibDataResolver extends BibDataResolver {
     public Object unmarshal(String bibDataResponse) {
         BibRecords bibRecords = null;
         try {
-            bibRecords = (BibRecords) JAXBHandler.getInstance().unmarshal(bibDataResponse, BibRecords.class);
+            JAXBContext context = JAXBContext.newInstance(BibRecords.class);
+            XMLInputFactory xif = XMLInputFactory.newFactory();
+            xif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
+            InputStream stream = new ByteArrayInputStream(bibDataResponse.getBytes(StandardCharsets.UTF_8));
+            XMLStreamReader xsr = null;
+            try {
+                xsr = xif.createXMLStreamReader(stream);
+            } catch (XMLStreamException e) {
+                e.printStackTrace();
+            }
+            Unmarshaller um = context.createUnmarshaller();
+            bibRecords = (BibRecords) um.unmarshal(xsr);
         } catch (JAXBException e) {
             logger.error(RecapCommonConstants.LOG_ERROR,e);
         }
