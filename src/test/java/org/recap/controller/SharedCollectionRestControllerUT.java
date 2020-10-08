@@ -187,18 +187,4 @@ public class SharedCollectionRestControllerUT {
         assertNotNull(response);
     }
 
-    @Test
-    public void deAccession() throws Exception {
-        DeAccessionRequest deAccessionRequest = new DeAccessionRequest();
-        DeAccessionItem deAccessionItem = new DeAccessionItem();
-        deAccessionItem.setItemBarcode("1");
-        deAccessionItem.setDeliveryLocation("PB");
-        deAccessionRequest.setDeAccessionItems(Arrays.asList(deAccessionItem));
-        Map<String, String> map = new HashMap<>();
-        map.put("Institution","PUL");
-        //Mockito.when(deAccessionService.deAccession(deAccessionRequest)).thenReturn(map);
-        ResponseEntity result = sharedCollectionRestController.deAccession(deAccessionRequest);
-        assertNotNull(result);
-    }
-
 }

@@ -52,14 +52,14 @@ public class AccessionReconciliationEmailServiceUT {
     @Test
     public void testEmailIdTo() throws Exception{
         String institution = "PUL";
-        AccessionReconciliationEmailService accessionReconciliationEmailService = new AccessionReconciliationEmailService(institution,producerTemplate);
+        AccessionReconciliationEmailService accessionReconciliationEmailService = new AccessionReconciliationEmailService(institution);
         String result = accessionReconciliationEmailService.emailIdTo(institution, emailPayLoad);
         assertNull(result);
     }
     @Test
     public void getEmailPayLoad(){
         String institutionCode = "NYPL";
-        AccessionReconciliationEmailService accessionReconciliationEmailService1 = new AccessionReconciliationEmailService(institutionCode,producerTemplate);
+        AccessionReconciliationEmailService accessionReconciliationEmailService1 = new AccessionReconciliationEmailService(institutionCode);
         emailPayLoad.setTo(emailAddress);
         emailPayLoad.setCc(ccEmailAddress);
         message.setHeader("CamelFileNameProduced",dataheader);
