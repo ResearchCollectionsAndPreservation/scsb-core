@@ -1,15 +1,65 @@
 package org.recap.converter;
 
-import org.recap.BaseTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.recap.RecapCommonConstants;
+import org.recap.model.accession.AccessionRequest;
+import org.recap.model.jaxb.marc.BibRecords;
+import org.recap.model.jpa.BibliographicEntity;
+import org.recap.model.jpa.HoldingsEntity;
+import org.recap.model.jpa.InstitutionEntity;
+import org.recap.model.jpa.ItemEntity;
+import org.recap.repository.jpa.BibliographicDetailsRepository;
+import org.recap.util.CommonUtil;
+import org.recap.util.DBReportUtil;
+import org.recap.util.MarcUtil;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.JAXBIntrospector;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by premkb on 15/12/16.
  */
-public class AccessionSCSBToBibEntityConverterUT extends BaseTestCase {
 
-    @Autowired
-    private AccessionSCSBToBibEntityConverter scsbToBibEntityConverter;
+@RunWith(SpringRunner.class)
+public class AccessionSCSBToBibEntityConverterUT {
+
+    @InjectMocks
+    AccessionSCSBToBibEntityConverter accessionSCSBToBibEntityConverter;
+
+    @Mock
+    CommonUtil commonUtil;
+
+    @Mock
+    DBReportUtil dbReportUtil;
+
+    @Mock
+    MarcUtil marcUtil;
+
+    @Mock
+    BibliographicDetailsRepository bibliographicDetailsRepository;
 
     private String scsbXmlContent = "<bibRecords>\n" +
             "    <bibRecord>\n" +
@@ -139,13 +189,32 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCase {
             "</holdings>\n" +
             "</bibRecord>\n" +
             "</bibRecords>\n";
-   /* @Test
+    @Test
     public void convert() throws Exception {
-        BibRecords bibRecords = (BibRecords) JAXBHandler.getInstance().unmarshal(scsbXmlContent, BibRecords.class);
+        BibRecords bibRecords = getBibRecords();
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("NA");
-        accessionRequest.setItemBarcode("33433065529350");
-        Map map = scsbToBibEntityConverter.convert(bibRecords.getBibRecordList().get(0), "NYPL",accessionRequest);
+        accessionRequest.setItemBarcode("33433002031718");
+        Map institutionEntityMap  = new HashMap();
+        institutionEntityMap.put("NYPL",3);
+        Map collectionGroupMap=new HashMap();
+        collectionGroupMap.put("Shared",1);
+        Map<String, Object> holdingsMap=new HashMap<>();
+        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0));
+        Mockito.when(commonUtil.getInstitutionEntityMap().get("NYPL")).thenReturn(institutionEntityMap);
+        Mockito.when(marcUtil.isSubFieldExists(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0), "245")).thenReturn(true);
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(3,".b100000186")).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186")));
+        Mockito.when(marcUtil.getInd1ForRecordType(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0),"852","h")).thenReturn("In Library Use");
+        Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "p")).thenReturn("33433002031718");
+        Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "a")).thenReturn(".i100000046");
+        Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "900", null, null, "a")).thenReturn("Shared");
+        Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "t")).thenReturn("1");
+        Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "h")).thenReturn("In Library Use");
+        Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
+        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.anyString())).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0)));
+        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.any(),Mockito.any(),Mockito.any())).thenReturn(holdingsMap);
+
+        Map map = accessionSCSBToBibEntityConverter.convert(bibRecords.getBibRecordList().get(0), "NYPL",accessionRequest);
         assertNotNull(map);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) map.get("bibliographicEntity");
         assertNotNull(bibliographicEntity);
@@ -155,5 +224,59 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCase {
         List<ItemEntity> itemEntities = bibliographicEntity.getItemEntities();
         assertNotNull(itemEntities);
         assertTrue(itemEntities.size() == 1);
-    }*/
+    }
+
+    private BibRecords getBibRecords() throws JAXBException, XMLStreamException {
+        JAXBContext context = JAXBContext.newInstance(BibRecords.class);
+        XMLInputFactory xif = XMLInputFactory.newFactory();
+        xif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
+        InputStream stream = new ByteArrayInputStream(scsbXmlContent.getBytes(StandardCharsets.UTF_8));
+        XMLStreamReader xsr = xif.createXMLStreamReader(stream);
+        Unmarshaller um = context.createUnmarshaller();
+        BibRecords   bibRecords = (BibRecords) JAXBIntrospector.getValue(um.unmarshal(xsr));
+        return bibRecords;
+    }
+
+    public BibliographicEntity saveBibSingleHoldingsSingleItem(String itemBarcode, String customerCode, String institution,String owningInstBibId) throws Exception {
+
+        BibliographicEntity bibliographicEntity = new BibliographicEntity();
+        bibliographicEntity.setContent("sourceBibContent".getBytes());
+        bibliographicEntity.setCreatedDate(new Date());
+        bibliographicEntity.setLastUpdatedDate(new Date());
+        bibliographicEntity.setCreatedBy("tst");
+        bibliographicEntity.setLastUpdatedBy("tst");
+        bibliographicEntity.setOwningInstitutionId(3);
+        bibliographicEntity.setOwningInstitutionBibId(owningInstBibId);
+
+        HoldingsEntity holdingsEntity = new HoldingsEntity();
+        holdingsEntity.setDeleted(false);
+        holdingsEntity.setCreatedDate(new Date());
+        holdingsEntity.setCreatedBy(RecapCommonConstants.ACCESSION);
+        holdingsEntity.setLastUpdatedDate(new Date());
+        holdingsEntity.setLastUpdatedBy(RecapCommonConstants.ACCESSION);
+        holdingsEntity.setOwningInstitutionId(3);
+        holdingsEntity.setOwningInstitutionHoldingsId("5123222f-2333-413e-8c9c-cb8709f010c3");
+
+        ItemEntity itemEntity = new ItemEntity();
+        itemEntity.setLastUpdatedDate(new Date());
+        itemEntity.setOwningInstitutionItemId(".i100000046");
+        itemEntity.setOwningInstitutionId(1);
+        itemEntity.setBarcode(itemBarcode);
+        itemEntity.setCallNumber("1");
+        itemEntity.setCollectionGroupId(1);
+        itemEntity.setCallNumberType("1");
+        itemEntity.setCustomerCode(customerCode);
+        itemEntity.setCreatedDate(new Date());
+        itemEntity.setCreatedBy("tst");
+        itemEntity.setLastUpdatedBy("tst");
+        itemEntity.setItemAvailabilityStatusId(1);itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
+        List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity));
+        holdingsEntity.setItemEntities(itemEntitylist);
+        bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
+        return bibliographicEntity;
+
+    }
+
 }

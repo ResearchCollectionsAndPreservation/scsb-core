@@ -13,6 +13,7 @@ import org.recap.model.jaxb.JAXBHandler;
 import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.jpa.HoldingsEntity;
+import org.recap.model.jpa.InstitutionEntity;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.repository.jpa.BibliographicDetailsRepository;
 import org.slf4j.Logger;
@@ -98,12 +99,21 @@ public class AccessionValidationServiceUT extends BaseTestCase {
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("32101095533293");
-        Map map = marcToBibEntityConverter.convert(records.get(0), "PUL",accessionRequest);
+        InstitutionEntity institutionEntity = getInstitutionEntity();
+        Map map = marcToBibEntityConverter.convert(records.get(0), institutionEntity);
         assertNotNull(map);
         BibliographicEntity convertedBibliographicEntity = (BibliographicEntity) map.get("bibliographicEntity");
         StringBuilder errorMessage = new StringBuilder();
         boolean isValid = accessionValidationService.validateItem(convertedBibliographicEntity,false,false,errorMessage);
         assertTrue(isValid);
+    }
+
+    private InstitutionEntity getInstitutionEntity() {
+        InstitutionEntity institutionEntity=new InstitutionEntity();
+        institutionEntity.setId(1);
+        institutionEntity.setInstitutionName("Princeton");
+        institutionEntity.setInstitutionCode("PUL");
+        return institutionEntity;
     }
 
     @Test
@@ -115,7 +125,8 @@ public class AccessionValidationServiceUT extends BaseTestCase {
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("32101095533293");
-        Map map = marcToBibEntityConverter.convert(records.get(0), "PUL",accessionRequest);
+        InstitutionEntity institutionEntity = getInstitutionEntity();
+        Map map = marcToBibEntityConverter.convert(records.get(0), institutionEntity);
         assertNotNull(map);
         BibliographicEntity convertedBibliographicEntity = (BibliographicEntity) map.get("bibliographicEntity");
         StringBuilder errorMessage = new StringBuilder();
