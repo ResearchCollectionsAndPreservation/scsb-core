@@ -4,14 +4,15 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
+import org.recap.model.ILSConfigProperties;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
 import org.recap.model.jpa.*;
 import org.recap.model.request.ItemCheckInRequest;
 import org.recap.model.request.ItemCheckinResponse;
 import org.recap.repository.jpa.*;
-import org.recap.service.accession.AccessionService;
-import org.recap.service.accession.resolver.BibDataResolver;
+import org.recap.service.accession.AccessionInterface;
+import org.recap.service.accession.AccessionResolverFactory;
 import org.recap.spring.SwaggerAPIProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +34,9 @@ import java.util.*;
  */
 @Service
 @EnableAsync
-public class AccessionHelperUtil {
+public class AccessionProcessService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AccessionHelperUtil.class);
-
-    @Autowired
-    private CustomerCodeDetailsRepository customerCodeDetailsRepository;
+    private static final Logger logger = LoggerFactory.getLogger(AccessionProcessService.class);
 
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;
@@ -50,16 +48,21 @@ public class AccessionHelperUtil {
     private ItemBarcodeHistoryDetailsRepository itemBarcodeHistoryDetailsRepository;
 
     @Autowired
-    private AccessionService accessionService;
-
-    @Autowired
     private InstitutionDetailsRepository institutionDetailsRepository;
 
-    private Map<String,Integer> institutionEntityMap;
+    @Autowired
+    AccessionUtil accessionUtil;
+
+    @Autowired
+    PropertyUtil propertyUtil;
+
+    @Autowired
+    AccessionResolverFactory accessionResolverFactory;
+
+    private Map<String, Integer> institutionEntityMap;
 
     @Value("${scsb.url}")
     private String scsbUrl;
-
 
     public Object processRecords(Set<AccessionResponse> accessionResponses, List<Map<String, String>> responseMaps,
                                  AccessionRequest accessionRequest, List<ReportDataEntity> reportDataEntitys,
@@ -73,14 +76,14 @@ public class AccessionHelperUtil {
 
             boolean isDeaccessionedItem = isItemDeaccessioned(itemEntityList);
             if (isDeaccessionedItem) { // If deacccessioned item make it available
-                String response = accessionService.reAccessionItem(itemEntityList);
+                String response = accessionUtil.reAccessionItem(itemEntityList);
                 if (response.equals(RecapCommonConstants.SUCCESS)) {
-                    response = accessionService.indexReaccessionedItem(itemEntityList);
-                    accessionService.saveItemChangeLogEntity(RecapConstants.REACCESSION, RecapConstants.ITEM_ISDELETED_TRUE_TO_FALSE, itemEntityList);
+                    response = accessionUtil.indexReaccessionedItem(itemEntityList);
+                    accessionUtil.saveItemChangeLogEntity(RecapConstants.REACCESSION, RecapConstants.ITEM_ISDELETED_TRUE_TO_FALSE, itemEntityList);
                     reAccessionedCheckin(itemEntityList);
                 }
-                setAccessionResponse(accessionResponses, itemBarcode, response);
-                reportDataEntitys.addAll(createReportDataEntityList(accessionRequest, response));
+                accessionUtil.setAccessionResponse(accessionResponses, itemBarcode, response);
+                reportDataEntitys.addAll(accessionUtil.createReportDataEntityList(accessionRequest, response));
             } else { // else, error response
                 String itemAreadyAccessionedMessage;
                 if (CollectionUtils.isNotEmpty(itemEntityList.get(0).getBibliographicEntities())) {
@@ -90,94 +93,69 @@ public class AccessionHelperUtil {
                 } else {
                     itemAreadyAccessionedMessage = RecapConstants.ITEM_ALREADY_ACCESSIONED;
                 }
-                setAccessionResponse(accessionResponses, itemBarcode, itemAreadyAccessionedMessage);
-                reportDataEntitys.addAll(createReportDataEntityList(accessionRequest, itemAreadyAccessionedMessage));
+                accessionUtil.setAccessionResponse(accessionResponses, itemBarcode, itemAreadyAccessionedMessage);
+                reportDataEntitys.addAll(accessionUtil.createReportDataEntityList(accessionRequest, itemAreadyAccessionedMessage));
             }
 
         } else { // If not available
 
+            ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(owningInstitution);
+            AccessionInterface formatResolver = accessionResolverFactory.getFormatResolver(ilsConfigProperties.getBibDataFormat());
+
             // Call ILS - Bib Data API
-            StopWatch individualStopWatch = new StopWatch();
-            individualStopWatch.start();
-            for (BibDataResolver bibDataResolver : accessionService.getBibDataResolvers()) {
-                if (bibDataResolver.isInterested(owningInstitution)) {
-                    String bibData;
-                    try {
-                        // Calling ILS - Bib Data API
-                        bibData = bibDataResolver.getBibData(itemBarcode, customerCode);
-                    } catch (Exception e) { // Process dummy record if record not found in ILS
+            String bibData = getBibData(accessionResponses, accessionRequest, reportDataEntitys, owningInstitution, customerCode, itemBarcode, formatResolver);
+            if (bibData != null) {
+                try { // Check whether owningInsitutionItemId attached with another barcode.
+                    Object unmarshalObject = formatResolver.unmarshal(bibData);
+                    Integer owningInstitutionId = getInstitutionIdCodeMap().get(owningInstitution);
+                    ItemEntity itemEntity = formatResolver.getItemEntityFromRecord(unmarshalObject, owningInstitutionId);
+                    boolean accessionProcess = formatResolver.isAccessionProcess(itemEntity, owningInstitution);
+                    // Process XML Record
+                    if (accessionProcess) { // Accession process
+                        formatResolver.processXml(accessionResponses, unmarshalObject, responseMaps, owningInstitution, reportDataEntitys, accessionRequest);
+                        callCheckin(accessionRequest.getItemBarcode(), owningInstitution);
+                    } else {  // If attached
+                        String oldBarcode = itemEntity.getBarcode();
+                        // update item record with new barcode. Accession Process
+                        formatResolver.processXml(accessionResponses, unmarshalObject, responseMaps, owningInstitution, reportDataEntitys, accessionRequest);
+                        callCheckin(accessionRequest.getItemBarcode(), owningInstitution);
+                        // Move item record information to history table
+                        ItemBarcodeHistoryEntity itemBarcodeHistoryEntity = prepareBarcodeHistoryEntity(itemEntity, itemBarcode, oldBarcode);
+                        itemBarcodeHistoryDetailsRepository.save(itemBarcodeHistoryEntity);
+                    }
+                } catch (Exception e) {
+                    if (writeToReport) {
                         processException(accessionResponses, accessionRequest, reportDataEntitys, owningInstitution, e);
-                        break;
-                    } finally {
-                        individualStopWatch.stop();
-                        logger.info("Time taken to get bib data from {} ILS : {}", owningInstitution, individualStopWatch.getTotalTimeSeconds());
+                    } else {
+                        return accessionRequest;
                     }
-                    try { // Check whether owningInsitutionItemId attached with another barcode.
-
-                        Object unmarshalObject = bibDataResolver.unmarshal(bibData);
-                        Integer owningInstitutionId = getInstitutionIdCodeMap().get(owningInstitution);
-                        ItemEntity itemEntity = bibDataResolver.getItemEntityFromRecord(unmarshalObject, owningInstitutionId);
-                        boolean accessionProcess = bibDataResolver.isAccessionProcess(itemEntity, owningInstitution);
-
-                        // Process XML Record
-                        if (accessionProcess) { // Accession process
-                            processXMLForAccession(accessionResponses, responseMaps, accessionRequest, reportDataEntitys,
-                                    owningInstitution, bibDataResolver, unmarshalObject);
-                        } else {  // If attached
-
-                            String oldBarcode = itemEntity.getBarcode();
-                            // update item record with new barcode. Accession Process
-                            processXMLForAccession(accessionResponses, responseMaps, accessionRequest, reportDataEntitys,
-                                    owningInstitution, bibDataResolver, unmarshalObject);
-                            // Move item record information to history table
-                            ItemBarcodeHistoryEntity itemBarcodeHistoryEntity = prepareBarcodeHistoryEntity(itemEntity, itemBarcode, oldBarcode);
-                            itemBarcodeHistoryDetailsRepository.save(itemBarcodeHistoryEntity);
-                        }
-                    } catch (Exception e) {
-                        if (writeToReport) {
-                            processException(accessionResponses, accessionRequest, reportDataEntitys, owningInstitution, e);
-                        } else {
-                            return accessionRequest;
-                        }
-                    }
-                    generateAccessionSummaryReport(responseMaps, owningInstitution);
-                    break;
                 }
             }
-
+            generateAccessionSummaryReport(responseMaps, owningInstitution);
         }
 
         // Save report
-        accessionService.saveReportEntity(owningInstitution, reportDataEntitys);
+        accessionUtil.saveReportEntity(owningInstitution, reportDataEntitys);
 
         return accessionResponses;
     }
 
-    private void processXMLForAccession(Set<AccessionResponse> accessionResponses, List<Map<String, String>> responseMaps, AccessionRequest accessionRequest, List<ReportDataEntity> reportDataEntitys, String owningInstitution, BibDataResolver bibDataResolver, Object unmarshalObject) throws Exception {
-        bibDataResolver.processXml(accessionResponses, unmarshalObject,
-                responseMaps, owningInstitution, reportDataEntitys, accessionRequest);
-        callCheckin(accessionRequest.getItemBarcode(), owningInstitution);
-    }
-
-
-    /**
-     * Gets owning institution for the given customer code.
-     *
-     * @param customerCode the customer code
-     * @return the owning institution
-     */
-    public String getOwningInstitution(String customerCode) {
-        String owningInstitution = null;
+    public String getBibData(Set<AccessionResponse> accessionResponses, AccessionRequest accessionRequest, List<ReportDataEntity> reportDataEntitys, String owningInstitution, String customerCode, String itemBarcode, AccessionInterface formatResolver) {
+        String bibData = null;
+        StopWatch individualStopWatch = new StopWatch();
+        individualStopWatch.start();
         try {
-            CustomerCodeEntity customerCodeEntity = customerCodeDetailsRepository.findByCustomerCode(customerCode);
-            if (null != customerCodeEntity) {
-                owningInstitution = customerCodeEntity.getInstitutionEntity().getInstitutionCode();
-            }
-        } catch (Exception e) {
-            logger.error(RecapConstants.EXCEPTION, e);
+            // Calling ILS - Bib Data API
+            bibData = formatResolver.getBibData(itemBarcode, customerCode, owningInstitution);
+        } catch (Exception e) { // Process dummy record if record not found in ILS
+            processException(accessionResponses, accessionRequest, reportDataEntitys, owningInstitution, e);
+        } finally {
+            individualStopWatch.stop();
+            logger.info("Time taken to get bib data from {} ILS : {}", owningInstitution, individualStopWatch.getTotalTimeSeconds());
         }
-        return owningInstitution;
+        return bibData;
     }
+
 
     /**
      * Get item entity list for the given item barcode and customer code.
@@ -218,48 +196,6 @@ public class AccessionHelperUtil {
             }
         }
         return itemDeleted;
-    }
-
-    /**
-     * Sets accession response.
-     *
-     * @param accessionResponseList the accession response list
-     * @param itemBarcode           the item barcode
-     * @param message               the message
-     */
-    public void setAccessionResponse(Set<AccessionResponse> accessionResponseList, String itemBarcode, String message) {
-        AccessionResponse accessionResponse = new AccessionResponse();
-        accessionResponse.setItemBarcode(itemBarcode);
-        accessionResponse.setMessage(message);
-        accessionResponseList.add(accessionResponse);
-    }
-
-    /**
-     * Create report data entity list for accessioned item.
-     *
-     * @param accessionRequest the accession request
-     * @param response         the response
-     * @return the list
-     */
-    public List<ReportDataEntity> createReportDataEntityList(AccessionRequest accessionRequest, String response) {
-        List<ReportDataEntity> reportDataEntityList = new ArrayList<>();
-        if (StringUtils.isNotBlank(accessionRequest.getCustomerCode())) {
-            ReportDataEntity reportDataEntityCustomerCode = new ReportDataEntity();
-            reportDataEntityCustomerCode.setHeaderName(RecapCommonConstants.CUSTOMER_CODE);
-            reportDataEntityCustomerCode.setHeaderValue(accessionRequest.getCustomerCode());
-            reportDataEntityList.add(reportDataEntityCustomerCode);
-        }
-        if (StringUtils.isNotBlank(accessionRequest.getItemBarcode())) {
-            ReportDataEntity reportDataEntityItemBarcode = new ReportDataEntity();
-            reportDataEntityItemBarcode.setHeaderName(RecapCommonConstants.ITEM_BARCODE);
-            reportDataEntityItemBarcode.setHeaderValue(accessionRequest.getItemBarcode());
-            reportDataEntityList.add(reportDataEntityItemBarcode);
-        }
-        ReportDataEntity reportDataEntityMessage = new ReportDataEntity();
-        reportDataEntityMessage.setHeaderName(RecapCommonConstants.MESSAGE);
-        reportDataEntityMessage.setHeaderValue(response);
-        reportDataEntityList.add(reportDataEntityMessage);
-        return reportDataEntityList;
     }
 
     /**
@@ -370,19 +306,19 @@ public class AccessionHelperUtil {
                                  List<ReportDataEntity> reportDataEntityList, String owningInstitution, Exception ex) {
         String response = ex.getMessage();
         if (StringUtils.contains(response, RecapConstants.ITEM_BARCODE_NOT_FOUND)) {
-            logger.error(RecapCommonConstants.LOG_ERROR , response);
-        } else if(StringUtils.contains(response, RecapConstants.MARC_FORMAT_PARSER_ERROR)){
-            logger.error(RecapCommonConstants.LOG_ERROR , response);
+            logger.error(RecapCommonConstants.LOG_ERROR, response);
+        } else if (StringUtils.contains(response, RecapConstants.MARC_FORMAT_PARSER_ERROR)) {
+            logger.error(RecapCommonConstants.LOG_ERROR, response);
             response = RecapConstants.INVALID_MARC_XML_ERROR_MSG;
-            logger.error(RecapConstants.EXCEPTION,ex);
+            logger.error(RecapConstants.EXCEPTION, ex);
         } else {
             response = RecapConstants.EXCEPTION + response;
-            logger.error(RecapConstants.EXCEPTION,ex);
+            logger.error(RecapConstants.EXCEPTION, ex);
         }
         //Create dummy record
-        response = accessionService.createDummyRecordIfAny(response, owningInstitution, reportDataEntityList, accessionRequest);
-        accessionService.getAccessionHelperUtil().setAccessionResponse(accessionResponsesList, accessionRequest.getItemBarcode(), response);
-        reportDataEntityList.addAll(accessionService.getAccessionHelperUtil().createReportDataEntityList(accessionRequest, response));
+        response = accessionUtil.createDummyRecordIfAny(response, owningInstitution, reportDataEntityList, accessionRequest);
+        accessionUtil.setAccessionResponse(accessionResponsesList, accessionRequest.getItemBarcode(), response);
+        reportDataEntityList.addAll(accessionUtil.createReportDataEntityList(accessionRequest, response));
     }
 
 
@@ -398,7 +334,8 @@ public class AccessionHelperUtil {
         try {
             itemRequestInfo.setItemBarcodes(Collections.singletonList(itemBarcode));
             itemRequestInfo.setItemOwningInstitution(owningInstitutionId);
-            if (RecapCommonConstants.NYPL.equalsIgnoreCase(owningInstitutionId)) {
+            ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(owningInstitutionId);
+            if ("REST".equalsIgnoreCase(ilsConfigProperties.getIlsRefileEndpointProtocol())) {
                 HttpEntity request = new HttpEntity<>(getHttpHeadersAuth());
                 UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(scsbUrl + RecapConstants.SERVICE_PATH.REFILE_ITEM_IN_ILS);
                 builder.queryParam(RecapCommonConstants.ITEMBARCODE, itemBarcode);
@@ -429,9 +366,7 @@ public class AccessionHelperUtil {
     void reAccessionedCheckin(List<ItemEntity> itemEntityList) {
         if (itemEntityList != null && !itemEntityList.isEmpty()) {
             for (ItemEntity itemEntity : itemEntityList) {
-                if(itemEntity.getInstitutionEntity().getInstitutionCode().equalsIgnoreCase(RecapCommonConstants.PRINCETON) || itemEntity.getInstitutionEntity().getInstitutionCode().equalsIgnoreCase(RecapCommonConstants.COLUMBIA)) {
-                    callCheckin(itemEntity.getBarcode(), itemEntity.getInstitutionEntity().getInstitutionCode());
-                }
+                callCheckin(itemEntity.getBarcode(), itemEntity.getInstitutionEntity().getInstitutionCode());
             }
         }
     }

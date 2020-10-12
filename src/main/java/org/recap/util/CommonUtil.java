@@ -1,8 +1,10 @@
 package org.recap.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.marc4j.marc.Record;
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
+import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.jpa.*;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.repository.jpa.*;
@@ -11,6 +13,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
@@ -36,6 +47,9 @@ public class CommonUtil {
 
     @Autowired
     ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
+
+    @Autowired
+    MarcUtil marcUtil;
 
     /**
      * This method builds Holdings Entity from holdings content
@@ -228,5 +242,39 @@ public class CommonUtil {
         } else {
             return userId;
         }
+    }
+
+    /**
+     * This method gets input string where the input will be in  SCSB xml format, unmarshals and maps to BibRecords and then returns BibRecords
+     * @param unmarshal - this the input xml which will be in SCSB xml format
+     * @return BibRecords
+     */
+    public BibRecords getBibRecordsForSCSBFormat(String unmarshal) {
+        BibRecords bibRecords = null;
+        try {
+            JAXBContext context = JAXBContext.newInstance(BibRecords.class);
+            XMLInputFactory xif = XMLInputFactory.newFactory();
+            xif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
+            InputStream stream = new ByteArrayInputStream(unmarshal.getBytes(StandardCharsets.UTF_8));
+            XMLStreamReader xsr = null;
+            try {
+                xsr = xif.createXMLStreamReader(stream);
+            } catch (XMLStreamException e) {
+                e.printStackTrace();
+            }
+            Unmarshaller um = context.createUnmarshaller();
+            bibRecords = (BibRecords) um.unmarshal(xsr);
+        } catch (JAXBException e) {
+            logger.error(RecapCommonConstants.LOG_ERROR,e);
+        }
+        return bibRecords;
+    }
+
+    public Object marcRecordConvert(String bibDataResponse) {
+        List<Record> records = new ArrayList<>();
+        if (StringUtils.isNotBlank(bibDataResponse)) {
+            records = marcUtil.readMarcXml(bibDataResponse);
+        }
+        return records;
     }
 }

@@ -5,7 +5,7 @@ import org.marc4j.marc.Record;
 import org.recap.BaseTestCase;
 import org.recap.model.jaxb.JAXBHandler;
 import org.recap.model.jaxb.marc.BibRecords;
-import org.recap.service.authorization.NyplOauthTokenApiService;
+import org.recap.service.authorization.OauthTokenApiService;
 import org.recap.util.MarcUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,7 +29,7 @@ public class PartnerServicesUT extends BaseTestCase {
     private MarcUtil marcUtil;
 
     @Autowired
-    private NyplOauthTokenApiService nyplOauthTokenApiService;
+    private OauthTokenApiService nyplOauthTokenApiService;
 
 
     String bibData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><collection xmlns:marcxml=\"http://www.loc.gov/MARC21/slim\">\n" +
