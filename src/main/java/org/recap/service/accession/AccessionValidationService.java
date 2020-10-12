@@ -1,6 +1,9 @@
 package org.recap.service.accession;
 
+import org.apache.commons.lang3.StringUtils;
 import org.marc4j.marc.Record;
+import org.recap.RecapCommonConstants;
+import org.recap.RecapConstants;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.jaxb.Bib;
 import org.recap.model.jaxb.BibRecord;
@@ -11,6 +14,7 @@ import org.recap.repository.jpa.CustomerCodeDetailsRepository;
 import org.recap.repository.jpa.HoldingsDetailsRepository;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
 import org.recap.repository.jpa.ItemDetailsRepository;
+import org.recap.util.AccessionUtil;
 import org.recap.util.MarcUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +42,9 @@ public class AccessionValidationService {
 
     @Autowired
     private InstitutionDetailsRepository institutionDetailsRepository;
+
+    @Autowired
+    private AccessionUtil accessionUtil;
 
     public boolean validateBoundWithMarcRecordFromIls(List<Record> records, AccessionRequest accessionRequest){
         List<String> holdingIdList = new ArrayList<>();
@@ -139,6 +146,77 @@ public class AccessionValidationService {
             }
         }
         return bibIdsStringBuilder;
+    }
+
+    public AccessionValidationResponse validateBarcodeOrCustomerCode(String itemBarcode, String customerCode) {
+        AccessionValidationResponse accessionValidationResponse = validateItemBarcode( itemBarcode);
+        if(null == accessionValidationResponse) {
+            accessionValidationResponse = validateCustomerCode(customerCode);
+        }
+        return accessionValidationResponse;
+    }
+    private AccessionValidationResponse validateItemBarcode(String itemBarcode) {
+        if(StringUtils.isBlank(itemBarcode)) {
+            return getAccessionValidationResponse(false, RecapConstants.ITEM_BARCODE_EMPTY);
+        } else {
+            // todo : Validate barcode length
+            if(itemBarcode.length() > 45) {
+                return getAccessionValidationResponse(false , RecapConstants.INVALID_BARCODE_LENGTH);
+            }
+        }
+
+        return null;
+    }
+
+    private AccessionValidationResponse validateCustomerCode(String customerCode) {
+        if(StringUtils.isBlank(customerCode)) {
+            return getAccessionValidationResponse(false, RecapConstants.CUSTOMER_CODE_EMPTY);
+        } else {
+            String owningInstitution = accessionUtil.getOwningInstitution(customerCode);
+            if(StringUtils.isBlank(owningInstitution)) {
+                return getAccessionValidationResponse(false, RecapCommonConstants.CUSTOMER_CODE_DOESNOT_EXIST);
+            }
+            AccessionValidationResponse accessionValidationResponse = getAccessionValidationResponse(true, "");
+            accessionValidationResponse.setOwningInstitution(owningInstitution);
+            return accessionValidationResponse;
+        }
+    }
+
+    private AccessionValidationResponse getAccessionValidationResponse(boolean valid, String message) {
+        AccessionValidationResponse accessionValidationResponse = new AccessionValidationResponse();
+        accessionValidationResponse.setValid(valid);
+        accessionValidationResponse.setMessage(message);
+        return accessionValidationResponse;
+    }
+
+    class AccessionValidationResponse {
+        private boolean valid;
+        private String owningInstitution;
+        private String message;
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        public void setValid(boolean valid) {
+            this.valid = valid;
+        }
+
+        public String getOwningInstitution() {
+            return owningInstitution;
+        }
+
+        public void setOwningInstitution(String owningInstitution) {
+            this.owningInstitution = owningInstitution;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
     }
 
 }
