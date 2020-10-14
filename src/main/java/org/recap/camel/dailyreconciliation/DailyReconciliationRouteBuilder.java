@@ -53,9 +53,9 @@ public class DailyReconciliationRouteBuilder {
     };
 
     public DailyReconciliationRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
-                                           @Value("${ftp.userName}") String ftpUserName, @Value("${ftp.daily.reconciliation}") String dailyReconciliationFtp,
-                                           @Value("${ftp.daily.reconciliation.processed}") String dailyReconciliationFtpProcessed, @Value("${ftp.knownHost}") String ftpKnownHost,
-                                           @Value("${ftp.privateKey}") String ftpPrivateKey,
+                                           @Value("${ftp.server.userName}") String ftpUserName, @Value("${ftp.daily.reconciliation}") String dailyReconciliationFtp,
+                                           @Value("${ftp.daily.reconciliation.processed}") String dailyReconciliationFtpProcessed, @Value("${ftp.server.knownHost}") String ftpKnownHost,
+                                           @Value("${ftp.server.privateKey}") String ftpPrivateKey,
                                            @Value("${daily.reconciliation.file}") String filePath,
                                            @Value("${daily.reconciliation.local.work.dir}") String localWorkDir) {
         try {

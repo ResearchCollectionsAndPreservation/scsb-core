@@ -49,7 +49,7 @@ public class EmailRouteBuilder {
      */
     @Autowired
     public EmailRouteBuilder(CamelContext context, @Value("${scsb.email.username}") String username, @Value("${scsb.email.password.file}") String passwordDirectory,
-                             @Value("${scsb.email.from}") String from, @Value("${request.recall.email.subject}") String subject,
+                             @Value("${scsb.email.from}") String from, @Value("${email.request.recall.subject}") String subject,
                              @Value("${recap.assist.email.to}") String requestPendingTo, @Value("${smtpServer}") String smtpServer) {
         try {
             context.addRoutes(new RouteBuilder() {

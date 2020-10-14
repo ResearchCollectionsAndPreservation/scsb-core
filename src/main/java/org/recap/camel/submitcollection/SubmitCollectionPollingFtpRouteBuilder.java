@@ -33,13 +33,13 @@ public class SubmitCollectionPollingFtpRouteBuilder {
     @Autowired
     private ProducerTemplate producer;
 
-    @Value("${ftp.userName}")
+    @Value("${ftp.server.userName}")
     private String ftpUserName;
 
-    @Value("${ftp.knownHost}")
+    @Value("${ftp.server.knownHost}")
     private String ftpKnownHost;
 
-    @Value("${ftp.privateKey}")
+    @Value("${ftp.server.privateKey}")
     private String ftpPrivateKey;
 
     /**
@@ -74,12 +74,12 @@ public class SubmitCollectionPollingFtpRouteBuilder {
      * @param nyplWorkDir                  the nypl work dir
      */
     public SubmitCollectionPollingFtpRouteBuilder(CamelContext camelContext,ApplicationContext applicationContext,
-                                                  @Value("${ftp.userName}") String ftpUserName,@Value("${ftp.ftpHost}") String ftpHost,@Value("${ftp.ftpPort}") String ftpPort,
-                                                  @Value("${ftp.submitcollection.cgdnotprotected.pul}") String pulFtpCGDNotProtectedFolder, @Value("${ftp.submitcollection.cgdprotected.pul}") String pulFtpCGDProtectedFolder,
-                                                  @Value("${ftp.submitcollection.cgdnotprotected.cul}") String culFtpCGDNotProtectedFolder, @Value("${ftp.submitcollection.cgdprotected.cul}") String culFtpCGDProtectedFolder,
-                                                  @Value("${ftp.submitcollection.cgdnotprotected.nypl}") String nyplFtpCGDNotProtectedFolder, @Value("${ftp.submitcollection.cgdprotected.nypl}") String nyplFtpCGDProtectedFolder,
-                                                  @Value("${ftp.knownHost}") String ftpKnownHost, @Value("${ftp.privateKey}") String ftpPrivateKey, @Value("${submit.collection.fileprocess.pul.workdir}") String pulWorkDir,
-                                                  @Value("${submit.collection.fileprocess.cul.workdir}") String culWorkDir, @Value("${submit.collection.fileprocess.nypl.workdir}") String nyplWorkDir){
+                                                  @Value("${ftp.server.userName}") String ftpUserName,@Value("${ftp.server}") String ftpHost,@Value("${ftp.server.port}") String ftpPort,
+                                                  @Value("${pul.ftp.submit.collection.cgdnotprotected.dir}") String pulFtpCGDNotProtectedFolder, @Value("${pul.ftp.submit.collection.cgdprotected.dir}") String pulFtpCGDProtectedFolder,
+                                                  @Value("${cul.ftp.submit.collection.cgdnotprotected.dir}") String culFtpCGDNotProtectedFolder, @Value("${cul.ftp.submit.collection.cgdprotected.dir}") String culFtpCGDProtectedFolder,
+                                                  @Value("${nypl.ftp.submit.collection.cgdnotprotected.dir}") String nyplFtpCGDNotProtectedFolder, @Value("${nypl.ftp.submit.collection.cgdprotected.dir}") String nyplFtpCGDProtectedFolder,
+                                                  @Value("${ftp.server.knownHost}") String ftpKnownHost, @Value("${ftp.server.privateKey}") String ftpPrivateKey, @Value("${pul.submit.collection.fileprocess.workdir}") String pulWorkDir,
+                                                  @Value("${cul.submit.collection.fileprocess.workdir}") String culWorkDir, @Value("${nypl.submit.collection.fileprocess.workdir}") String nyplWorkDir){
         try{
             camelContext.addRoutes(new RouteBuilder() {
                 @Override

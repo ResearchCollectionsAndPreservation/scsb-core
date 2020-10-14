@@ -44,20 +44,20 @@ public class AccessionReconciliationRouteBuilder {
      * @param filePathNypl                           the file path nypl
      */
     public AccessionReconciliationRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
-                                               @Value("${ftp.userName}") String ftpUserName, @Value("${ftp.privateKey}") String ftpPrivateKey,
-                                               @Value("${ftp.accession.reconciliation.pul}") String accessionReconciliationPulFtp,
-                                               @Value("${ftp.accession.reconciliation.cul}") String accessionReconciliationCulFtp,
-                                               @Value("${ftp.accession.reconciliation.nypl}") String accessionReconciliationNyplFtp,
-                                               @Value("${ftp.accession.reconciliation.processed.pul}") String accessionReconciliationFtpPulProcessed,
-                                               @Value("${ftp.accession.reconciliation.processed.cul}") String accessionReconciliationFtpCulProcessed,
-                                               @Value("${ftp.accession.reconciliation.processed.nypl}") String accessionReconciliationFtpNyplProcessed,
-                                               @Value("${ftp.knownHost}") String ftpKnownHost,
+                                               @Value("${ftp.server.userName}") String ftpUserName, @Value("${ftp.server.privateKey}") String ftpPrivateKey,
+                                               @Value("${pul.ftp.accession.reconciliation.dir}") String accessionReconciliationPulFtp,
+                                               @Value("${cul.ftp.accession.reconciliation.dir}") String accessionReconciliationCulFtp,
+                                               @Value("${nypl.ftp.accession.reconciliation.dir}") String accessionReconciliationNyplFtp,
+                                               @Value("${pul.ftp.accession.reconciliation.processed.dir}") String accessionReconciliationFtpPulProcessed,
+                                               @Value("${cul.ftp.accession.reconciliation.processed.dir}") String accessionReconciliationFtpCulProcessed,
+                                               @Value("${nypl.ftp.accession.reconciliation.processed.dir}") String accessionReconciliationFtpNyplProcessed,
+                                               @Value("${ftp.server.knownHost}") String ftpKnownHost,
                                                @Value("${accession.reconciliation.filePath.pul}") String filePathPul,
                                                @Value("${accession.reconciliation.filePath.cul}") String filePathCul,
                                                @Value("${accession.reconciliation.filePath.nypl}") String filePathNypl,
-                                               @Value("${accession.reconciliation.pul.workdir}") String pulWorkDir,
-                                               @Value("${accession.reconciliation.cul.workdir}") String culWorkDir,
-                                               @Value("${accession.reconciliation.nypl.workdir}") String nyplWorkDir) {
+                                               @Value("${pul.accession.reconciliation.workdir}") String pulWorkDir,
+                                               @Value("${cul.accession.reconciliation.workdir}") String culWorkDir,
+                                               @Value("${nypl.accession.reconciliation.workdir}") String nyplWorkDir) {
 
         /**
          * Predicate to idenitify is the input file is gz

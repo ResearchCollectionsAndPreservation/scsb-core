@@ -23,7 +23,7 @@ public class DailyReconciliationEmailService{
     @Autowired
     private ProducerTemplate producerTemplate;
 
-    @Value("${daily.reconciliation.email.to}")
+    @Value("${email.daily.reconciliation.to}")
     private String emailTo;
 
     private String fileLocation;

@@ -24,22 +24,22 @@ public class AccessionReconciliationEmailService {
     @Autowired
     private ProducerTemplate producerTemplate;
 
-    @Value("${accession.reconciliation.email.pul.to}")
+    @Value("${pul.email.accession.reconciliation.to}")
     private String pulEmailTo;
 
-    @Value("${accession.reconciliation.email.cul.to}")
+    @Value("${cul.email.accession.reconciliation.to}")
     private String culEmailTo;
 
-    @Value("${accession.reconciliation.email.nypl.to}")
+    @Value("${nypl.email.accession.reconciliation.to}")
     private String nyplEmailTo;
 
-    @Value("${accession.reconciliation.email.pul.cc}")
+    @Value("${pul.email.accession.reconciliation.cc}")
     private String pulEmailCC;
 
-    @Value("${accession.reconciliation.email.cul.cc}")
+    @Value("${cul.email.accession.reconciliation.cc}")
     private String culEmailCC;
 
-    @Value("${accession.reconciliation.email.nypl.cc}")
+    @Value("${nypl.email.accession.reconciliation.cc}")
     private String nyplEmailCC;
 
     private String institutionCode;

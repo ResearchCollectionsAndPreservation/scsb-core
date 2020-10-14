@@ -63,7 +63,7 @@ public class AccessionServiceUT extends BaseTestCase {
     @Autowired
     private ItemDetailsRepository itemDetailsRepository;
 
-    @Value("${ils.nypl.bibdata}")
+    @Value("${nypl.ils.bibdata.api.endpoint}")
     String ilsNYPLBibData;
 
     @Autowired

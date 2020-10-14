@@ -22,10 +22,10 @@ public class StatusReconciliationEmailService {
     @Autowired
     private ProducerTemplate producerTemplate;
 
-    @Value("${status.reconciliation.email.to}")
+    @Value("${email.status.reconciliation.to}")
     private String statusReconciliationEmailTo;
 
-    @Value("${status.reconciliation.email.cc}")
+    @Value("${email.status.reconciliation.cc}")
     private String statusReconciliationEmailCC;
 
     /**
