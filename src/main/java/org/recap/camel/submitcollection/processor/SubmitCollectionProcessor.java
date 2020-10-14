@@ -46,35 +46,35 @@ public class SubmitCollectionProcessor {
     @Autowired
     private ProducerTemplate producer;
 
-    @Value("${submit.collection.email.subject}")
+    @Value("${email.submit.collection.subject}")
     private String submitCollectionEmailSubject;
 
-    @Value("${ftp.submit.collection.pul.report}")
+    @Value("${pul.ftp.submit.collection.report.dir}")
     private String submitCollectionPULReportLocation;
 
-    @Value("${ftp.submit.collection.cul.report}")
+    @Value("${cul.ftp.submit.collection.report.dir}")
     private String submitCollectionCULReportLocation;
 
-    @Value("${ftp.submit.collection.nypl.report}")
+    @Value("${nypl.ftp.submit.collection.report.dir}")
     private String submitCollectionNYPLReportLocation;
 
-    @Value("${submit.collection.email.pul.to}")
+    @Value("${pul.email.submit.collection.to}")
     private String emailToPUL;
 
-    @Value("${submit.collection.email.cul.to}")
+    @Value("${cul.email.submit.collection.to}")
     private String emailToCUL;
 
-    @Value("${submit.collection.email.nypl.to}")
+    @Value("${nypl.email.submit.collection.to}")
     private String emailToNYPL;
 
     private String institutionCode;
 
     private boolean isCGDProtection;
-    @Value("${submit.collection.email.pul.cc}")
+    @Value("${pul.email.submit.collection.cc}")
     private String emailCCForPul;
-    @Value("${submit.collection.email.cul.cc}")
+    @Value("${cul.email.submit.collection.cc}")
     private String emailCCForCul;
-    @Value("${submit.collection.email.nypl.cc}")
+    @Value("${nypl.email.submit.collection.cc}")
     private String emailCCForNypl;
 
     @Autowired

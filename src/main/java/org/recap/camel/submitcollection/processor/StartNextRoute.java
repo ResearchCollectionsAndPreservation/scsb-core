@@ -28,16 +28,16 @@ public class StartNextRoute implements Processor{
     @Autowired
     private ProducerTemplate producer;
 
-    @Value("${submit.collection.email.subject.for.empty.directory}")
+    @Value("${email.submit.collection.subject.for.empty.directory}")
     private String submitCollectionEmailSubjectForEmptyDirectory;
 
-    @Value("${submit.collection.nofiles.email.pul.to}")
+    @Value("${pul.email.submit.collection.nofiles.to}")
     private String emailToPUL;
 
-    @Value("${submit.collection.nofiles.email.cul.to}")
+    @Value("${cul.email.submit.collection.nofiles.to}")
     private String emailToCUL;
 
-    @Value("${submit.collection.nofiles.email.nypl.to}")
+    @Value("${nypl.email.submit.collection.nofiles.to}")
     private String emailToNYPL;
 
 

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    @Value("${deleted.records.email.to}")
+    @Value("${email.deleted.records.to}")
     private String deletedRecordsMailTo;
 
     @Autowired
