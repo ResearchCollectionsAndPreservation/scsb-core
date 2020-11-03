@@ -211,6 +211,11 @@ public final class RecapConstants {
     public static final String CANNOT_REFILE_FIRST_SCAN_REQUEST ="Cannot place recall for requests placed on first scan LAS status";
     public static final String REQUESTS_STUCK_IN__PENDING = "Requests stuck in pending";
     public static final String NO_PENDING_REQUESTS_FOUND = "There are no pending requests or no new pending request";
+    public static final String PROTECTED = "Protected";
+    public static final String NOT_PROTECTED = "NotProtected";
+    public static final String ACCESSION_RECONCILIATION_DIRECT_ROUTE = "accessionReconciliationDirectRoute";
+    public static final String CGD_PROTECTED_ROUTE_ID = "CgdProtectedRouteId";
+    public static final String CGD_NOT_PROTECTED_ROUTE_ID = "CgdNotProtectedRouteId";
 
     protected static final List<String> GFA_STATUS_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_INCOMING_ON_WORK_ORDER, GFA_STATUS_REACC_ON_WORK_ORDER, GFA_STATUS_VER_ON_REFILE_WORK_ORDER, GFA_STATUS_IN);
     protected static final List<String> GFA_STATUS_NOT_AVAILABLE_LIST = Arrays.asList(GFA_STATUS_SCH_ON_REFILE_WORK_ORDER, GFA_STATUS_NOT_ON_FILE, GFA_STATUS_OUT_ON_RETRIVAL_WORK_ORDER, GFA_STATUS_PW_INDIRECT_WORK_ORDER, GFA_STATUS_PW_DIRECT_WORK_ORDER,
@@ -384,9 +389,6 @@ public final class RecapConstants {
     public static final String COMPLETE = "Complete";
 
     public static final String ACCESSION_RR_FTP_OPTIONS = "&sendEmptyMessageWhenIdle=true&move=.done&delay=2&localWorkDirectory=";
-    public static final String ACCESSION_RECONCILATION_FTP_PUL_ROUTE = "accessionReconcilationFtpPulRoute";
-    public static final String ACCESSION_RECONCILATION_FTP_CUL_ROUTE = "accessionReconcilationFtpCulRoute";
-    public static final String ACCESSION_RECONCILATION_FTP_NYPL_ROUTE = "accessionReconcilationFtpNyplRoute";
     public static final String ACCESSION_RECONCILATION_FS_PUL_ROUTE = "accessionReconcilationFsPulRoute";
     public static final String ACCESSION_RECONCILATION_FS_CUL_ROUTE = "accessionReconcilationFsCulRoute";
     public static final String ACCESSION_RECONCILATION_FS_NYPL_ROUTE = "accessionReconcilationFsNyplRoute";
@@ -428,9 +430,9 @@ public final class RecapConstants {
     public static final String STATUS_RECONCILIATION = "StatusReconciliation";
     public static final String STATUS_RECONCILIATION_FAILURE = "StatusReconciliationFailure";
 
-    public static final String REQUEST_INITIAL_LOAD_PUL = "pul";
-    public static final String REQUEST_INITIAL_LOAD_CUL = "cul";
-    public static final String REQUEST_INITIAL_LOAD_NYPL = "nypl";
+    public static final String REQUEST_INITIAL_LOAD_PUL = "PUL";
+    public static final String REQUEST_INITIAL_LOAD_CUL = "CUL";
+    public static final String REQUEST_INITIAL_LOAD_NYPL = "NYPL";
     public static final String CAMEL_SPLIT_INDEX = "CamelSplitIndex";
     public static final String REQUEST_INITIAL_LOAD_HEADER = "Barcodes Not Exist In SCSB";
     public static final String EMAIL_HEADER_REQUEST_PENDING = "Request_Pending";
