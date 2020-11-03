@@ -5,6 +5,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.file.remote.SftpEndpoint;
+import org.recap.util.PropertyUtil;
 import org.slf4j.Logger;
 import org.recap.RecapConstants;
 import org.recap.RecapCommonConstants;
@@ -20,7 +21,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Scope("prototype")
-public class StartNextRoute implements Processor{
+public class StartNextRoute implements Processor {
+
+    private static final Logger logger = LoggerFactory.getLogger(StartNextRoute.class);
 
     @Autowired
     CamelContext camelContext;
@@ -28,20 +31,12 @@ public class StartNextRoute implements Processor{
     @Autowired
     private ProducerTemplate producer;
 
+    @Autowired
+    PropertyUtil propertyUtil;
+
     @Value("${email.submit.collection.subject.for.empty.directory}")
     private String submitCollectionEmailSubjectForEmptyDirectory;
 
-    @Value("${pul.email.submit.collection.nofiles.to}")
-    private String emailToPUL;
-
-    @Value("${cul.email.submit.collection.nofiles.to}")
-    private String emailToCUL;
-
-    @Value("${nypl.email.submit.collection.nofiles.to}")
-    private String emailToNYPL;
-
-
-    private static final Logger logger = LoggerFactory.getLogger(StartNextRoute.class);
     private String routeId;
 
     public StartNextRoute(String routeId) {
@@ -112,13 +107,7 @@ public class StartNextRoute implements Processor{
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setSubject(submitCollectionEmailSubjectForEmptyDirectory);
         emailPayLoad.setLocation(ftpLocationPath);
-        if(RecapCommonConstants.PRINCETON.equalsIgnoreCase(institutionCode)){
-            emailPayLoad.setTo(emailToPUL);
-        } else if(RecapCommonConstants.COLUMBIA.equalsIgnoreCase(institutionCode)){
-            emailPayLoad.setTo(emailToCUL);
-        } else if(RecapCommonConstants.NYPL.equalsIgnoreCase(institutionCode)){
-            emailPayLoad.setTo(emailToNYPL);
-        }
+        emailPayLoad.setTo(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.submit.collection.nofiles.to"));
         return  emailPayLoad;
     }
 

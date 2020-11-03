@@ -10,6 +10,7 @@ import org.recap.service.common.SetupDataService;
 import org.recap.service.submitcollection.SubmitCollectionBatchService;
 import org.recap.service.submitcollection.SubmitCollectionReportGenerator;
 import org.recap.service.submitcollection.SubmitCollectionService;
+import org.recap.util.PropertyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,41 +47,19 @@ public class SubmitCollectionProcessor {
     @Autowired
     private ProducerTemplate producer;
 
+    @Autowired
+    PropertyUtil propertyUtil;
+
     @Value("${email.submit.collection.subject}")
     private String submitCollectionEmailSubject;
 
-    @Value("${pul.ftp.submit.collection.report.dir}")
-    private String submitCollectionPULReportLocation;
-
-    @Value("${cul.ftp.submit.collection.report.dir}")
-    private String submitCollectionCULReportLocation;
-
-    @Value("${nypl.ftp.submit.collection.report.dir}")
-    private String submitCollectionNYPLReportLocation;
-
-    @Value("${pul.email.submit.collection.to}")
-    private String emailToPUL;
-
-    @Value("${cul.email.submit.collection.to}")
-    private String emailToCUL;
-
-    @Value("${nypl.email.submit.collection.to}")
-    private String emailToNYPL;
-
     private String institutionCode;
-
     private boolean isCGDProtection;
-    @Value("${pul.email.submit.collection.cc}")
-    private String emailCCForPul;
-    @Value("${cul.email.submit.collection.cc}")
-    private String emailCCForCul;
-    @Value("${nypl.email.submit.collection.cc}")
-    private String emailCCForNypl;
 
     @Autowired
     private SetupDataService setupDataService;
 
-    public SubmitCollectionProcessor(){};
+    public SubmitCollectionProcessor(){}
 
     public SubmitCollectionProcessor(String inputInstitutionCode,boolean isCGDProtection) {
         this.institutionCode = inputInstitutionCode;
@@ -160,31 +139,13 @@ public class SubmitCollectionProcessor {
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setSubject(RecapConstants.SUBJECT_FOR_SUBMIT_COL_EXCEPTION);
         emailPayLoad.setXmlFileName(name);
-        if(RecapCommonConstants.PRINCETON.equalsIgnoreCase(institutionCode)){
-            emailPayLoad.setTo(emailToPUL);
-            emailPayLoad.setLocation(getFtpLocation(submitCollectionPULReportLocation));
-            emailPayLoad.setInstitution(RecapCommonConstants.PRINCETON);
-            emailPayLoad.setCc(emailCCForPul);
-            emailPayLoad.setLocation(filePath);
-            emailPayLoad.setException(exception);
-            emailPayLoad.setExceptionMessage(exceptionMessage);
-        } else if(RecapCommonConstants.COLUMBIA.equalsIgnoreCase(institutionCode)){
-            emailPayLoad.setTo(emailToCUL);
-            emailPayLoad.setLocation(getFtpLocation(submitCollectionCULReportLocation));
-            emailPayLoad.setInstitution(RecapCommonConstants.COLUMBIA);
-            emailPayLoad.setCc(emailCCForCul);
-            emailPayLoad.setLocation(filePath);
-            emailPayLoad.setException(exception);
-            emailPayLoad.setExceptionMessage(exceptionMessage);
-        } else if(RecapCommonConstants.NYPL.equalsIgnoreCase(institutionCode)){
-            emailPayLoad.setTo(emailToNYPL);
-            emailPayLoad.setLocation(getFtpLocation(submitCollectionNYPLReportLocation));
-            emailPayLoad.setInstitution(RecapCommonConstants.NYPL);
-            emailPayLoad.setCc(emailCCForNypl);
-            emailPayLoad.setLocation(filePath);
-            emailPayLoad.setException(exception);
-            emailPayLoad.setExceptionMessage(exceptionMessage);
-        }
+        emailPayLoad.setTo(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.submit.collection.to"));
+        emailPayLoad.setCc(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.submit.collection.cc"));
+        emailPayLoad.setLocation(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "ftp.submit.collection.report.dir"));
+        emailPayLoad.setLocation(filePath);
+        emailPayLoad.setInstitution(institutionCode.toUpperCase());
+        emailPayLoad.setException(exception);
+        emailPayLoad.setExceptionMessage(exceptionMessage);
         return  emailPayLoad;
 
     }
@@ -204,22 +165,10 @@ public class SubmitCollectionProcessor {
         emailPayLoad.setSubject(submitCollectionEmailSubject);
         emailPayLoad.setReportFileName(reportFileName);
         emailPayLoad.setXmlFileName(xmlFileName);
-        if(RecapCommonConstants.PRINCETON.equalsIgnoreCase(institutionCode)){
-            emailPayLoad.setTo(emailToPUL);
-            emailPayLoad.setLocation(getFtpLocation(submitCollectionPULReportLocation));
-            emailPayLoad.setInstitution(RecapCommonConstants.PRINCETON);
-            emailPayLoad.setCc(emailCCForPul);
-        } else if(RecapCommonConstants.COLUMBIA.equalsIgnoreCase(institutionCode)){
-            emailPayLoad.setTo(emailToCUL);
-            emailPayLoad.setLocation(getFtpLocation(submitCollectionCULReportLocation));
-            emailPayLoad.setInstitution(RecapCommonConstants.COLUMBIA);
-            emailPayLoad.setCc(emailCCForCul);
-        } else if(RecapCommonConstants.NYPL.equalsIgnoreCase(institutionCode)){
-            emailPayLoad.setTo(emailToNYPL);
-            emailPayLoad.setLocation(getFtpLocation(submitCollectionNYPLReportLocation));
-            emailPayLoad.setInstitution(RecapCommonConstants.NYPL);
-            emailPayLoad.setCc(emailCCForNypl);
-        }
+        emailPayLoad.setTo(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.submit.collection.to"));
+        emailPayLoad.setCc(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.submit.collection.cc"));
+        emailPayLoad.setLocation(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "ftp.submit.collection.report.dir"));
+        emailPayLoad.setInstitution(institutionCode.toUpperCase());
         return  emailPayLoad;
     }
 

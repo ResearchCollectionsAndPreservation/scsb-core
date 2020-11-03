@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class SubmitCollectionReportGenerator {
 
-    @Value("${scsb.solr.client.url}")
+    @Value("${scsb.solr.doc.url}")
     private String solrClientUrl;
 
     /**
