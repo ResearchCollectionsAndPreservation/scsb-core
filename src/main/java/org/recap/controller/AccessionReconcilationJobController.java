@@ -1,14 +1,21 @@
 package org.recap.controller;
 
 import org.apache.camel.CamelContext;
-import org.recap.RecapConstants;
 import org.recap.RecapCommonConstants;
+import org.recap.camel.accessionreconciliation.BarcodeReconciliationRouteBuilder;
+import org.recap.model.ILSConfigProperties;
+import org.recap.repository.jpa.InstitutionDetailsRepository;
+import org.recap.util.PropertyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * Created by akulak on 24/5/17.
@@ -18,6 +25,24 @@ import org.springframework.web.bind.annotation.RestController;
 public class AccessionReconcilationJobController {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessionReconcilationJobController.class);
+
+    @Value("${ftp.server.userName}")
+    String ftpUserName;
+
+    @Value("${ftp.server.privateKey}")
+    String ftpPrivateKey;
+
+    @Value("${ftp.server.knownHost}")
+    String ftpKnownHost;
+
+    @Autowired
+    PropertyUtil propertyUtil;
+
+    @Autowired
+    InstitutionDetailsRepository institutionDetailsRepository;
+
+    @Autowired
+    ApplicationContext applicationContext;
 
     @Autowired
     CamelContext camelContext;
@@ -30,10 +55,19 @@ public class AccessionReconcilationJobController {
      */
     @PostMapping(value = "/startAccessionReconcilation")
     public String startAccessionReconcilation() throws Exception{
+        logger.info("Before accession reconciliation process : {}",camelContext.getRoutes().size());
         logger.info("Starting Accession Reconcilation Routes");
-        camelContext.getRouteController().startRoute(RecapConstants.ACCESSION_RECONCILATION_FTP_PUL_ROUTE);
-        camelContext.getRouteController().startRoute(RecapConstants.ACCESSION_RECONCILATION_FTP_CUL_ROUTE);
-        camelContext.getRouteController().startRoute(RecapConstants.ACCESSION_RECONCILATION_FTP_NYPL_ROUTE);
+        List<String> allInstitutionCodeExceptHTC = institutionDetailsRepository.findAllInstitutionCodeExceptHTC();
+        for (String institution : allInstitutionCodeExceptHTC) {
+            ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(institution);
+            camelContext.addRoutes(new BarcodeReconciliationRouteBuilder(applicationContext,camelContext,ftpUserName,ftpPrivateKey,ftpKnownHost,
+                    institution,ilsConfigProperties.getFtpAccessionReconciliationDir(),ilsConfigProperties.getAccessionReconciliationWorkdir(),
+                    ilsConfigProperties.getAccessionReconciliationFilepath(),ilsConfigProperties.getFtpAccessionReconciliationProcessedDir()));
+        }
+        for (String institution : allInstitutionCodeExceptHTC) {
+            camelContext.getRouteController().startRoute(institution+"accessionReconcilationFtpRoute");
+        }
+        logger.info("After accession reconciliation process : {}",camelContext.getRoutes().size());
         return RecapCommonConstants.SUCCESS;
     }
 }

@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Scope;
 @Scope("prototype")
 public class StartRouteProcessor implements Processor {
 
+    private static final Logger log= LoggerFactory.getLogger(StartRouteProcessor.class);
+
     private String routeId;
 
     public StartRouteProcessor(String routeId) {
@@ -20,6 +22,7 @@ public class StartRouteProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
+        log.info("Starting next route !!! {}",routeId);
         exchange.getContext().getRouteController().startRoute(routeId);
     }
 }
