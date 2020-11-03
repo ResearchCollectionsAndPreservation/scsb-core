@@ -39,7 +39,7 @@ public class AccessionReconciliationProcessor {
     @Autowired
     CamelContext camelContext;
 
-    @Value("${scsb.solr.client.url}")
+    @Value("${scsb.solr.doc.url}")
     private String solrSolrClientUrl;
 
     @Value("${accession.reconciliation.filePath}")

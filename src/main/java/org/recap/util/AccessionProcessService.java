@@ -61,7 +61,7 @@ public class AccessionProcessService {
 
     private Map<String, Integer> institutionEntityMap;
 
-    @Value("${scsb.url}")
+    @Value("${scsb.gateway.url}")
     private String scsbUrl;
 
     public Object processRecords(Set<AccessionResponse> accessionResponses, List<Map<String, String>> responseMaps,

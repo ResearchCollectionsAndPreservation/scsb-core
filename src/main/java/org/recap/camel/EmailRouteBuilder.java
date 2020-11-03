@@ -48,9 +48,9 @@ public class EmailRouteBuilder {
      * @param smtpServer        the smtp server
      */
     @Autowired
-    public EmailRouteBuilder(CamelContext context, @Value("${scsb.email.username}") String username, @Value("${scsb.email.password.file}") String passwordDirectory,
-                             @Value("${scsb.email.from}") String from, @Value("${email.request.recall.subject}") String subject,
-                             @Value("${recap.assist.email.to}") String requestPendingTo, @Value("${smtpServer}") String smtpServer) {
+    public EmailRouteBuilder(CamelContext context, @Value("${email.smtp.server.username}") String username, @Value("${email.smtp.server.password.file}") String passwordDirectory,
+                             @Value("${email.smtp.server.address.from}") String from, @Value("${email.request.recall.subject}") String subject,
+                             @Value("${recap-las.email.recap.assist.email.to}") String requestPendingTo, @Value("${email.smtp.server}") String smtpServer) {
         try {
             context.addRoutes(new RouteBuilder() {
                 @Override

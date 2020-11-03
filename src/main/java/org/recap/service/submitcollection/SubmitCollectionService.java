@@ -75,7 +75,7 @@ public class SubmitCollectionService {
 
     private RestTemplate restTemplate;
 
-    @Value("${scsb.solr.client.url}")
+    @Value("${scsb.solr.doc.url}")
     private String scsbSolrClientUrl;
 
     @Value("${submit.collection.input.limit}")

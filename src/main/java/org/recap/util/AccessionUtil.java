@@ -69,7 +69,7 @@ public class AccessionUtil {
     @Autowired
     ProducerTemplate producerTemplate;
 
-    @Value("${scsb.solr.client.url}")
+    @Value("${scsb.solr.doc.url}")
     private String scsbSolrClientUrl;
 
     private RestTemplate restTemplate;
