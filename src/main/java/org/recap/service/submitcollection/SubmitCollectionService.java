@@ -194,19 +194,7 @@ public class SubmitCollectionService {
         format = RecapConstants.FORMAT_SCSB;
         BibRecords bibRecords = null;
         try {
-            JAXBContext context = JAXBContext.newInstance(BibRecords.class);
-            XMLInputFactory xif = XMLInputFactory.newFactory();
-            xif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
-            InputStream stream = new ByteArrayInputStream(inputRecords.getBytes(StandardCharsets.UTF_8));
-            XMLStreamReader xsr = null;
-            try {
-                xsr = xif.createXMLStreamReader(stream);
-            } catch (XMLStreamException e) {
-                e.printStackTrace();
-            }
-            Unmarshaller um = context.createUnmarshaller();
-            bibRecords = (BibRecords) um.unmarshal(xsr);
-            logger.info("bibrecord size {}", bibRecords.getBibRecordList().size());
+            bibRecords = commonUtil.extractBibRecords(inputRecords);
             if (checkLimit && bibRecords.getBibRecordList().size() > inputLimit) {
                 return RecapConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE + " " + inputLimit;
             }

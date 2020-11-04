@@ -7,6 +7,7 @@ import org.recap.repository.jpa.BibliographicDetailsRepository;
 import org.recap.repository.jpa.CollectionGroupDetailsRepository;
 import org.recap.repository.jpa.ItemStatusDetailsRepository;
 import org.recap.repository.jpa.OwningInstitutionIDSequenceRepository;
+import org.recap.util.CommonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,9 @@ public class DummyDataService {
 
     @Autowired
     private AccessionDAO accessionDAO;
+
+    @Autowired
+    private CommonUtil commonUtil;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -151,21 +155,7 @@ public class DummyDataService {
     }
 
     private String getXmlContent(String filename) {
-        InputStream inputStream = getClass().getResourceAsStream(filename);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder out = new StringBuilder();
-        String line;
-        try {
-            while ((line = reader.readLine()) != null) {
-                if (!line.isEmpty()) {
-                    out.append(line);
-                }
-                out.append("\n");
-            }
-        } catch (IOException e) {
-            logger.error(RecapConstants.EXCEPTION,e);
-        }
-        return out.toString();
+        return commonUtil.getContentByFileName(filename).toString();
     }
 
     private String getDummyOwningInstId(){

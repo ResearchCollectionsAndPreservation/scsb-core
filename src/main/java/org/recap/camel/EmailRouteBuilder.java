@@ -5,6 +5,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.io.FileUtils;
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
+import org.recap.util.CommonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,7 @@ public class EmailRouteBuilder {
      * @param smtpServer        the smtp server
      */
     @Autowired
-    public EmailRouteBuilder(CamelContext context, @Value("${email.smtp.server.username}") String username, @Value("${email.smtp.server.password.file}") String passwordDirectory,
+    public EmailRouteBuilder(CamelContext context, CommonUtil commonUtil, @Value("${email.smtp.server.username}") String username, @Value("${email.smtp.server.password.file}") String passwordDirectory,
                              @Value("${email.smtp.server.address.from}") String from, @Value("${email.request.recall.subject}") String subject,
                              @Value("${recap-las.email.recap.assist.email.to}") String requestPendingTo, @Value("${email.smtp.server}") String smtpServer) {
         try {
@@ -157,21 +158,7 @@ public class EmailRouteBuilder {
                 }
 
                 private StringBuilder getEmailBodyString(String vmFileName) {
-                    InputStream inputStream = getClass().getResourceAsStream(vmFileName);
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    StringBuilder out = new StringBuilder();
-                    String line;
-                    try {
-                        while ((line = reader.readLine()) != null) {
-                            if (!line.isEmpty()) {
-                                out.append(line);
-                            }
-                            out.append("\n");
-                        }
-                    } catch (IOException e) {
-                        logger.error(RecapCommonConstants.LOG_ERROR, e);
-                    }
-                    return out;
+                    return commonUtil.getContentByFileName(vmFileName);
                 }
             });
         } catch (Exception e) {
