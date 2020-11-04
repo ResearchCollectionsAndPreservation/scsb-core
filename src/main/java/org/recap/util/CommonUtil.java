@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.marc4j.marc.Record;
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
+import org.recap.model.accession.AccessionRequest;
+import org.recap.model.accession.AccessionResponse;
 import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.jpa.*;
 import org.recap.model.report.SubmitCollectionReportInfo;
@@ -19,8 +21,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -50,6 +51,9 @@ public class CommonUtil {
 
     @Autowired
     MarcUtil marcUtil;
+
+    @Autowired
+    AccessionUtil accessionUtil;
 
     /**
      * This method builds Holdings Entity from holdings content
@@ -252,18 +256,7 @@ public class CommonUtil {
     public BibRecords getBibRecordsForSCSBFormat(String unmarshal) {
         BibRecords bibRecords = null;
         try {
-            JAXBContext context = JAXBContext.newInstance(BibRecords.class);
-            XMLInputFactory xif = XMLInputFactory.newFactory();
-            xif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
-            InputStream stream = new ByteArrayInputStream(unmarshal.getBytes(StandardCharsets.UTF_8));
-            XMLStreamReader xsr = null;
-            try {
-                xsr = xif.createXMLStreamReader(stream);
-            } catch (XMLStreamException e) {
-                e.printStackTrace();
-            }
-            Unmarshaller um = context.createUnmarshaller();
-            bibRecords = (BibRecords) um.unmarshal(xsr);
+            extractBibRecords(unmarshal);
         } catch (JAXBException e) {
             logger.error(RecapCommonConstants.LOG_ERROR,e);
         }
@@ -276,5 +269,53 @@ public class CommonUtil {
             records = marcUtil.readMarcXml(bibDataResponse);
         }
         return records;
+    }
+
+    public BibRecords extractBibRecords(String inputRecords) throws JAXBException {
+        BibRecords bibRecords;
+        JAXBContext context = JAXBContext.newInstance(BibRecords.class);
+        XMLInputFactory xif = XMLInputFactory.newFactory();
+        xif.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
+        InputStream stream = new ByteArrayInputStream(inputRecords.getBytes(StandardCharsets.UTF_8));
+        XMLStreamReader xsr = null;
+        try {
+            xsr = xif.createXMLStreamReader(stream);
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
+        Unmarshaller um = context.createUnmarshaller();
+        bibRecords = (BibRecords) um.unmarshal(xsr);
+        logger.info("bibrecord size {}", bibRecords.getBibRecordList().size());
+        return bibRecords;
+    }
+
+    public String getUpdatedDataResponse(Set<AccessionResponse> accessionResponsesList, List<Map<String, String>> responseMapList, String owningInstitution, List<ReportDataEntity> reportDataEntityList, AccessionRequest accessionRequest, boolean isValidBoundWithRecord, int count, Object record) {
+        String response;
+        boolean isFirstRecord = false;
+        if (count == 1) {
+            isFirstRecord = true;
+        }
+        response = accessionUtil.updateData(record, owningInstitution, responseMapList, accessionRequest, isValidBoundWithRecord, isFirstRecord);
+        accessionUtil.setAccessionResponse(accessionResponsesList, accessionRequest.getItemBarcode(), response);
+        reportDataEntityList.addAll(accessionUtil.createReportDataEntityList(accessionRequest, response));
+        return response;
+    }
+
+    public StringBuilder getContentByFileName(String vmFileName) {
+        InputStream inputStream = getClass().getResourceAsStream(vmFileName);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder out = new StringBuilder();
+        String line;
+        try {
+            while ((line = reader.readLine()) != null) {
+                if (!line.isEmpty()) {
+                    out.append(line);
+                }
+                out.append("\n");
+            }
+        } catch (IOException e) {
+            logger.error(RecapCommonConstants.LOG_ERROR, e);
+        }
+        return out;
     }
 }

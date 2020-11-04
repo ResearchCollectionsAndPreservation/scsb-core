@@ -67,11 +67,15 @@ public class SubmitCollectionReportHelperService {
             logger.info("Report data for item {}",itemEntity.getBarcode());
             StringBuilder sbMessage = new StringBuilder();
             sbMessage.append(message);
-            if(itemEntity.getCatalogingStatus() != null && itemEntity.getCatalogingStatus().equals(RecapCommonConstants.INCOMPLETE_STATUS)
-                && StringUtils.isEmpty(itemEntity.getUseRestrictions())) {
-                    sbMessage.append("-").append(RecapConstants.RECORD_INCOMPLETE).append(RecapConstants.USE_RESTRICTION_UNAVAILABLE);
-            }
+            appendCompleteStatus(itemEntity, sbMessage);
             setSubmitCollectionReportInfo(submitCollectionExceptionInfos,itemEntity,sbMessage.toString(),null);
+        }
+    }
+
+    private void appendCompleteStatus(ItemEntity itemEntity, StringBuilder sbMessage) {
+        if (itemEntity.getCatalogingStatus() != null && itemEntity.getCatalogingStatus().equals(RecapCommonConstants.INCOMPLETE_STATUS)
+                && StringUtils.isEmpty(itemEntity.getUseRestrictions())) {
+            sbMessage.append("-").append(RecapConstants.RECORD_INCOMPLETE).append(RecapConstants.USE_RESTRICTION_UNAVAILABLE);
         }
     }
 
@@ -346,10 +350,7 @@ public class SubmitCollectionReportHelperService {
             submitCollectionReportInfo.setOwningInstitution(owningInstitution);
             StringBuilder sbMessage = new StringBuilder();
             sbMessage.append(RecapConstants.SUBMIT_COLLECTION_SUCCESS_RECORD);
-            if(fetchedItemEntity.getCatalogingStatus() != null && fetchedItemEntity.getCatalogingStatus().equals(RecapCommonConstants.INCOMPLETE_STATUS) &&
-                    StringUtils.isEmpty(fetchedItemEntity.getUseRestrictions())){
-                sbMessage.append("-").append(RecapConstants.RECORD_INCOMPLETE).append(RecapConstants.USE_RESTRICTION_UNAVAILABLE);
-            }
+            appendCompleteStatus(fetchedItemEntity, sbMessage);
             submitCollectionReportInfo.setMessage(sbMessage.toString());
             boolean isBarcodeAlreadyAdded = isBarcodeAlreadyAdded(incomingItemEntity.getBarcode(),submitCollectionReportInfoMap);
             if (!isBarcodeAlreadyAdded) {//To avoid multiple response message for boundwith items

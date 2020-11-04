@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,7 +56,7 @@ public class MarcFormatResolver extends AccessionResolverAbstract {
             if (CollectionUtils.isNotEmpty(records)) {
                 int count = 1;
                 for (Record record : records) {
-                    response = getUpdatedDataResponse(accessionResponses, responseMapList, owningInstitution, reportDataEntityList, accessionRequest, isValidBoundWithRecord, count, record);
+                    response = commonUtil.getUpdatedDataResponse(accessionResponses, responseMapList, owningInstitution, reportDataEntityList, accessionRequest, isValidBoundWithRecord, count, record);
                     count++;
                 }
             }
@@ -74,18 +73,6 @@ public class MarcFormatResolver extends AccessionResolverAbstract {
     @Override
     public ItemEntity getItemEntityFromRecord(Object object, Integer owningInstitutionId) {
         return getItemEntityFormMarcRecord((List<Record>) object, owningInstitutionId);
-    }
-
-    private String getUpdatedDataResponse(Set<AccessionResponse> accessionResponsesList, List<Map<String, String>> responseMapList, String owningInstitution, List<ReportDataEntity> reportDataEntityList, AccessionRequest accessionRequest, boolean isValidBoundWithRecord, int count, Object record) {
-        String response;
-        boolean isFirstRecord = false;
-        if (count == 1) {
-            isFirstRecord = true;
-        }
-        response = accessionUtil.updateData(record, owningInstitution, responseMapList, accessionRequest, isValidBoundWithRecord, isFirstRecord);
-        accessionUtil.setAccessionResponse(accessionResponsesList, accessionRequest.getItemBarcode(), response);
-        reportDataEntityList.addAll(accessionUtil.createReportDataEntityList(accessionRequest, response));
-        return response;
     }
 
     private boolean isBoundWithItemForMarcRecord(List<Record> recordList) {

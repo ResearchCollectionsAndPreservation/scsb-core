@@ -18,7 +18,6 @@ import org.recap.model.jpa.ItemEntity;
 import org.recap.model.jpa.ReportDataEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 
@@ -65,7 +64,7 @@ public class SCSBFormatResolver extends AccessionResolverAbstract {
         if ((!isBoundWithItem) || (isBoundWithItem && isValidBoundWithRecord)) {
             int count = 1;
             for (BibRecord bibRecord : bibRecords.getBibRecordList()) {
-                response = getUpdatedDataResponse(accessionResponses, responseMapList, owningInstitution, reportDataEntityList, accessionRequest, isValidBoundWithRecord, count, bibRecord);
+                response = commonUtil.getUpdatedDataResponse(accessionResponses, responseMapList, owningInstitution, reportDataEntityList, accessionRequest, isValidBoundWithRecord, count, bibRecord);
             }
         } else {
             response = RecapConstants.INVALID_BOUNDWITH_RECORD;
@@ -125,18 +124,6 @@ public class SCSBFormatResolver extends AccessionResolverAbstract {
             }
         }
         return null;
-    }
-
-    private String getUpdatedDataResponse(Set<AccessionResponse> accessionResponsesList, List<Map<String, String>> responseMapList, String owningInstitution, List<ReportDataEntity> reportDataEntityList, AccessionRequest accessionRequest, boolean isValidBoundWithRecord, int count, Object record) {
-        String response;
-        boolean isFirstRecord = false;
-        if (count == 1) {
-            isFirstRecord = true;
-        }
-        response = accessionUtil.updateData(record, owningInstitution, responseMapList, accessionRequest, isValidBoundWithRecord, isFirstRecord);
-        accessionUtil.setAccessionResponse(accessionResponsesList, accessionRequest.getItemBarcode(), response);
-        reportDataEntityList.addAll(accessionUtil.createReportDataEntityList(accessionRequest, response));
-        return response;
     }
 
     private boolean isBoundWithItemForScsbRecord(List<BibRecord> bibRecordList) {
