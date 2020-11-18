@@ -14,10 +14,12 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.recap.BaseTestCase;
+import org.recap.BaseTestCaseUT;
 import org.recap.camel.submitcollection.processor.SubmitCollectionProcessor;
 import org.recap.service.common.SetupDataService;
 import org.recap.service.submitcollection.SubmitCollectionBatchService;
 import org.recap.service.submitcollection.SubmitCollectionReportGenerator;
+import org.recap.util.PropertyUtil;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.HashMap;
@@ -25,8 +27,9 @@ import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SubmitCollectionProcessorUT{
+
+public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
+
     @InjectMocks
     SubmitCollectionProcessor submitCollectionProcessor;
 
@@ -42,25 +45,19 @@ public class SubmitCollectionProcessorUT{
     @Mock
     private ProducerTemplate producer;
 
+    @Mock
+    PropertyUtil propertyUtil;
+
     @Before
     public void setUp() throws Exception {
         ReflectionTestUtils.setField(submitCollectionProcessor, "submitCollectionEmailSubject","Submit collection completed" );
-        ReflectionTestUtils.setField(submitCollectionProcessor, "submitCollectionPULReportLocation","null/share/recap/reports/collection/submitCollection/local/pul" );
-        ReflectionTestUtils.setField(submitCollectionProcessor, "submitCollectionCULReportLocation","null/share/recap/reports/collection/submitCollection/local/cul" );
-        ReflectionTestUtils.setField(submitCollectionProcessor, "submitCollectionNYPLReportLocation","null/share/recap/reports/collection/submitCollection/local/nypl" );
-        ReflectionTestUtils.setField(submitCollectionProcessor, "emailCCForCul","testCul@gmail.com" );
-        ReflectionTestUtils.setField(submitCollectionProcessor, "emailCCForPul","testPul@gmail.com" );
-        ReflectionTestUtils.setField(submitCollectionProcessor, "emailCCForNypl","testNypl@gmail.com" );
-        ReflectionTestUtils.setField(submitCollectionProcessor, "emailToNYPL","testNypl@gmail.com" );
-        ReflectionTestUtils.setField(submitCollectionProcessor, "emailToCUL","testCul@gmail.com" );
-        ReflectionTestUtils.setField(submitCollectionProcessor, "emailToPUL","testPul@gmail.com" );
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
     public void testSubmitCollectionProcessor() {
         SubmitCollectionProcessor submitCollectionProcessor = new SubmitCollectionProcessor("NYPL", false);
-
+        ReflectionTestUtils.setField(submitCollectionProcessor,"propertyUtil",propertyUtil);
         CamelContext ctx = new DefaultCamelContext();
         Exchange ex = new DefaultExchange(ctx);
         ex.getIn().setHeader("CamelFileName", "CUL");

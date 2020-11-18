@@ -1,26 +1,31 @@
 package org.recap.controller;
 
-import org.apache.camel.*;
+
+import org.apache.camel.CamelContext;
+import org.apache.camel.Endpoint;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.PollingConsumer;
 import org.apache.camel.spi.RouteController;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.recap.BaseTestCase;
+import org.recap.BaseTestCaseUT;
+import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.recap.camel.submitcollection.SubmitCollectionPollingFtpRouteBuilder;
+import org.recap.repository.jpa.InstitutionDetailsRepository;
 
-import static org.junit.Assert.assertNotNull;
-@RunWith(MockitoJUnitRunner.class)
-public class SubmitCollectionJobControllerUT {
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+
+public class SubmitCollectionJobControllerUT extends BaseTestCaseUT {
 
     @InjectMocks
     SubmitCollectionJobController submitCollectionJobController;
-
-    @Mock
-    private ProducerTemplate producer;
 
     @Mock
     private CamelContext camelContext;
@@ -40,6 +45,12 @@ public class SubmitCollectionJobControllerUT {
     @Mock
     Message message;
 
+    @Mock
+    InstitutionDetailsRepository institutionDetailsRepository;
+
+    @Mock
+    SubmitCollectionPollingFtpRouteBuilder submitCollectionPollingFtpRouteBuilder;
+
     @Test
     public void startSubmitCollection() throws Exception{
         message.setMessageId("1");
@@ -51,7 +62,9 @@ public class SubmitCollectionJobControllerUT {
         Mockito.when(endpoint.createPollingConsumer()).thenReturn(pollingConsumer);
         Mockito.when(pollingConsumer.receive()).thenReturn(exchange);
         Mockito.when(exchange.getIn()).thenReturn(message);
+        List<String> allInstitutionCodeExceptHTC= Arrays.asList("PUL","CUL","NYPL");
+        Mockito.when(institutionDetailsRepository.findAllInstitutionCodeExceptHTC()).thenReturn(allInstitutionCodeExceptHTC);
         String result = submitCollectionJobController.startSubmitCollection();
-        assertNotNull(result);
+        assertEquals(RecapCommonConstants.SUCCESS,result);
     }
 }

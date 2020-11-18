@@ -1,5 +1,6 @@
 package org.recap.repository;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.recap.BaseTestCase;
 import org.recap.model.jpa.BibliographicEntity;
@@ -24,6 +25,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by sudhishk on 9/12/16.
  */
+@Ignore
 public class PatronDetailsRepositoryUT extends BaseTestCase {
 
     @PersistenceContext

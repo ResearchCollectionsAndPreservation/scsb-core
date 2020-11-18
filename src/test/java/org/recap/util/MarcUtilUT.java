@@ -4,14 +4,19 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.marc4j.marc.Record;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.recap.BaseTestCaseUT;
+import org.recap.RecapConstants;
 import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.jaxb.marc.DataFieldType;
 import org.recap.model.jaxb.marc.RecordType;
 import org.recap.model.jaxb.marc.SubfieldatafieldType;
+import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.marc.BibMarcRecord;
 import org.recap.model.marc.HoldingsMarcRecord;
 import org.recap.model.marc.ItemMarcRecord;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -25,7 +30,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -40,6 +47,9 @@ public class MarcUtilUT extends BaseTestCaseUT {
 
     @InjectMocks
     MarcUtil marcUtil;
+
+    @Value("${submit.collection.input.limit}")
+    Integer inputLimit;
 
     private String marcXML = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n" +
             "          <record>\n" +
@@ -320,9 +330,8 @@ public class MarcUtilUT extends BaseTestCaseUT {
         int docsPerThread = 1;
         int totalDocs = 15;
 
-        System.out.println(totalDocs % (docsPerThread*numThreads));
-        System.out.println(totalDocs / (docsPerThread*numThreads));
-
+        assertNotNull(totalDocs % (docsPerThread*numThreads));
+        assertNotNull(totalDocs / (docsPerThread*numThreads));
 
     }
 
@@ -346,7 +355,7 @@ public class MarcUtilUT extends BaseTestCaseUT {
     public void readMarcXml() throws Exception {
         List<Record> records = getRecords();
         assertNotNull(records);
-        assertEquals(records.size(), 1);
+        assertEquals(1,records.size());
         Record record = records.get(0);
         assertNotNull(record);
     }
@@ -355,29 +364,29 @@ public class MarcUtilUT extends BaseTestCaseUT {
     public void getDataFieldValue() throws Exception {
         List<Record> records = getRecords();
         assertNotNull(records);
-        assertEquals(records.size(), 1);
+        assertEquals(1,records.size());
         Record record = records.get(0);
         assertNotNull(record);
         String fieldValue = marcUtil.getDataFieldValue(record, "876", 'p');
-        assertEquals(fieldValue, "32101095533293");
+        assertEquals( "32101095533293",fieldValue);
     }
 
     @Test
     public void getControlFieldValue() throws Exception {
         List<Record> records = getRecords();
         assertNotNull(records);
-        assertEquals(records.size(), 1);
+        assertEquals(1,records.size());
         Record record = records.get(0);
         assertNotNull(record);
         String controlFieldValue = marcUtil.getControlFieldValue(record, "001");
-        assertEquals(controlFieldValue, "9919400");
+        assertEquals("9919400",controlFieldValue);
     }
 
     @Test
     public void getInd1() throws Exception {
         List<Record> records = getRecords();
         assertNotNull(records);
-        assertEquals(records.size(), 1);
+        assertEquals(1,records.size());
         Record record = records.get(0);
         assertNotNull(record);
         Character ind1 = marcUtil.getInd1(record, "876", 'h');
@@ -388,7 +397,7 @@ public class MarcUtilUT extends BaseTestCaseUT {
     public void buildBibMarcRecord() throws Exception {
         List<Record> records = getRecords();
         assertNotNull(records);
-        assertEquals(records.size(), 1);
+        assertEquals(1,records.size());
         Record record = records.get(0);
         assertNotNull(record);
 
@@ -474,12 +483,26 @@ public class MarcUtilUT extends BaseTestCaseUT {
     public void writeMarcXml() throws Exception {
         List<Record> records = getRecords();
         assertNotNull(records);
-        assertEquals(records.size(), 1);
+        assertEquals(1,records.size());
         Record record = records.get(0);
         assertNotNull(record);
 
         String content = marcUtil.writeMarcXml(record);
         assertNotNull(content);
         assertTrue(content.length() > 0);
+    }
+
+    @Test
+    public void convertAndValidateXml() throws Exception {
+        ReflectionTestUtils.setField(marcUtil,"inputLimit",0);
+        String message=marcUtil.convertAndValidateXml(marcXML,true,getRecords());
+        assertTrue(message.contains(RecapConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE));
+    }
+
+    @Test
+    public void convertAndValidateXmlException() throws Exception {
+        ReflectionTestUtils.setField(marcUtil,"inputLimit",0);
+        String message=marcUtil.convertAndValidateXml("test",true,getRecords());
+        assertEquals(message,RecapConstants.INVALID_MARC_XML_FORMAT_MESSAGE);
     }
 }

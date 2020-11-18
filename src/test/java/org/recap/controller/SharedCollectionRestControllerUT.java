@@ -1,6 +1,7 @@
 package org.recap.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.camel.Exchange;
 import org.apache.commons.collections.map.HashedMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,21 +10,30 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.recap.BaseTestCase;
+import org.recap.BaseTestCaseUT;
 import org.recap.RecapConstants;
 import org.recap.RecapCommonConstants;
+import org.recap.model.accession.AccessionRequest;
+import org.recap.model.accession.AccessionResponse;
+import org.recap.model.accession.AccessionSummary;
 import org.recap.model.deaccession.DeAccessionItem;
 import org.recap.model.deaccession.DeAccessionRequest;
 import org.recap.model.submitcollection.SubmitCollectionResponse;
+import org.recap.service.accession.AccessionService;
+import org.recap.service.accession.BulkAccessionService;
 import org.recap.service.common.SetupDataService;
 import org.recap.service.submitcollection.SubmitCollectionBatchService;
 import org.recap.service.submitcollection.SubmitCollectionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MvcResult;
 
+import javax.jms.IllegalStateException;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -34,19 +44,29 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Created by premkb on 26/12/16.
  */
-@RunWith(MockitoJUnitRunner.class)
-public class SharedCollectionRestControllerUT {
+
+public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
 
     @InjectMocks
     private SharedCollectionRestController sharedCollectionRestController;
+
     @Mock
-    private SubmitCollectionService submitCollectionService;
+    AccessionService accessionService;
 
     @Mock
     private SubmitCollectionBatchService submitCollectionBatchService;
 
     @Mock
     private SetupDataService setupDataService;
+
+    @Mock
+    Exchange exchange;
+
+    @Mock
+    BulkAccessionService bulkAccessionService;
+
+    @Value("${ongoing.accession.input.limit}")
+    private Integer inputLimit;
 
     String updatedMarcXml = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">\n" +
             "<record>\n" +
@@ -180,11 +200,61 @@ public class SharedCollectionRestControllerUT {
         Set<String> updatedBoundWithDummyRecordOwnInstBibIdSet = new HashSet<>();
         List<SubmitCollectionResponse> submitCollectionResponseList = new ArrayList<>();
         submitCollectionResponseList.add(submitCollectionResponse);
-        ResponseEntity responseEntity = new ResponseEntity(submitCollectionResponse,HttpStatus.OK);
         Mockito.when(setupDataService.getInstitutionCodeIdMap()).thenReturn(map);
         Mockito.when(submitCollectionBatchService.process(institution, inputRecords, processedBibIdSet, idMapToRemoveIndexList, bibIdMapToRemoveIndexList, "", reportRecordNumberList, true, isCGDProtection, updatedBoundWithDummyRecordOwnInstBibIdSet)).thenReturn(submitCollectionResponseList);
         ResponseEntity response = sharedCollectionRestController.submitCollection(requestParameters);
         assertNotNull(response);
     }
+
+    @Test
+    public void accessionBatch() throws Exception{
+        ResponseEntity response = sharedCollectionRestController.accessionBatch(getAccessionRequests());
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+    }
+
+    @Test
+    public void accession() throws Exception{
+        ReflectionTestUtils.setField(sharedCollectionRestController,"inputLimit",inputLimit);
+        ResponseEntity response = sharedCollectionRestController.accession(getAccessionRequests(),exchange);
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+    }
+
+    @Test
+    public void accessionExceedLimit() throws Exception{
+        List<AccessionRequest> accessionRequestList=new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
+        accessionRequest.setCustomerCode("PA");
+        accessionRequest.setItemBarcode("32101095533293");
+        AccessionRequest accessionRequest1 = new AccessionRequest();
+        accessionRequest1.setCustomerCode("PA");
+        accessionRequest1.setItemBarcode("32101095533294");
+        accessionRequestList.add(accessionRequest1);
+        ReflectionTestUtils.setField(sharedCollectionRestController,"inputLimit",0);
+        ResponseEntity response = sharedCollectionRestController.accession(accessionRequestList,exchange);
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+    }
+
+    @Test
+    public void ongoingAccessionJobNoPending() throws Exception{
+        String response = sharedCollectionRestController.ongoingAccessionJob(exchange);
+        assertEquals(RecapCommonConstants.ACCESSION_NO_PENDING_REQUESTS,response);
+    }
+
+    @Test
+    public void ongoingAccessionJobFailure() throws Exception{
+        Mockito.when(bulkAccessionService.getAccessionRequest(Mockito.anyList())).thenReturn(getAccessionRequests());
+        String response = sharedCollectionRestController.ongoingAccessionJob(exchange);
+        assertEquals(RecapCommonConstants.FAILURE,response);
+    }
+
+    private List<AccessionRequest> getAccessionRequests() {
+        List<AccessionRequest> accessionRequestList = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
+        accessionRequest.setCustomerCode("PA");
+        accessionRequest.setItemBarcode("32101095533293");
+        accessionRequestList.add(accessionRequest);
+        return accessionRequestList;
+    }
+
 
 }
