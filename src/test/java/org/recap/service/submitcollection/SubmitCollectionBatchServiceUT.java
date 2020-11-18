@@ -1,13 +1,18 @@
+
 package org.recap.service.submitcollection;
 
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.marc4j.marc.Leader;
 import org.marc4j.marc.Record;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.recap.BaseTestCaseUT;
+import org.recap.RecapConstants;
+import org.recap.converter.SCSBToBibEntityConverter;
+import org.recap.model.jaxb.Bib;
+import org.recap.model.jaxb.BibRecord;
 import org.recap.model.jaxb.JAXBHandler;
 import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.jpa.BibliographicEntity;
@@ -15,7 +20,10 @@ import org.recap.model.jpa.HoldingsEntity;
 import org.recap.model.jpa.InstitutionEntity;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.model.report.SubmitCollectionReportInfo;
+import org.recap.util.CommonUtil;
 import org.recap.util.MarcUtil;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.xml.bind.JAXBException;
 import java.util.List;
@@ -27,10 +35,11 @@ import java.util.Date;
 import java.util.Set;
 import java.util.HashSet;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SubmitCollectionBatchServiceUT {
+
+public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
 
     @InjectMocks
     SubmitCollectionBatchService submitCollectionBatchService;
@@ -46,6 +55,25 @@ public class SubmitCollectionBatchServiceUT {
 
     @Mock
     private MarcUtil marcUtil;
+
+    @Mock
+    CommonUtil commonUtil;
+
+    @Mock
+    SCSBToBibEntityConverter scsbToBibEntityConverter;
+
+    @Mock
+    SubmitCollectionReportHelperService submitCollectionReportHelperService;
+
+    @Mock
+    SubmitCollectionDAOService submitCollectionDAOService;
+
+    @Value("${submit.collection.input.limit}")
+    Integer inputLimit;
+
+    @Value("${submit.collection.partition.size}")
+    Integer partitionSize;
+
 
     private String inputRecords = "\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n\" +\n" +
             "            \"<collection>\\n\" +\n" +
@@ -181,11 +209,8 @@ public class SubmitCollectionBatchServiceUT {
         record.setType("Submit");
         List<Record> recordList = new ArrayList<>();
         recordList.add(record);
-//        Mockito.when(submitCollectionBatchService.getMarcUtil()).thenReturn(marcUtil);
-//        Mockito.when(marcUtil.convertMarcXmlToRecord(inputRecords)).thenReturn(recordList);
- ///       Mockito.when(marcUtil.convertAndValidateXml(inputRecords, checkLimit, recordList)).thenCallRealMethod();
-        String result = submitCollectionBatchService.processMarc(inputRecords, processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,checkLimit
-            ,isCGDProtection,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
+        String result = submitCollectionBatchService.processMarc(inputRecords, processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,checkLimit,isCGDProtection,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
+        assertNull(result);
     }
 
     @Test
@@ -201,14 +226,13 @@ public class SubmitCollectionBatchServiceUT {
         Set<String> updatedDummyRecordOwnInstBibIdSet = new HashSet<>();
         InstitutionEntity institutionEntity = new InstitutionEntity();
         List<Record> recordList = new ArrayList<>();
-        Mockito.when(marcUtil.convertAndValidateXml(inputRecords, checkLimit, recordList)).thenReturn("Maximum allowed input record");
-        String result = submitCollectionBatchService.processMarc(inputRecords, processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,checkLimit
-                ,isCGDProtection,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
-        assertNotNull(result);
+        Mockito.when(marcUtil.convertAndValidateXml(inputRecords, checkLimit, recordList)).thenReturn(RecapConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE);
+        String result = submitCollectionBatchService.processMarc(inputRecords, processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,checkLimit,isCGDProtection,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
+        assertEquals(RecapConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE,result);
     }
+
     @Test
-    public void processSCSB() throws JAXBException {
-        //String inputRecords = "test";
+    public void processSCSBExceedLimit() throws JAXBException {
         Set<Integer> processedBibIds = new HashSet<>();
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
@@ -218,27 +242,149 @@ public class SubmitCollectionBatchServiceUT {
         InstitutionEntity institutionEntity = getInstitutionEntity();
         Set<String> updatedDummyRecordOwnInstBibIdSet = new HashSet<>();
         BibRecords bibRecords = new BibRecords();
-//        Mockito.when((BibRecords)jaxbHandler.getInstance().unmarshal(inputRecords, BibRecords.class)).thenReturn(bibRecords);
-   //     submitCollectionBatchService.processSCSB(inputRecords,processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,checkLimit,isCGDProtected,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
+        List<BibRecord> bibRecordList=new ArrayList<>();
+        BibRecord bibRecord=new BibRecord();
+        bibRecord.setBib(new Bib());
+        bibRecordList.add(bibRecord);
+        bibRecords.setBibRecordList(bibRecordList);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"inputLimit",0);
+        Mockito.when(commonUtil.extractBibRecords(Mockito.anyString())).thenReturn(bibRecords);
+        String result =  submitCollectionBatchService.processSCSB(inputRecords,processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,checkLimit,isCGDProtected,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
+        assertEquals(RecapConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE+ " " + 0,result);
+
     }
+
+
+    @Test
+    public void processSCSBNonBoundwith() throws JAXBException {
+        Set<Integer> processedBibIds = new HashSet<>();
+        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
+        InstitutionEntity institutionEntity = getInstitutionEntity();
+        Set<String> updatedDummyRecordOwnInstBibIdSet = new HashSet<>();
+        BibRecords bibRecords = new BibRecords();
+        List<BibRecord> bibRecordList=new ArrayList<>();
+        BibRecord bibRecord=new BibRecord();
+        bibRecord.setBib(new Bib());
+        bibRecordList.add(bibRecord);
+        bibRecords.setBibRecordList(bibRecordList);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"inputLimit",1);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"partitionSize",partitionSize);
+        Mockito.when(commonUtil.extractBibRecords(Mockito.anyString())).thenReturn(bibRecords);
+        Map responseMap=new HashMap();
+        StringBuilder errorMessage = new StringBuilder();
+        responseMap.put("errorMessage",errorMessage);
+        responseMap.put("bibliographicEntity",getBibliographicEntity());
+        Mockito.when(scsbToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
+        List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
+        updatedBibliographicEntityList.add(getBibliographicEntity());
+        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anySet())).thenReturn(updatedBibliographicEntityList);
+        String result =  submitCollectionBatchService.processSCSB(inputRecords,processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,true,true,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
+        assertEquals(null,result);
+    }
+
+    @Test
+    public void processSCSBBoundwith() throws JAXBException {
+        Set<Integer> processedBibIds = new HashSet<>();
+        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
+        InstitutionEntity institutionEntity = getInstitutionEntity();
+        Set<String> updatedDummyRecordOwnInstBibIdSet = new HashSet<>();
+        BibRecords bibRecords = new BibRecords();
+        List<BibRecord> bibRecordList=new ArrayList<>();
+        BibRecord bibRecord=new BibRecord();
+        bibRecord.setBib(new Bib());
+        bibRecordList.add(bibRecord);
+        bibRecords.setBibRecordList(bibRecordList);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"inputLimit",1);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"partitionSize",partitionSize);
+        Mockito.when(commonUtil.extractBibRecords(Mockito.anyString())).thenReturn(bibRecords);
+        Map responseMap=new HashMap();
+        StringBuilder errorMessage = new StringBuilder();
+        responseMap.put("errorMessage",errorMessage);
+        responseMap.put("bibliographicEntity",getBibliographicEntity2());
+        Mockito.when(scsbToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
+        List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
+        updatedBibliographicEntityList.add(getBibliographicEntity2());
+        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anySet())).thenReturn(updatedBibliographicEntityList);
+        String result =  submitCollectionBatchService.processSCSB(inputRecords,processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,true,true,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
+        assertEquals(null,result);
+
+    }
+
+    @Test
+    public void processSCSBInvalid() throws JAXBException {
+        Set<Integer> processedBibIds = new HashSet<>();
+        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
+        InstitutionEntity institutionEntity = getInstitutionEntity();
+        Set<String> updatedDummyRecordOwnInstBibIdSet = new HashSet<>();
+        BibRecords bibRecords = new BibRecords();
+        List<BibRecord> bibRecordList=new ArrayList<>();
+        BibRecord bibRecord=new BibRecord();
+        bibRecord.setBib(new Bib());
+        bibRecordList.add(bibRecord);
+        bibRecords.setBibRecordList(bibRecordList);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"inputLimit",1);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"partitionSize",partitionSize);
+        Mockito.when(commonUtil.extractBibRecords(Mockito.anyString())).thenReturn(bibRecords);
+        Map responseMap=new HashMap();
+        StringBuilder errorMessage = new StringBuilder();
+        errorMessage.append(1);
+        responseMap.put("errorMessage",errorMessage);
+        responseMap.put("bibliographicEntity",getBibliographicEntity2());
+        Mockito.when(scsbToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
+        List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
+        updatedBibliographicEntityList.add(getBibliographicEntity2());
+        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anySet())).thenReturn(updatedBibliographicEntityList);
+        String result =  submitCollectionBatchService.processSCSB(inputRecords,processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,true,true,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
+        assertEquals(null,result);
+
+    }
+
+    @Test
+    public void processSCSBInvalid2() throws JAXBException {
+        Set<Integer> processedBibIds = new HashSet<>();
+        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
+        InstitutionEntity institutionEntity = getInstitutionEntity();
+        Set<String> updatedDummyRecordOwnInstBibIdSet = new HashSet<>();
+        BibRecords bibRecords = new BibRecords();
+        List<BibRecord> bibRecordList=new ArrayList<>();
+        BibRecord bibRecord=new BibRecord();
+        bibRecord.setBib(new Bib());
+        bibRecordList.add(bibRecord);
+        bibRecords.setBibRecordList(bibRecordList);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"inputLimit",1);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"partitionSize",partitionSize);
+        Mockito.when(commonUtil.extractBibRecords(Mockito.anyString())).thenReturn(bibRecords);
+        Map responseMap=new HashMap();
+        responseMap.put("errorMessage",null);
+        responseMap.put("bibliographicEntity",getBibliographicEntity2());
+        Mockito.when(scsbToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
+        List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
+        updatedBibliographicEntityList.add(getBibliographicEntity2());
+        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anySet())).thenReturn(updatedBibliographicEntityList);
+        String result =  submitCollectionBatchService.processSCSB(inputRecords,processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,true,true,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
+        assertEquals(null,result);
+
+    }
+
+
     @Test
     public  void processSCSBException() throws JAXBException {
-        //String inputRecords = "/home/jancy.roach/Workspace/Recap-4jdk11/Phase4-SCSB-Circ/src/test/resources";
         Set<Integer> processedBibIds = new HashSet<>();
-        processedBibIds.add(1);
-        processedBibIds.add(2);
         Map<String, List< SubmitCollectionReportInfo >> submitCollectionReportInfoMap = new HashMap<>();
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
-        boolean checkLimit = true;
-        boolean isCGDProtection = true;
         Set<String> updatedDummyRecordOwnInstBibIdSet = new HashSet<>();
-        InstitutionEntity institutionEntity = getInstitutionEntity();
-        BibRecords bibRecords = new BibRecords();
-        //Mockito.when((BibRecords) jaxbHandler.getInstance().unmarshal(inputRecords, BibRecords.class)).thenReturn(bibRecords);
-        String result = submitCollectionBatchService.processSCSB(inputRecords, processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,checkLimit
-                ,isCGDProtection,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
-        assertNotNull(result);
+        Mockito.when(commonUtil.extractBibRecords(Mockito.anyString())).thenThrow(JAXBException.class);
+        String result = submitCollectionBatchService.processSCSB(inputRecords, processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,true,true,getInstitutionEntity(),updatedDummyRecordOwnInstBibIdSet);
+        assertEquals(RecapConstants.INVALID_SCSB_XML_FORMAT_MESSAGE,result);
     }
 
     private InstitutionEntity getInstitutionEntity(){
@@ -250,14 +396,14 @@ public class SubmitCollectionBatchServiceUT {
     }
     private BibliographicEntity getBibliographicEntity(){
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(123456);
+        bibliographicEntity.setBibliographicId(1);
         bibliographicEntity.setContent("Test".getBytes());
         bibliographicEntity.setCreatedDate(new Date());
         bibliographicEntity.setLastUpdatedDate(new Date());
         bibliographicEntity.setCreatedBy("tst");
         bibliographicEntity.setLastUpdatedBy("tst");
         bibliographicEntity.setOwningInstitutionId(1);
-        bibliographicEntity.setOwningInstitutionBibId("1577261074");
+        bibliographicEntity.setOwningInstitutionBibId("456");
         bibliographicEntity.setDeleted(false);
 
         InstitutionEntity institutionEntity = new InstitutionEntity();
@@ -299,21 +445,36 @@ public class SubmitCollectionBatchServiceUT {
 
         return bibliographicEntity;
     }
-    private SubmitCollectionReportInfo getSubmitCollectionReportInfo(){
-        SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
-        submitCollectionReportInfo.setOwningInstitution("PUL");
-        submitCollectionReportInfo.setItemBarcode("123456");
-        submitCollectionReportInfo.setCustomerCode("PA");
-        submitCollectionReportInfo.setMessage("SUCCESS");
-        return submitCollectionReportInfo;
-    }
 
-    private ItemEntity getItemEntity(){
+    private BibliographicEntity getBibliographicEntity2(){
         InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setId(1);
         institutionEntity.setInstitutionName("PUL");
         institutionEntity.setInstitutionCode("PUL");
+
+        BibliographicEntity bibliographicEntity = new BibliographicEntity();
+        bibliographicEntity.setBibliographicId(123456);
+        bibliographicEntity.setContent("Test".getBytes());
+        bibliographicEntity.setCreatedDate(new Date());
+        bibliographicEntity.setLastUpdatedDate(new Date());
+        bibliographicEntity.setCreatedBy("tst");
+        bibliographicEntity.setLastUpdatedBy("tst");
+        bibliographicEntity.setOwningInstitutionId(1);
+        bibliographicEntity.setOwningInstitutionBibId("1577261074");
+        bibliographicEntity.setDeleted(false);
+        bibliographicEntity.setCatalogingStatus("inComplete");
+
+        HoldingsEntity holdingsEntity = new HoldingsEntity();
+        holdingsEntity.setCreatedDate(new Date());
+        holdingsEntity.setLastUpdatedDate(new Date());
+        holdingsEntity.setCreatedBy("tst");
+        holdingsEntity.setLastUpdatedBy("tst");
+        holdingsEntity.setOwningInstitutionId(1);
+        holdingsEntity.setOwningInstitutionHoldingsId("34567");
+        holdingsEntity.setDeleted(false);
+
         ItemEntity itemEntity = new ItemEntity();
+        itemEntity.setItemId(1);
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setOwningInstitutionItemId("843617540");
         itemEntity.setOwningInstitutionId(1);
@@ -325,13 +486,36 @@ public class SubmitCollectionBatchServiceUT {
         itemEntity.setCreatedDate(new Date());
         itemEntity.setCreatedBy("tst");
         itemEntity.setLastUpdatedBy("tst");
-        itemEntity.setCatalogingStatus("Incomplete");
+        itemEntity.setCatalogingStatus("Complete");
         itemEntity.setItemAvailabilityStatusId(1);
-        itemEntity.setUseRestrictions("restrictions");
         itemEntity.setDeleted(false);
+        itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
         itemEntity.setInstitutionEntity(institutionEntity);
-        itemEntity.setBibliographicEntities(Arrays.asList(getBibliographicEntity()));
-        return itemEntity;
+        List<BibliographicEntity> bibliographicEntities = new ArrayList<>();
+        BibliographicEntity bibliographicEntity1 = getBibliographicEntity();
+        bibliographicEntity.setOwningInstitutionBibId("34558");
+        BibliographicEntity bibliographicEntity2= getBibliographicEntity();
+        bibliographicEntity.setOwningInstitutionBibId("34558");
+        bibliographicEntity1.setOwningInstitutionBibId("45568");
+        bibliographicEntities.add(bibliographicEntity1);
+        bibliographicEntities.add(bibliographicEntity2);
+        itemEntity.setBibliographicEntities(bibliographicEntities);
+        holdingsEntity.setItemEntities(Arrays.asList(itemEntity));
+        bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
+
+        return bibliographicEntity;
+    }
+
+    private SubmitCollectionReportInfo getSubmitCollectionReportInfo(){
+        SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
+        submitCollectionReportInfo.setOwningInstitution("PUL");
+        submitCollectionReportInfo.setItemBarcode("123456");
+        submitCollectionReportInfo.setCustomerCode("PA");
+        submitCollectionReportInfo.setMessage("SUCCESS");
+        return submitCollectionReportInfo;
     }
 
 }
+

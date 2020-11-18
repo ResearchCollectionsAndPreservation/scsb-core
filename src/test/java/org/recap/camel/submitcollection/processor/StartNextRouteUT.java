@@ -1,36 +1,38 @@
 package org.recap.camel.submitcollection.processor;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultExchange;
-import org.apache.camel.support.EndpointHelper;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.recap.BaseTestCase;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
+import org.recap.BaseTestCaseUT;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-public class StartNextRouteUT extends BaseTestCase {
+
+public class StartNextRouteUT extends BaseTestCaseUT {
     StartNextRoute startNextRoute;
 
     @InjectMocks
     StartNextRoute mockedStartNextRoute;
+
     @Mock
     private ProducerTemplate producer;
 
     @Mock
     CamelContext camelContext;
-    @Before
-    public void setUp() throws Exception {
-        ReflectionTestUtils.setField(mockedStartNextRoute, "emailToNYPL","testNypl@gmail.com" );
-        ReflectionTestUtils.setField(mockedStartNextRoute, "emailToCUL","testCul@gmail.com" );
-        ReflectionTestUtils.setField(mockedStartNextRoute, "emailToPUL","testPul@gmail.com" );
-        MockitoAnnotations.initMocks(this);
-    }
+
+
     @Test
     public void testStartNextRoute() {
         startNextRoute = new StartNextRoute("pulSubmitCollectionFTPCgdProtectedRoute");
@@ -46,6 +48,7 @@ public class StartNextRouteUT extends BaseTestCase {
         try{
             startNextRoute.sendEmailForEmptyDirectory(ex);} catch (Exception e) {}
     }
+
     @Test
     public void testStartNextRouteForPulSubmitCollectionFTPCgdNotProtectedRoute() {
         startNextRoute = new StartNextRoute("pulSubmitCollectionFTPCgdNotProtectedRoute");
@@ -130,6 +133,5 @@ public class StartNextRouteUT extends BaseTestCase {
         ex.getIn().setHeader("CamelFileName", "CUL");
         ex.getIn().setHeader("CamelFileParent", "CUL");
         ex.getIn().setBody("Test text for Example");
-       // mockedStartNextRoute.sendEmailForEmptyDirectory(ex);
     }
 }

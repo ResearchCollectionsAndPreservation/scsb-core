@@ -1,30 +1,44 @@
 package org.recap.service.accession.callable;
 
 import org.junit.Test;
-import org.recap.BaseTestCase;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.recap.BaseTestCaseUT;
 import org.recap.model.accession.AccessionRequest;
-import org.recap.service.accession.resolver.BibDataResolver;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.recap.model.accession.AccessionResponse;
+import org.recap.util.AccessionProcessService;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+
 
 /**
  * Created by hemalathas on 7/7/17.
  */
-public class BibDataCallableUT extends BaseTestCase {
+public class BibDataCallableUT extends BaseTestCaseUT {
 
-    @Autowired
+    @InjectMocks
     BibDataCallable bibDataCallable;
 
+    @Mock
+    AccessionProcessService accessionProcessService;
+
     @Test
-    public void testBibDataCallaable(){
+    public void testBibDataCallaable() throws Exception {
         bibDataCallable.setAccessionRequest(new AccessionRequest());
         bibDataCallable.setOwningInstitution("PUL");
-        List<BibDataResolver> bibDataResolvers = bibDataCallable.getBibDataResolvers();
-        assertNotNull(bibDataResolvers);
         bibDataCallable.setWriteToReport(true);
+        Set<AccessionResponse> accessionResponses=new HashSet<>();
+        AccessionResponse accessionResponse=new AccessionResponse();
+        accessionResponse.setMessage("test");
+        accessionResponse.setItemBarcode("123");
+        accessionResponses.add(accessionResponse);
+        Mockito.when(accessionProcessService.processRecords(Mockito.anySet(),Mockito.anyList(),Mockito.any(),Mockito.anyList(),Mockito.anyString(),Mockito.anyBoolean())).thenReturn(accessionResponses);
+        Object object= bibDataCallable.call();
+        assertEquals(accessionResponses,object);
     }
 
 }
