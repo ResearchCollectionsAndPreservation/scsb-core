@@ -4,6 +4,7 @@ import org.apache.camel.Exchange;
 import org.apache.commons.collections.CollectionUtils;
 import org.recap.RecapConstants;
 import org.recap.RecapCommonConstants;
+import org.recap.model.accession.AccessionModelRequest;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
 import org.recap.model.accession.AccessionSummary;
@@ -25,12 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by premkb on 21/12/16.
@@ -64,42 +60,42 @@ public class SharedCollectionRestController {
     /**
      * This method is used to save the accession and send the response.
      *
-     * @param accessionRequestList the accession request list
+     * @param accessionModelRequest the accession request list
      * @return the response entity
      */
     @PostMapping(value = "/accessionBatch", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity accessionBatch(@RequestBody List<AccessionRequest> accessionRequestList) {
-        String responseMessage = bulkAccessionService.saveRequest(accessionRequestList);
-        return new ResponseEntity(responseMessage, getHttpHeaders(), HttpStatus.OK);
+    public ResponseEntity<String> accessionBatch(@RequestBody AccessionModelRequest accessionModelRequest) {
+        String responseMessage = bulkAccessionService.saveRequest(accessionModelRequest);
+        return new ResponseEntity<>(responseMessage, getHttpHeaders(), HttpStatus.OK);
     }
 
     /**
      * This method is used to perform accession for the given list of accessionRequests.
      *
-     * @param accessionRequestList the accession request list
+     * @param accessionModelRequest the accession request list
      * @return the response entity
      */
     @PostMapping(value = "/accession", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity accession(@RequestBody List<AccessionRequest> accessionRequestList, Exchange exchange) {
-        ResponseEntity responseEntity;
+    public ResponseEntity<List<AccessionResponse>> accession(@RequestBody AccessionModelRequest accessionModelRequest, Exchange exchange) {
+        ResponseEntity<List<AccessionResponse>> responseEntity;
         List<AccessionResponse> accessionResponsesList;
-        if (accessionRequestList.size() > inputLimit) {
+        if (accessionModelRequest.getAccessionRequests().size() > inputLimit) {
             accessionResponsesList = getAccessionResponses();
-            return new ResponseEntity(accessionResponsesList, getHttpHeaders(), HttpStatus.OK);
+            return new ResponseEntity<>(accessionResponsesList, getHttpHeaders(), HttpStatus.OK);
         } else {
             String accessionType = RecapConstants.ACCESSION_SUMMARY;
             AccessionSummary accessionSummary = new AccessionSummary(accessionType);
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
-            logger.info("Total record for Accession : {}" , accessionRequestList.size());
-            accessionResponsesList = accessionService.doAccession(accessionRequestList, accessionSummary,exchange);
+            logger.info("Total record for Accession : {}" , accessionModelRequest.getAccessionRequests().size());
+            accessionResponsesList = accessionService.doAccession(accessionModelRequest.getAccessionRequests(), accessionSummary,exchange);
             stopWatch.stop();
             accessionSummary.setTimeElapsed(stopWatch.getTotalTimeSeconds() + " Secs");
-            logger.info(accessionSummary.toString());
+            logger.info("{}", accessionSummary);
             accessionService.createSummaryReport(accessionSummary.toString(), accessionType);
-            responseEntity = new ResponseEntity(accessionResponsesList, getHttpHeaders(), HttpStatus.OK);
+            responseEntity = new ResponseEntity<>(accessionResponsesList, getHttpHeaders(), HttpStatus.OK);
         }
         return responseEntity;
     }
@@ -145,13 +141,10 @@ public class SharedCollectionRestController {
     }
 
     private List<AccessionResponse> getAccessionResponses() {
-        List<AccessionResponse> accessionResponsesList;
-        accessionResponsesList = new ArrayList<>();
         AccessionResponse accessionResponse = new AccessionResponse();
         accessionResponse.setItemBarcode("");
-        accessionResponsesList.add(accessionResponse);
         accessionResponse.setMessage(RecapConstants.ONGOING_ACCESSION_LIMIT_EXCEED_MESSAGE + inputLimit);
-        return accessionResponsesList;
+        return Collections.singletonList(accessionResponse);
     }
 
     /**
