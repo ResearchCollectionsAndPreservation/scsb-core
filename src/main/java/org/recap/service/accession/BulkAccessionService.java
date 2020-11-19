@@ -8,6 +8,7 @@ import org.apache.camel.Exchange;
 import org.apache.commons.collections.CollectionUtils;
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
+import org.recap.model.accession.AccessionModelRequest;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
 import org.recap.model.accession.AccessionSummary;
@@ -58,16 +59,17 @@ public class BulkAccessionService extends AccessionService{
     /**
      * This method saves the accession request in database and returns the status message.
      *
-     * @param accessionRequestList
+     * @param accessionModelRequest
      * @return
      */
     @Transactional
-    public String saveRequest(List<AccessionRequest> accessionRequestList) {
-        List<AccessionRequest> trimmedAccessionRequests = getTrimmedAccessionRequests(accessionRequestList);
+    public String saveRequest(AccessionModelRequest accessionModelRequest) {
+        List<AccessionRequest> trimmedAccessionRequests = getTrimmedAccessionRequests(accessionModelRequest.getAccessionRequests());
         String status;
         try {
             AccessionEntity accessionEntity = new AccessionEntity();
-            accessionEntity.setAccessionRequest(convertJsonToString(trimmedAccessionRequests));
+            accessionModelRequest.setAccessionRequests(trimmedAccessionRequests);
+            accessionEntity.setAccessionRequest(convertJsonToString(accessionModelRequest));
             accessionEntity.setCreatedDate(new Date());
             accessionEntity.setAccessionStatus(RecapConstants.PENDING);
             accessionDetailsRepository.save(accessionEntity);
