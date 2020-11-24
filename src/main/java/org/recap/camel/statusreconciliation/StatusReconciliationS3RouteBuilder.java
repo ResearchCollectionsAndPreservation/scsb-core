@@ -2,6 +2,7 @@ package org.recap.camel.statusreconciliation;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.aws.s3.S3Constants;
 import org.apache.camel.model.dataformat.BindyType;
 import org.recap.RecapConstants;
 import org.recap.RecapCommonConstants;
@@ -19,9 +20,9 @@ import org.springframework.stereotype.Component;
  * Created by hemalathas on 22/5/17.
  */
 @Component
-public class StatusReconciliationFtpRouteBuilder {
+public class StatusReconciliationS3RouteBuilder {
 
-    private static final Logger logger = LoggerFactory.getLogger(StatusReconciliationFtpRouteBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(StatusReconciliationS3RouteBuilder.class);
 
     /**
      * Instantiates a new Status reconciliation ftp route builder.
@@ -34,7 +35,7 @@ public class StatusReconciliationFtpRouteBuilder {
      * @param statusReconciliation the status reconciliation
      */
     @Autowired
-    public StatusReconciliationFtpRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
+    public StatusReconciliationS3RouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
                                                @Value("${ftp.server.userName}") String ftpUserName,
                                                @Value("${ftp.server.knownHost}") String ftpKnownHost, @Value("${ftp.server.privateKey}") String ftpPrivateKey,
                                                @Value("${status.reconciliation}") String statusReconciliation) {
@@ -49,13 +50,15 @@ public class StatusReconciliationFtpRouteBuilder {
                             .bean(applicationContext.getBean(StatusReconciliationEmailService.class), RecapConstants.PROCESS_INPUT)
                             .end()
                             .choice()
-                            .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION))
-                            .marshal().bindy(BindyType.Csv, StatusReconciliationCSVRecord.class)
-                            .to(RecapCommonConstants.SFTP + ftpUserName + RecapCommonConstants.AT + statusReconciliation + RecapCommonConstants.PRIVATE_KEY_FILE + ftpPrivateKey + RecapCommonConstants.KNOWN_HOST_FILE + ftpKnownHost + "&fileName=StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv")
-                            .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION_FAILURE))
-                            .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
-                            .to(RecapCommonConstants.SFTP + ftpUserName + RecapCommonConstants.AT + statusReconciliation + RecapCommonConstants.PRIVATE_KEY_FILE + ftpPrivateKey + RecapCommonConstants.KNOWN_HOST_FILE + ftpKnownHost + "&fileName=StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv")
-                            .log("status reconciliation failure report generated in ftp");
+                                .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION))
+                                    .marshal().bindy(BindyType.Csv, StatusReconciliationCSVRecord.class)
+                                    .setHeader(S3Constants.KEY,simple("archival/share/recap/status-reconciliation/StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv"))
+                                    .to("aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                                .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION_FAILURE))
+                                    .setHeader(S3Constants.KEY,simple("archival/share/recap/status-reconciliation/StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv"))
+                                    .to("aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                                    .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
+                                    .log("status reconciliation failure report generated in ftp");
                 }
             });
         } catch (Exception e) {
