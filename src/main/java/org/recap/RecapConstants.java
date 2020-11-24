@@ -249,6 +249,7 @@ public final class RecapConstants {
         public static final String CHECKIN_ITEM = "requestItem/checkinItem";
         public static final String REFILE_ITEM_IN_ILS = "requestItem/refileItemInILS";
         public static final String REPLACE_REQUEST = "requestItem/replaceRequest";
+        public static final String REFILE_ITEM = "requestItem/refile";
     }
 
     //Accession
@@ -412,7 +413,7 @@ public final class RecapConstants {
     public static final String DELETED_MAIL_QUEUE = "deletedRecordsMailSendQueue";
     public static final String COUNT_OF_PURGED_ACCESSION_REQUESTS = "countOfPurgedAccessionRequests";
 
-    public static final String GFA_ITEM_STATUS_COMPARISON_URL = "gfaService/itemStatusComparison";
+    public static final String GFA_MULTIPLE_ITEM_STATUS_URL = "gfaService/multipleItemsStatusCheck";
 
     public static final String STATUS_RECONCILIATION_CHANGE_LOG_OPERATION_TYPE = "StatusReconciliation-ItemAvailablityStatusChange";
 
@@ -522,7 +523,7 @@ public final class RecapConstants {
         return GFA_STATUS_AVAILABLE_LIST;
     }
 
-    public static List getGFAStatusNotAvailableList() {
+    public static List<String> getGFAStatusNotAvailableList() {
         return GFA_STATUS_NOT_AVAILABLE_LIST;
     }
 

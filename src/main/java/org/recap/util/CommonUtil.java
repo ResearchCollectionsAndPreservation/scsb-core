@@ -318,4 +318,19 @@ public class CommonUtil {
         }
         return out;
     }
+
+    /**
+     * Get list of barcodes from item entities
+     * @param itemEntities
+     * @return
+     */
+    public List<String> getBarcodesList(List<ItemEntity> itemEntities) {
+        List<String> itemBarcodes = new ArrayList<>();
+        if (!itemEntities.isEmpty()) {
+            for (ItemEntity itemEntity : itemEntities) {
+                itemBarcodes.add(itemEntity.getBarcode());
+            }
+        }
+        return itemBarcodes;
+    }
 }

@@ -1,4 +1,4 @@
-package org.recap.camel.statusreconciliation;
+package org.recap.model.csv;
 
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
