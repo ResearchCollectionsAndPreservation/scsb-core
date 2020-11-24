@@ -1,5 +1,6 @@
 package org.recap.camel.accessionreconciliation;
 
+import com.amazonaws.services.s3.AmazonS3;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.recap.RecapConstants;
@@ -44,6 +45,9 @@ public class AccessionReconciliationProcessor {
 
     @Value("${accession.reconciliation.filePath}")
     private String accessionFilePath;
+
+    @Autowired
+    AmazonS3 awsS3Client;
 
     private String institutionCode;
 
@@ -105,6 +109,12 @@ public class AccessionReconciliationProcessor {
             logger.error(RecapCommonConstants.LOG_ERROR ,e);
         }
         startFileSystemRoutesForAccessionReconciliation(exchange,index);
+        String xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+        String bucketName = exchange.getIn().getHeader("CamelAwsS3BucketName").toString();
+        if(awsS3Client.doesObjectExist(bucketName,xmlFileName) && awsS3Client.doesBucketExistV2(bucketName)) {
+            awsS3Client.copyObject(bucketName, xmlFileName, "scsb-processed", xmlFileName);
+            awsS3Client.deleteObject(bucketName, xmlFileName);
+        }
     }
 
     private void startFileSystemRoutesForAccessionReconciliation(Exchange exchange,Integer index) {
