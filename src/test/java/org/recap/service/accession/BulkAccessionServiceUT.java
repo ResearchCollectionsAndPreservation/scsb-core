@@ -11,7 +11,9 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.recap.BaseTestCaseUT;
+import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
+import org.recap.model.accession.AccessionModelRequest;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
 import org.recap.model.accession.AccessionSummary;
@@ -69,9 +71,9 @@ public class BulkAccessionServiceUT extends BaseTestCaseUT {
 
     @Ignore
     public void doBulkAccession() {
-        List<AccessionRequest> accessionRequestList=getAccessionRequests();
+        AccessionModelRequest accessionModelRequest = getAccessionModelRequest();
         AccessionSummary accessionSummary=new AccessionSummary("test");
-        Mockito.when(accessionProcessService.removeDuplicateRecord(Mockito.anyList())).thenReturn(removeDuplicateRecord(accessionRequestList));
+        Mockito.when(accessionProcessService.removeDuplicateRecord(Mockito.anyList())).thenReturn(removeDuplicateRecord(accessionModelRequest.getAccessionRequests()));
         ReflectionTestUtils.setField(bulkAccessionService,"batchAccessionThreadSize",batchAccessionThreadSize);
         Mockito.when(accessionValidationService.validateBarcodeOrCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(accessionValidationResponse);
         Mockito.when(accessionValidationResponse.getOwningInstitution()).thenReturn("PUL");
@@ -79,35 +81,35 @@ public class BulkAccessionServiceUT extends BaseTestCaseUT {
         Mockito.when(accessionValidationResponse.isValid()).thenReturn(true);
         BibDataCallable bibDataCallable = Mockito.mock(BibDataCallable.class);
         Mockito.when(applicationContext.getBean(Mockito.anyString())).thenReturn(bibDataCallable);
-        List<AccessionResponse> response=bulkAccessionService.doAccession(accessionRequestList,accessionSummary,exchange);
+        List<AccessionResponse> response=bulkAccessionService.doAccession(accessionModelRequest.getAccessionRequests(),accessionSummary,exchange);
 
     }
 
     @Test
     public void doBulkAccessionInvalid() {
-        List<AccessionRequest> accessionRequestList=getAccessionRequests();
+        AccessionModelRequest accessionModelRequest = getAccessionModelRequest();
         AccessionSummary accessionSummary=new AccessionSummary("test");
-        Mockito.when(accessionProcessService.removeDuplicateRecord(Mockito.anyList())).thenReturn(removeDuplicateRecord(accessionRequestList));
+        Mockito.when(accessionProcessService.removeDuplicateRecord(Mockito.anyList())).thenReturn(removeDuplicateRecord(accessionModelRequest.getAccessionRequests()));
         ReflectionTestUtils.setField(bulkAccessionService,"batchAccessionThreadSize",batchAccessionThreadSize);
         Mockito.when(accessionValidationService.validateBarcodeOrCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(accessionValidationResponse);
         Mockito.when(accessionValidationResponse.getOwningInstitution()).thenReturn("PUL");
         Mockito.when(accessionValidationResponse.getMessage()).thenReturn(RecapConstants.ITEM_ALREADY_ACCESSIONED);
-        List<AccessionResponse> response=bulkAccessionService.doAccession(accessionRequestList,accessionSummary,exchange);
+        List<AccessionResponse> response=bulkAccessionService.doAccession(accessionModelRequest.getAccessionRequests(),accessionSummary,exchange);
         assertNull(response);
     }
 
     @Test
     public void saveRequest() {
-        List<AccessionRequest> accessionRequestList=getAccessionRequests();
-        String status=bulkAccessionService.saveRequest(accessionRequestList);
+        AccessionModelRequest accessionModelRequest = getAccessionModelRequest();
+        String status=bulkAccessionService.saveRequest(accessionModelRequest);
         assertEquals(RecapConstants.ACCESSION_SAVE_SUCCESS_STATUS,status);
     }
 
     @Test
     public void saveRequestException() {
-        List<AccessionRequest> accessionRequestList=getAccessionRequests();
+        AccessionModelRequest accessionModelRequest = getAccessionModelRequest();
         Mockito.when(accessionDetailsRepository.save(Mockito.any())).thenThrow(NullPointerException.class);
-        String status=bulkAccessionService.saveRequest(accessionRequestList);
+        String status=bulkAccessionService.saveRequest(accessionModelRequest);
         assertTrue(status.contains(RecapConstants.ACCESSION_SAVE_FAILURE_STATUS));
     }
 
@@ -144,12 +146,15 @@ public class BulkAccessionServiceUT extends BaseTestCaseUT {
         return new ArrayList<>(accessionRequests);
     }
 
-    private List<AccessionRequest> getAccessionRequests() {
+    private AccessionModelRequest getAccessionModelRequest() {
+        AccessionModelRequest accessionModelRequest = new AccessionModelRequest();
+        accessionModelRequest.setImsLocationCode(RecapCommonConstants.IMS_LOCATION_RECAP);
         List<AccessionRequest> accessionRequestList = new ArrayList<>();
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("32101095533293");
         accessionRequestList.add(accessionRequest);
-        return accessionRequestList;
+        accessionModelRequest.setAccessionRequests(accessionRequestList);
+        return accessionModelRequest;
     }
 }

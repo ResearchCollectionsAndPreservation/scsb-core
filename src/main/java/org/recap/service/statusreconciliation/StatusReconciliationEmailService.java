@@ -1,11 +1,10 @@
-package org.recap.camel.statusreconciliation;
+package org.recap.service.statusreconciliation;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.recap.RecapConstants;
 import org.recap.camel.EmailPayLoad;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -16,8 +15,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Scope("prototype")
+@Slf4j
 public class StatusReconciliationEmailService {
-    private static final Logger logger = LoggerFactory.getLogger(StatusReconciliationEmailService.class);
 
     @Autowired
     private ProducerTemplate producerTemplate;
@@ -35,15 +34,15 @@ public class StatusReconciliationEmailService {
      */
     public void processInput(Exchange exchange) {
         String fileLocation = (String) exchange.getIn().getHeaders().get("CamelFileNameProduced");
-        producerTemplate.sendBodyAndHeader(RecapConstants.EMAIL_Q, getEmailPayLoad(fileLocation), RecapConstants.EMAIL_BODY_FOR,"StatusReconcilation");
+        producerTemplate.sendBodyAndHeader(RecapConstants.EMAIL_Q, getEmailPayLoad(fileLocation), RecapConstants.EMAIL_BODY_FOR, "StatusReconcilation");
     }
 
-    private EmailPayLoad getEmailPayLoad(String FileLocation){
+    private EmailPayLoad getEmailPayLoad(String fileLocation) {
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setCc(statusReconciliationEmailCC);
         emailPayLoad.setTo(statusReconciliationEmailTo);
-        logger.info("Status Reconciliation : email sent to : {0} and cc : {1} ",emailPayLoad.getTo(),emailPayLoad.getCc());
-        emailPayLoad.setMessageDisplay("The \"Out\" Status Reconciliation report is available at the FTP location "+FileLocation);
+        log.info("Status Reconciliation : email sent to : {} and cc : {} ", emailPayLoad.getTo(), emailPayLoad.getCc());
+        emailPayLoad.setMessageDisplay("The \"Out\" Status Reconciliation report is available at the FTP location " + fileLocation);
         return emailPayLoad;
     }
 }

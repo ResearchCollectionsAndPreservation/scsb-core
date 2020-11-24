@@ -1,45 +1,29 @@
 package org.recap.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.apache.commons.collections.map.HashedMap;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.recap.BaseTestCase;
 import org.recap.BaseTestCaseUT;
-import org.recap.RecapConstants;
 import org.recap.RecapCommonConstants;
+import org.recap.model.accession.AccessionModelRequest;
 import org.recap.model.accession.AccessionRequest;
-import org.recap.model.accession.AccessionResponse;
-import org.recap.model.accession.AccessionSummary;
-import org.recap.model.deaccession.DeAccessionItem;
-import org.recap.model.deaccession.DeAccessionRequest;
 import org.recap.model.submitcollection.SubmitCollectionResponse;
 import org.recap.service.accession.AccessionService;
 import org.recap.service.accession.BulkAccessionService;
 import org.recap.service.common.SetupDataService;
 import org.recap.service.submitcollection.SubmitCollectionBatchService;
-import org.recap.service.submitcollection.SubmitCollectionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.MvcResult;
 
-import javax.jms.IllegalStateException;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Created by premkb on 26/12/16.
@@ -208,19 +192,21 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
 
     @Test
     public void accessionBatch() throws Exception{
-        ResponseEntity response = sharedCollectionRestController.accessionBatch(getAccessionRequests());
+        ResponseEntity response = sharedCollectionRestController.accessionBatch(getAccessionModelRequest());
         assertEquals(HttpStatus.OK,response.getStatusCode());
     }
 
     @Test
     public void accession() throws Exception{
         ReflectionTestUtils.setField(sharedCollectionRestController,"inputLimit",inputLimit);
-        ResponseEntity response = sharedCollectionRestController.accession(getAccessionRequests(),exchange);
+        ResponseEntity response = sharedCollectionRestController.accession(getAccessionModelRequest(),exchange);
         assertEquals(HttpStatus.OK,response.getStatusCode());
     }
 
     @Test
     public void accessionExceedLimit() throws Exception{
+        AccessionModelRequest accessionModelRequest = new AccessionModelRequest();
+        accessionModelRequest.setImsLocationCode(RecapCommonConstants.IMS_LOCATION_RECAP);
         List<AccessionRequest> accessionRequestList=new ArrayList<>();
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
@@ -229,8 +215,9 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         accessionRequest1.setCustomerCode("PA");
         accessionRequest1.setItemBarcode("32101095533294");
         accessionRequestList.add(accessionRequest1);
+        accessionModelRequest.setAccessionRequests(accessionRequestList);
         ReflectionTestUtils.setField(sharedCollectionRestController,"inputLimit",0);
-        ResponseEntity response = sharedCollectionRestController.accession(accessionRequestList,exchange);
+        ResponseEntity response = sharedCollectionRestController.accession(accessionModelRequest,exchange);
         assertEquals(HttpStatus.OK,response.getStatusCode());
     }
 
@@ -242,18 +229,21 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
 
     @Test
     public void ongoingAccessionJobFailure() throws Exception{
-        Mockito.when(bulkAccessionService.getAccessionRequest(Mockito.anyList())).thenReturn(getAccessionRequests());
+        Mockito.when(bulkAccessionService.getAccessionRequest(Mockito.anyList())).thenReturn(getAccessionModelRequest().getAccessionRequests());
         String response = sharedCollectionRestController.ongoingAccessionJob(exchange);
         assertEquals(RecapCommonConstants.FAILURE,response);
     }
 
-    private List<AccessionRequest> getAccessionRequests() {
+    private AccessionModelRequest getAccessionModelRequest() {
+        AccessionModelRequest accessionModelRequest = new AccessionModelRequest();
+        accessionModelRequest.setImsLocationCode(RecapCommonConstants.IMS_LOCATION_RECAP);
         List<AccessionRequest> accessionRequestList = new ArrayList<>();
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("32101095533293");
         accessionRequestList.add(accessionRequest);
-        return accessionRequestList;
+        accessionModelRequest.setAccessionRequests(accessionRequestList);
+        return accessionModelRequest;
     }
 
 

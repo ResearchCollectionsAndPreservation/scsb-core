@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.recap.BaseTestCase;
 import org.recap.RecapConstants;
+import org.recap.controller.StatusReconciliationController;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.model.jpa.ItemStatusEntity;
 import org.recap.repository.jpa.ItemChangeLogDetailsRepository;
