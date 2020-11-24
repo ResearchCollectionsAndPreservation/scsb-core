@@ -1,5 +1,6 @@
 package org.recap.camel.submitcollection.processor;
 
+import com.amazonaws.services.s3.AmazonS3;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.recap.RecapConstants;
@@ -59,6 +60,9 @@ public class SubmitCollectionProcessor {
     @Autowired
     private SetupDataService setupDataService;
 
+    @Autowired
+    AmazonS3 awsS3Client;
+
     public SubmitCollectionProcessor(){}
 
     public SubmitCollectionProcessor(String inputInstitutionCode,boolean isCGDProtection) {
@@ -75,17 +79,21 @@ public class SubmitCollectionProcessor {
     public void processInput(Exchange exchange) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        logger.info("Submit Collection : Route started and started processing the records from ftp for submitcollection");
-        String inputXml = exchange.getIn().getBody(String.class);
-        String xmlFileName = exchange.getIn().toString();
-        logger.info("Processing xmlFileName----->{}",xmlFileName);
         Set<Integer> processedBibIds = new HashSet<>();
         Set<String> updatedBoundWithDummyRecordOwnInstBibIdSet = new HashSet<>();
         List<Map<String,String>> idMapToRemoveIndexList = new ArrayList<>();
         List<Map<String,String>> bibIdMapToRemoveIndexList = new ArrayList<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Integer institutionId = (Integer) setupDataService.getInstitutionCodeIdMap().get(institutionCode);
+        String xmlFileName = null;
+        String bucketName = null;
         try {
+            logger.info("Submit Collection : Route started and started processing the records from ftp for submitcollection");
+            String inputXml = exchange.getIn().getBody(String.class);
+            logger.info("Processing xml String----->{}",inputXml);
+            xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+            bucketName = exchange.getIn().getHeader("CamelAwsS3BucketName").toString();
+            logger.info("Processing xmlFileName----->{}",xmlFileName);
+            Integer institutionId = (Integer) setupDataService.getInstitutionCodeIdMap().get(institutionCode);
             submitCollectionBatchService.process(institutionCode,inputXml,processedBibIds,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,xmlFileName,reportRecordNumList, false, isCGDProtection,updatedBoundWithDummyRecordOwnInstBibIdSet);
             logger.info("Submit Collection : Solr indexing started for {} records", processedBibIds.size());
             logger.info("idMapToRemoveIndex---> {}", idMapToRemoveIndexList.size());
@@ -116,6 +124,10 @@ public class SubmitCollectionProcessor {
             ReportDataRequest reportRequest = getReportDataRequest(xmlFileName);
             String generatedReportFileName = submitCollectionReportGenerator.generateReport(reportRequest);
             producer.sendBodyAndHeader(RecapConstants.EMAIL_Q, getEmailPayLoad(xmlFileName,generatedReportFileName), RecapConstants.EMAIL_BODY_FOR, RecapConstants.SUBMIT_COLLECTION);
+            if(awsS3Client.doesObjectExist(bucketName,xmlFileName) && awsS3Client.doesBucketExistV2(bucketName)) {
+                awsS3Client.copyObject(bucketName, xmlFileName, bucketName, "archival/"+xmlFileName);
+                awsS3Client.deleteObject(bucketName, xmlFileName);
+            }
             stopWatch.stop();
             logger.info("Submit Collection : Total time taken for processing through ftp---> {} sec",stopWatch.getTotalTimeSeconds());
         } catch (Exception e) {

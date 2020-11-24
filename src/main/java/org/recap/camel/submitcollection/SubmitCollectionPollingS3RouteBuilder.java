@@ -28,9 +28,9 @@ import java.util.List;
  * Created by premkb on 19/3/17.
  */
 @Component
-public class SubmitCollectionPollingFtpRouteBuilder {
+public class SubmitCollectionPollingS3RouteBuilder {
 
-    private static final Logger logger = LoggerFactory.getLogger(SubmitCollectionPollingFtpRouteBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(SubmitCollectionPollingS3RouteBuilder.class);
 
     @Autowired
     ProducerTemplate producer;
@@ -64,11 +64,15 @@ public class SubmitCollectionPollingFtpRouteBuilder {
      * Predicate to identify is the input file is gz
      */
     Predicate gzipFile = exchange -> {
-        String fileName = (String) exchange.getIn().getHeader(Exchange.FILE_NAME);
-        return StringUtils.equalsIgnoreCase("gz", FilenameUtils.getExtension(fileName));
+        if(exchange.getIn().getHeader("CamelAwsS3Key") != null) {
+            String fileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+            return StringUtils.equalsIgnoreCase("gz", FilenameUtils.getExtension(fileName));
+        }else{
+            return false;
+        }
     };
 
-    public SubmitCollectionPollingFtpRouteBuilder(CamelContext camelContext,ApplicationContext applicationContext){
+    public SubmitCollectionPollingS3RouteBuilder(CamelContext camelContext,ApplicationContext applicationContext){
         try {
             //This route is used to send message to queue which is used in controller to identify the completion of submit collection process
             camelContext.addRoutes(new RouteBuilder() {
@@ -144,21 +148,22 @@ public class SubmitCollectionPollingFtpRouteBuilder {
                                 .handled(true)
                                 .setHeader(RecapCommonConstants.INSTITUTION, constant(""))
                                 .to(RecapCommonConstants.DIRECT_ROUTE_FOR_EXCEPTION);
-                        from(RecapCommonConstants.SFTP + ftpUserName + RecapCommonConstants.AT + ftpHost + ":" + ftpPort + ftpInputDirectory + RecapCommonConstants.PRIVATE_KEY_FILE + ftpPrivateKey + RecapCommonConstants.KNOWN_HOST_FILE + ftpKnownHost + RecapConstants.SUBMIT_COLLECTION_SFTP_OPTIONS + localDirectory)
+                        from("aws-s3://{{scsbBucketName}}?prefix=feeds/share/recap/submit-collections/" + currentInstitution + "/Cgd" + cgdType + "/&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
                                 .routeId(currentInstitutionRouteId)
                                 .noAutoStartup()
                                 .choice()
                                 .when(gzipFile)
                                 .unmarshal()
                                 .gzipDeflater()
-                                .log(currentInstitution+"Submit Collection FTP Route Unzip Complete")
+                                .log(currentInstitution+"Submit Collection S3 Route Unzip Complete")
                                 .bean(applicationContext.getBean(SubmitCollectionProcessor.class, RecapCommonConstants.PRINCETON, true), RecapConstants.PROCESS_INPUT)
+                                .log("Successfully pulled from S3 {{scsbBucketName}} bucket. " + "File detected: ${header.CamelAwsS3Key}")
                                 .when(body().isNull())//This condition is satisfied when there are no files in the directory(parameter-sendEmptyMessageWhenIdle=true)
                                 .log(currentInstitution+"-"+cgdType +" Directory is empty")
                                 .otherwise()
                                 .log("submit collection for "+currentInstitution+"-"+cgdType+" started")
                                 .bean(applicationContext.getBean(SubmitCollectionProcessor.class, RecapCommonConstants.PRINCETON, true), RecapConstants.PROCESS_INPUT)
-                                .log(currentInstitution+" Submit Collection "+cgdType+" FTP Route Record Processing completed")
+                                .log(currentInstitution+" Submit Collection "+cgdType+" S3 Route Record Processing completed")
                                 .end();
                     }
                 });

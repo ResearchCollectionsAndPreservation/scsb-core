@@ -6,7 +6,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.PollingConsumer;
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
-import org.recap.camel.submitcollection.SubmitCollectionPollingFtpRouteBuilder;
+import org.recap.camel.submitcollection.SubmitCollectionPollingS3RouteBuilder;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ public class SubmitCollectionJobController {
     private CamelContext camelContext;
 
     @Autowired
-    SubmitCollectionPollingFtpRouteBuilder submitCollectionPollingFtpRouteBuilder;
+    SubmitCollectionPollingS3RouteBuilder submitCollectionPollingFtpRouteBuilder;
 
     @Autowired
     InstitutionDetailsRepository institutionDetailsRepository;
