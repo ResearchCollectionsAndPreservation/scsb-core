@@ -1,5 +1,6 @@
 package org.recap.camel.dailyreconciliation;
 
+import com.amazonaws.services.s3.AmazonS3;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,9 @@ public class DailyReconciliationProcessor {
     @Autowired
     private SecurityUtil securityUtil;
 
+    @Autowired
+    AmazonS3 awsS3Client;
+
     /**
      * Process input for daily reconciliation report.
      *
@@ -110,6 +114,12 @@ public class DailyReconciliationProcessor {
                 logger.info("total number of sheets created {}",xssfWorkbook.getNumberOfSheets());
                 camelContext.getRouteController().startRoute(RecapConstants.DAILY_RR_FS_ROUTE_ID);
                 logger.info("started "+ RecapConstants.DAILY_RR_FS_ROUTE_ID);
+                String xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+                String bucketName = exchange.getIn().getHeader("CamelAwsS3BucketName").toString();
+                if(awsS3Client.doesObjectExist(bucketName,xmlFileName) && awsS3Client.doesBucketExistV2(bucketName)) {
+                    awsS3Client.copyObject(bucketName, xmlFileName, bucketName, "archival/"+xmlFileName);
+                    awsS3Client.deleteObject(bucketName, xmlFileName);
+                }
             }
         }
         catch (Exception e){

@@ -82,7 +82,7 @@ public class BarcodeReconciliationRouteBuilder extends RouteBuilder {
                 .noAutoStartup()
                 //.to(RecapCommonConstants.SFTP+ ftpUserName +  RecapCommonConstants.AT + ftpAccessionReconciliationProcessedDir + RecapCommonConstants.PRIVATE_KEY_FILE + ftpPrivateKey + RecapCommonConstants.KNOWN_HOST_FILE + ftpKnownHost+"&fileName=BarcodeReconciliation_"+institution+"_${date:now:yyyyMMdd_HHmmss}.csv")
                 .setHeader(S3Constants.CONTENT_LENGTH, simple("${in.header.CamelFileLength}"))
-                .setHeader(S3Constants.KEY,simple("share/recap/accession-reconciliation/archival/"+institution+"/BarcodeReconciliation_"+institution+"_${date:now:yyyyMMdd_HHmmss}.csv"))
+                .setHeader(S3Constants.KEY,simple("reports/share/recap/accession-reconciliation/"+institution+"/BarcodeReconciliation_"+institution+"_${date:now:yyyyMMdd_HHmmss}.csv"))
                 .to("aws-s3://{{scsbReportsBucket}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
                 .onCompletion()
                 .bean(applicationContext.getBean(AccessionReconciliationEmailService.class, institution), RecapConstants.PROCESS_INPUT)
