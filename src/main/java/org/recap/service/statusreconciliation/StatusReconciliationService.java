@@ -116,9 +116,9 @@ public class StatusReconciliationService {
             RestTemplate restTemplate = new RestTemplate();
             responseEntity = restTemplate.exchange(scsbCircUrl + RecapConstants.GFA_MULTIPLE_ITEM_STATUS_URL, HttpMethod.POST, httpEntity, GFAItemStatusCheckResponse.class);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(RecapCommonConstants.LOG_ERROR, e);
         }
-        return responseEntity.getBody();
+        return responseEntity != null ? responseEntity.getBody() : null;
     }
 
     private void processMismatchStatus(List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList, List<ItemChangeLogEntity> itemChangeLogEntityList, String lasStatus, ItemEntity itemEntity) {
