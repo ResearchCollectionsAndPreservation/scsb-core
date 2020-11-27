@@ -26,15 +26,6 @@ public class AccessionReconcilationJobController {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessionReconcilationJobController.class);
 
-    @Value("${ftp.server.userName}")
-    String ftpUserName;
-
-    @Value("${ftp.server.privateKey}")
-    String ftpPrivateKey;
-
-    @Value("${ftp.server.knownHost}")
-    String ftpKnownHost;
-
     @Autowired
     PropertyUtil propertyUtil;
 

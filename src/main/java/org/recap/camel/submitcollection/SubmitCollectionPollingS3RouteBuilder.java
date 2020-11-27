@@ -35,21 +35,6 @@ public class SubmitCollectionPollingS3RouteBuilder {
     @Autowired
     ProducerTemplate producer;
 
-    @Value("${ftp.server.userName}")
-    String ftpUserName;
-
-    @Value("${ftp.server.knownHost}")
-    String ftpKnownHost;
-
-    @Value("${ftp.server.privateKey}")
-    String ftpPrivateKey;
-
-    @Value("${ftp.server}")
-    String ftpHost;
-
-    @Value("${ftp.server.port}")
-    String ftpPort;
-
     @Autowired
     CamelContext camelContext;
 
