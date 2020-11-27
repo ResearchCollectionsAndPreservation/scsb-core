@@ -50,24 +50,25 @@ public class AccessionReconcilationJobController {
     /**
      * This method is used for generating report by, comparing LAS(ReCAP) barcodes and SCSB barcodes. The LAS barcodes are send to SCSB as CVS files, in specific FTP folder.
      * The barcodes are physically seprated by institution. This method will initiate the comparison of all the three institution at the same time.
+     *
      * @return String
      * @throws Exception
      */
     @PostMapping(value = "/startAccessionReconcilation")
-    public String startAccessionReconcilation() throws Exception{
-        logger.info("Before accession reconciliation process : {}",camelContext.getRoutes().size());
+    public String startAccessionReconcilation() throws Exception {
+        logger.info("Before accession reconciliation process : {}", camelContext.getRoutes().size());
         logger.info("Starting Accession Reconcilation Routes");
         List<String> allInstitutionCodeExceptHTC = institutionDetailsRepository.findAllInstitutionCodeExceptHTC();
         for (String institution : allInstitutionCodeExceptHTC) {
             ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(institution);
-            camelContext.addRoutes(new BarcodeReconciliationRouteBuilder(applicationContext,camelContext,ftpUserName,ftpPrivateKey,ftpKnownHost,
-                    institution,ilsConfigProperties.getFtpAccessionReconciliationDir(),ilsConfigProperties.getAccessionReconciliationWorkdir(),
-                    ilsConfigProperties.getAccessionReconciliationFilepath(),ilsConfigProperties.getFtpAccessionReconciliationProcessedDir()));
+            camelContext.addRoutes(new BarcodeReconciliationRouteBuilder(applicationContext, camelContext,
+                    institution, ilsConfigProperties.getFtpAccessionReconciliationDir(),
+                    ilsConfigProperties.getAccessionReconciliationFilepath(), ilsConfigProperties.getFtpAccessionReconciliationProcessedDir()));
         }
         for (String institution : allInstitutionCodeExceptHTC) {
-            camelContext.getRouteController().startRoute(institution+"accessionReconcilationFtpRoute");
+            camelContext.getRouteController().startRoute(institution + "accessionReconcilationFtpRoute");
         }
-        logger.info("After accession reconciliation process : {}",camelContext.getRoutes().size());
+        logger.info("After accession reconciliation process : {}", camelContext.getRoutes().size());
         return RecapCommonConstants.SUCCESS;
     }
 }

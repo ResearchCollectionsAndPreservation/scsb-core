@@ -32,11 +32,8 @@ public class DailyReconciliationRouteBuilder {
      *
      * @param camelContext                   the camel context
      * @param applicationContext             the application context
-     * @param ftpUserName                    the ftp user name
      * @param dailyReconciliationFtp          the daily reconciliation ftp
      * @param dailyReconciliationFtpProcessed the daily reconciliation ftp processed
-     * @param ftpKnownHost                   the ftp known host
-     * @param ftpPrivateKey                  the ftp private key
      * @param filePath                       the file path
      */
 
@@ -53,17 +50,14 @@ public class DailyReconciliationRouteBuilder {
         }
     };
 
-    public DailyReconciliationRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
-                                           @Value("${ftp.server.userName}") String ftpUserName, @Value("${ftp.daily.reconciliation}") String dailyReconciliationFtp,
-                                           @Value("${ftp.daily.reconciliation.processed}") String dailyReconciliationFtpProcessed, @Value("${ftp.server.knownHost}") String ftpKnownHost,
-                                           @Value("${ftp.server.privateKey}") String ftpPrivateKey,
-                                           @Value("${daily.reconciliation.file}") String filePath,
-                                           @Value("${daily.reconciliation.local.work.dir}") String localWorkDir) {
+    public DailyReconciliationRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext, @Value("${ftp.daily.reconciliation}") String dailyReconciliationFtp,
+                                           @Value("${ftp.daily.reconciliation.processed}") String dailyReconciliationFtpProcessed,
+                                           @Value("${daily.reconciliation.file}") String filePath) {
         try {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    from("aws-s3://{{awsS3BucketName}}?prefix=share/recap/daily-reconciliation&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                    from("aws-s3://{{scsbBucketName}}?prefix=share/recap/daily-reconciliation&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
                             .routeId(RecapConstants.DAILY_RR_FTP_ROUTE_ID)
                             .noAutoStartup()
                             .log("daily reconciliation started")
@@ -106,7 +100,7 @@ public class DailyReconciliationRouteBuilder {
                             .noAutoStartup()
                             .setHeader(S3Constants.CONTENT_LENGTH, simple("${in.header.CamelFileLength}"))
                             .setHeader(S3Constants.KEY,simple("reports/share/recap/daily-reconciliation/BarcodeReconciliation_${date:now:yyyyMMdd_HHmmss}.csv"))
-                            .to("aws-s3://{{scsbReportsBucket}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                            .to("aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
                             .onCompletion()
                             .log("email service started for daily reconciliation")
                             .bean(applicationContext.getBean(DailyReconciliationEmailService.class))

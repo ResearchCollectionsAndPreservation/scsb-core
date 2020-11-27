@@ -29,16 +29,10 @@ public class StatusReconciliationS3RouteBuilder {
      *
      * @param camelContext         the camel context
      * @param applicationContext   the application context
-     * @param ftpUserName          the ftp user name
-     * @param ftpKnownHost         the ftp known host
-     * @param ftpPrivateKey        the ftp private key
      * @param statusReconciliation the status reconciliation
      */
     @Autowired
-    public StatusReconciliationS3RouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
-                                               @Value("${ftp.server.userName}") String ftpUserName,
-                                               @Value("${ftp.server.knownHost}") String ftpKnownHost, @Value("${ftp.server.privateKey}") String ftpPrivateKey,
-                                               @Value("${status.reconciliation}") String statusReconciliation) {
+    public StatusReconciliationS3RouteBuilder(CamelContext camelContext, ApplicationContext applicationContext, @Value("${status.reconciliation}") String statusReconciliation) {
         try {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
@@ -46,19 +40,19 @@ public class StatusReconciliationS3RouteBuilder {
                     from(RecapConstants.STATUS_RECONCILIATION_REPORT)
                             .routeId(RecapConstants.STATUS_RECONCILIATION_REPORT_ID)
                             .onCompletion().onWhen(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION))
-                            .log("status reconciliation process finished files generated in ftp")
+                            .log("status reconciliation process finished files generated in S3")
                             .bean(applicationContext.getBean(StatusReconciliationEmailService.class), RecapConstants.PROCESS_INPUT)
                             .end()
                             .choice()
-                                .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION))
-                                    .marshal().bindy(BindyType.Csv, StatusReconciliationCSVRecord.class)
-                                    .setHeader(S3Constants.KEY,simple("archival/share/recap/status-reconciliation/StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv"))
-                                    .to("aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
-                                .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION_FAILURE))
-                                    .setHeader(S3Constants.KEY,simple("archival/share/recap/status-reconciliation/StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv"))
-                                    .to("aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
-                                    .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
-                                    .log("status reconciliation failure report generated in ftp");
+                            .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION))
+                            .marshal().bindy(BindyType.Csv, StatusReconciliationCSVRecord.class)
+                            .setHeader(S3Constants.KEY, simple("archival/share/recap/status-reconciliation/StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv"))
+                            .to("aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                            .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION_FAILURE))
+                            .setHeader(S3Constants.KEY, simple("archival/share/recap/status-reconciliation/StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv"))
+                            .to("aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                            .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
+                            .log("status reconciliation failure report generated in ftp");
                 }
             });
         } catch (Exception e) {
