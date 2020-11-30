@@ -87,7 +87,7 @@ public class SubmitCollectionProcessor {
         String xmlFileName = null;
         String bucketName = null;
         try {
-            logger.info("Submit Collection : Route started and started processing the records from ftp for submitcollection");
+            logger.info("Submit Collection : Route started and started processing the records from s3 for submitcollection");
             String inputXml = exchange.getIn().getBody(String.class);
             logger.info("Processing xml String----->{}",inputXml);
             xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
@@ -129,7 +129,7 @@ public class SubmitCollectionProcessor {
                 awsS3Client.deleteObject(bucketName, xmlFileName);
             }
             stopWatch.stop();
-            logger.info("Submit Collection : Total time taken for processing through ftp---> {} sec",stopWatch.getTotalTimeSeconds());
+            logger.info("Submit Collection : Total time taken for processing through s3---> {} sec",stopWatch.getTotalTimeSeconds());
         } catch (Exception e) {
             logger.error(RecapCommonConstants.LOG_ERROR,e);
             exchange.setException(e);
@@ -153,7 +153,7 @@ public class SubmitCollectionProcessor {
         emailPayLoad.setXmlFileName(name);
         emailPayLoad.setTo(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.submit.collection.to"));
         emailPayLoad.setCc(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.submit.collection.cc"));
-        emailPayLoad.setLocation(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "ftp.submit.collection.report.dir"));
+        emailPayLoad.setLocation(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "s3.submit.collection.report.dir"));
         emailPayLoad.setLocation(filePath);
         emailPayLoad.setInstitution(institutionCode.toUpperCase());
         emailPayLoad.setException(exception);
@@ -179,7 +179,7 @@ public class SubmitCollectionProcessor {
         emailPayLoad.setXmlFileName(xmlFileName);
         emailPayLoad.setTo(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.submit.collection.to"));
         emailPayLoad.setCc(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.submit.collection.cc"));
-        emailPayLoad.setLocation(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "ftp.submit.collection.report.dir"));
+        emailPayLoad.setLocation(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "s3.submit.collection.report.dir"));
         emailPayLoad.setInstitution(institutionCode.toUpperCase());
         return  emailPayLoad;
     }

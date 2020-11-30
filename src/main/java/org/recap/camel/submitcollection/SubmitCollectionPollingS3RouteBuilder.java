@@ -47,6 +47,9 @@ public class SubmitCollectionPollingS3RouteBuilder {
     @Autowired
     InstitutionDetailsRepository institutionDetailsRepository;
 
+    @Value("${s3.submit.collection.dir}")
+    private String submitCollectionS3BasePath;
+
     /**
      * Predicate to identify is the input file is gz
      */
@@ -99,9 +102,9 @@ public class SubmitCollectionPollingS3RouteBuilder {
             for (String cdgType : protectedAndNotProtected) {
                 String nextRouteId = getNextRouteId(currentInstitution, nextInstitution, cdgType);
                 if (RecapConstants.PROTECTED.equalsIgnoreCase(cdgType))
-                    addRoutesToCamelContext(currentInstitution, cdgType, currentInstitution + RecapConstants.CGD_PROTECTED_ROUTE_ID, nextRouteId, ilsConfigProperties.getSubmitCollectionProtectedFtpDir(), ilsConfigProperties.getSubmitCollectionProtectedLocalDir());
+                    addRoutesToCamelContext(currentInstitution, cdgType, currentInstitution + RecapConstants.CGD_PROTECTED_ROUTE_ID, nextRouteId);
                 else {
-                    addRoutesToCamelContext(currentInstitution, cdgType, currentInstitution + RecapConstants.CGD_NOT_PROTECTED_ROUTE_ID, nextRouteId, ilsConfigProperties.getSubmitCollectionNotProtectedFtpDir(), ilsConfigProperties.getSubmitCollectionNotProtectedLocalDir());
+                    addRoutesToCamelContext(currentInstitution, cdgType, currentInstitution + RecapConstants.CGD_NOT_PROTECTED_ROUTE_ID, nextRouteId);
                 }
             }
         }
@@ -117,7 +120,7 @@ public class SubmitCollectionPollingS3RouteBuilder {
         }
     }
 
-    public void addRoutesToCamelContext(String currentInstitution, String cgdType, String currentInstitutionRouteId, String nextInstitutionRouteId, String ftpInputDirectory, String localDirectory) {
+    public void addRoutesToCamelContext(String currentInstitution, String cgdType, String currentInstitutionRouteId, String nextInstitutionRouteId) {
         try {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
@@ -134,7 +137,7 @@ public class SubmitCollectionPollingS3RouteBuilder {
                             .handled(true)
                             .setHeader(RecapCommonConstants.INSTITUTION, constant(""))
                             .to(RecapCommonConstants.DIRECT_ROUTE_FOR_EXCEPTION);
-                    from("aws-s3://{{scsbBucketName}}?prefix=feeds/share/recap/submit-collections/" + currentInstitution + "/Cgd" + cgdType + "/&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                    from("aws-s3://{{scsbBucketName}}?prefix="+submitCollectionS3BasePath+"/" + currentInstitution + "/Cgd" + cgdType + "/&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
                             .routeId(currentInstitutionRouteId)
                             .noAutoStartup()
                             .choice()

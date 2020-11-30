@@ -25,7 +25,7 @@ public class StatusReconciliationS3RouteBuilder {
     private static final Logger logger = LoggerFactory.getLogger(StatusReconciliationS3RouteBuilder.class);
 
     /**
-     * Instantiates a new Status reconciliation ftp route builder.
+     * Instantiates a new Status reconciliation s3 route builder.
      *
      * @param camelContext         the camel context
      * @param applicationContext   the application context
@@ -46,13 +46,13 @@ public class StatusReconciliationS3RouteBuilder {
                             .choice()
                             .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION))
                             .marshal().bindy(BindyType.Csv, StatusReconciliationCSVRecord.class)
-                            .setHeader(S3Constants.KEY, simple("archival/share/recap/status-reconciliation/StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv"))
-                            .to("aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                            .setHeader(S3Constants.KEY, simple(statusReconciliation+"/StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv"))
+                            .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
                             .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION_FAILURE))
-                            .setHeader(S3Constants.KEY, simple("archival/share/recap/status-reconciliation/StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv"))
-                            .to("aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                            .setHeader(S3Constants.KEY, simple(statusReconciliation+"/StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv"))
+                            .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
                             .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
-                            .log("status reconciliation failure report generated in ftp");
+                            .log("status reconciliation failure report generated in s3");
                 }
             });
         } catch (Exception e) {

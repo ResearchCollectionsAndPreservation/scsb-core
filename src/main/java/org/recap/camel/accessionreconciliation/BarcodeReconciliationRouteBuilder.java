@@ -1,14 +1,12 @@
 package org.recap.camel.accessionreconciliation;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.aws.s3.S3Constants;
 import org.apache.camel.model.dataformat.BindyType;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
 import org.recap.camel.route.StartRouteProcessor;
 import org.recap.camel.route.StopRouteProcessor;
@@ -17,18 +15,18 @@ import org.springframework.context.ApplicationContext;
 public class BarcodeReconciliationRouteBuilder extends RouteBuilder {
 
     String institution;
-    String accessionReconciliationFtpDir;
+    String accessionReconciliationS3Dir;
     String accessionReconciliationFilePath;
-    String ftpAccessionReconciliationProcessedDir;
+    String s3AccessionReconciliationProcessedDir;
     ApplicationContext applicationContext;
 
 
-    public BarcodeReconciliationRouteBuilder(ApplicationContext applicationContext, CamelContext camelContext, String institution, String accessionReconciliationFtpDir, String accessionReconciliationFilePath, String ftpAccessionReconciliationProcessedDir) {
+    public BarcodeReconciliationRouteBuilder(ApplicationContext applicationContext, CamelContext camelContext, String institution, String accessionReconciliationS3Dir, String accessionReconciliationFilePath, String s3AccessionReconciliationProcessedDir) {
         super(camelContext);
         this.institution = institution;
-        this.accessionReconciliationFtpDir = accessionReconciliationFtpDir;
+        this.accessionReconciliationS3Dir = accessionReconciliationS3Dir;
         this.accessionReconciliationFilePath = accessionReconciliationFilePath;
-        this.ftpAccessionReconciliationProcessedDir = ftpAccessionReconciliationProcessedDir;
+        this.s3AccessionReconciliationProcessedDir = s3AccessionReconciliationProcessedDir;
         this.applicationContext = applicationContext;
     }
 
@@ -41,9 +39,8 @@ public class BarcodeReconciliationRouteBuilder extends RouteBuilder {
             } else
                 return false;
         };
-        from("aws-s3://{{scsbBucketName}}?prefix=share/recap/accession-reconciliation/" + institution + "/&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
-                // from(RecapCommonConstants.SFTP+ ftpUserName +  RecapCommonConstants.AT + accessionReconciliationFtpDir + RecapCommonConstants.PRIVATE_KEY_FILE + ftpPrivateKey + RecapCommonConstants.KNOWN_HOST_FILE + ftpKnownHost+ RecapConstants.ACCESSION_RR_FTP_OPTIONS+accessionReconciliationWorkDir)
-                .routeId(institution + "accessionReconcilationFtpRoute")
+        from("aws-s3://{{scsbBucketName}}?prefix="+accessionReconciliationS3Dir+"/" + institution + "/&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                .routeId(institution + "accessionReconcilationS3Route")
                 .noAutoStartup()
                 .choice()
                 .when(gzipFile)
@@ -53,7 +50,7 @@ public class BarcodeReconciliationRouteBuilder extends RouteBuilder {
                 .to(RecapConstants.DIRECT + institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE)
                 .when(body().isNull())
                 .log("No File To Process For " + institution + " Accession Reconciliation")
-                .process(new StopRouteProcessor(institution + "accessionReconcilationFtpRoute"))
+                .process(new StopRouteProcessor(institution + "accessionReconcilationS3Route"))
                 .otherwise()
                 .process(new StartRouteProcessor(institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE))
                 .to(RecapConstants.DIRECT + institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE)
@@ -72,10 +69,9 @@ public class BarcodeReconciliationRouteBuilder extends RouteBuilder {
         from(RecapConstants.DAILY_RR_FS_FILE + accessionReconciliationFilePath + institution + RecapConstants.DAILY_RR_FS_OPTIONS)
                 .routeId(institution + "accessionReconcilationFsRoute")
                 .noAutoStartup()
-                //.to(RecapCommonConstants.SFTP+ ftpUserName +  RecapCommonConstants.AT + ftpAccessionReconciliationProcessedDir + RecapCommonConstants.PRIVATE_KEY_FILE + ftpPrivateKey + RecapCommonConstants.KNOWN_HOST_FILE + ftpKnownHost+"&fileName=BarcodeReconciliation_"+institution+"_${date:now:yyyyMMdd_HHmmss}.csv")
                 .setHeader(S3Constants.CONTENT_LENGTH, simple("${in.header.CamelFileLength}"))
-                .setHeader(S3Constants.KEY, simple("reports/share/recap/accession-reconciliation/" + institution + "/BarcodeReconciliation_" + institution + "_${date:now:yyyyMMdd_HHmmss}.csv"))
-                .to("aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                .setHeader(S3Constants.KEY, simple(s3AccessionReconciliationProcessedDir+"/" + institution + "/BarcodeReconciliation_" + institution + "_${date:now:yyyyMMdd_HHmmss}.csv"))
+                .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
                 .onCompletion()
                 .bean(applicationContext.getBean(AccessionReconciliationEmailService.class, institution), RecapConstants.PROCESS_INPUT)
                 .process(new StopRouteProcessor(institution + "accessionReconcilationFsRoute"))

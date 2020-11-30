@@ -38,6 +38,15 @@ public class AccessionReconcilationJobController {
     @Autowired
     CamelContext camelContext;
 
+    @Value("${s3.accession.reconciliation.dir}")
+    private String accessionReconciliationPath;
+
+    @Value("${accession.reconciliation.filePath}")
+    private String accessionReconciliationFilePath;
+
+    @Value("${s3.accession.reconciliation.processed.dir}")
+    private String accessionReconciliationProcessedPath;
+
     /**
      * This method is used for generating report by, comparing LAS(ReCAP) barcodes and SCSB barcodes. The LAS barcodes are send to SCSB as CVS files, in specific FTP folder.
      * The barcodes are physically seprated by institution. This method will initiate the comparison of all the three institution at the same time.
@@ -53,11 +62,10 @@ public class AccessionReconcilationJobController {
         for (String institution : allInstitutionCodeExceptHTC) {
             ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(institution);
             camelContext.addRoutes(new BarcodeReconciliationRouteBuilder(applicationContext, camelContext,
-                    institution, ilsConfigProperties.getFtpAccessionReconciliationDir(),
-                    ilsConfigProperties.getAccessionReconciliationFilepath(), ilsConfigProperties.getFtpAccessionReconciliationProcessedDir()));
+                    institution, accessionReconciliationPath, accessionReconciliationFilePath, accessionReconciliationProcessedPath));
         }
         for (String institution : allInstitutionCodeExceptHTC) {
-            camelContext.getRouteController().startRoute(institution + "accessionReconcilationFtpRoute");
+            camelContext.getRouteController().startRoute(institution + "accessionReconcilationS3Route");
         }
         logger.info("After accession reconciliation process : {}", camelContext.getRoutes().size());
         return RecapCommonConstants.SUCCESS;
