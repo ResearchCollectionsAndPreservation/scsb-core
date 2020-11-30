@@ -2,12 +2,11 @@ package org.recap.service.common;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.recap.BaseTestCaseUT;
 import org.recap.RecapCommonConstants;
 import org.recap.model.jpa.CollectionGroupEntity;
 import org.recap.model.jpa.InstitutionEntity;
@@ -27,8 +26,7 @@ import static org.junit.Assert.assertNotNull;
  * Created by premkb on 18/6/17.
  */
 
-@RunWith(MockitoJUnitRunner.class)
-public class SetupDataServiceUT {
+public class SetupDataServiceUT extends BaseTestCaseUT {
 
     @InjectMocks
     private SetupDataService setupDataService;

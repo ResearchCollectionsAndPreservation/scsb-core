@@ -1,16 +1,17 @@
 package org.recap.service.submitcollection;
 
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.recap.RecapConstants;
-import org.recap.model.jpa.*;
+import org.recap.BaseTestCaseUT;
+import org.recap.model.jpa.BibliographicEntity;
+import org.recap.model.jpa.HoldingsEntity;
+import org.recap.model.jpa.InstitutionEntity;
+import org.recap.model.jpa.ItemChangeLogEntity;
+import org.recap.model.jpa.ItemEntity;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.model.submitcollection.BoundWithBibliographicEntityObject;
 import org.recap.model.submitcollection.NonBoundWithBibliographicEntityObject;
@@ -19,19 +20,26 @@ import org.recap.repository.jpa.ItemChangeLogDetailsRepository;
 import org.recap.repository.jpa.ItemDetailsRepository;
 import org.recap.service.common.RepositoryService;
 import org.recap.service.common.SetupDataService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.*;
+
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SubmitCollectionDAOServiceUT {
+
+public class SubmitCollectionDAOServiceUT extends BaseTestCaseUT {
 
     @InjectMocks
     SubmitCollectionDAOService submitCollectionDAOService;
@@ -68,192 +76,403 @@ public class SubmitCollectionDAOServiceUT {
         ReflectionTestUtils.setField(submitCollectionDAOService, "nonHoldingIdInstitution", "NYPL");
     }
 
+    @Test
+    public void updateExistingRecordException() throws Exception{
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+        List<ItemEntity> itemEntity = getBibliographicEntityBoundwith("64343","435").getItemEntities();
+        Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
+        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(itemEntity);
+        Mockito.when(setupDataService.getItemStatusIdCodeMap().get(1)).thenReturn(getMap("Available","NYPL"));
+        Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenThrow(NullPointerException.class);
+        BibliographicEntity bibliographicEntity1=getBibliographicEntity("64343");
+        bibliographicEntity1.getItemEntities().get(0).setDeleted(true);
+        BibliographicEntity bibliographicEntity=submitCollectionDAOService.updateBibliographicEntity(bibliographicEntity1,getSubmitCollectionReportInfoMap(),idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        assertNull(bibliographicEntity);
+    }
+
+
+    @Test
+    public void updateBibliographicEntityBoundwith() throws Exception{
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+        List<ItemEntity> itemEntity = getBibliographicEntityBoundwith("64343","2435").getItemEntities();
+        Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
+        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(itemEntity);
+        Mockito.when(setupDataService.getItemStatusIdCodeMap().get(1)).thenReturn(getMap("Available","NYPL"));
+        Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
+        ReflectionTestUtils.setField(repositoryService,"itemChangeLogDetailsRepository",itemChangeLogDetailsRepository);
+        Mockito.when(repositoryService.getItemChangeLogDetailsRepository()).thenCallRealMethod();
+        Mockito.when(bibliographicDetailsRepository.saveAndFlush(Mockito.any())).thenReturn(getBibliographicEntity("64343"));
+        BibliographicEntity bibliographicEntity=submitCollectionDAOService.updateBibliographicEntity(getBibliographicEntity("64343"),getSubmitCollectionReportInfoMap(),idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        assertNotNull(bibliographicEntity);
+    }
+
+    @Test
+    public void updateBibliographicEntity() throws Exception{
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+        List<ItemEntity> itemEntity = getBibliographicEntity("1577261074").getItemEntities();
+        Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
+        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(itemEntity);
+        BibliographicEntity bibliographicEntity=submitCollectionDAOService.updateBibliographicEntity(getBibliographicEntity("64343"),getSubmitCollectionReportInfoMap(),idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        assertNull(bibliographicEntity);
+    }
+
+    @Test
+    public void updateBibliographicEntityException() throws Exception{
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+        Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
+        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(null);
+        BibliographicEntity bibliographicEntity=submitCollectionDAOService.updateBibliographicEntity(getBibliographicEntity("64343"),getSubmitCollectionReportInfoMap(),idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        assertNotNull(bibliographicEntity);
+    }
+
+    @Test
+    public void updateBibliographicEntityDummy() throws Exception{
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+        List<ItemEntity> itemEntity = getBibliographicEntity("d1").getItemEntities();
+        Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
+        ReflectionTestUtils.setField(repositoryService,"bibliographicDetailsRepository",bibliographicDetailsRepository);
+        ReflectionTestUtils.setField(repositoryService,"itemChangeLogDetailsRepository",itemChangeLogDetailsRepository);
+        Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenCallRealMethod();
+        Mockito.when(repositoryService.getItemChangeLogDetailsRepository()).thenCallRealMethod();
+        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(itemEntity);
+        Mockito.when(bibliographicDetailsRepository.saveAndFlush(Mockito.any())).thenReturn(getBibliographicEntity("64343"));
+        BibliographicEntity bibliographicEntity=submitCollectionDAOService.updateBibliographicEntity(getBibliographicEntity("64343"),getSubmitCollectionReportInfoMap(),idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        assertNotNull(bibliographicEntity);
+    }
+
 
     @Test
     public void updateBibliographicEntityInBatchForNonBoundWith() throws Exception{
         List<NonBoundWithBibliographicEntityObject> nonBoundWithBibliographicEntityObjectList = new ArrayList<>();
-        NonBoundWithBibliographicEntityObject nonBoundWithBibliographicEntityObject = getNonBoundWithBibliographicEntityObject();
+        NonBoundWithBibliographicEntityObject nonBoundWithBibliographicEntityObject = getNonBoundWithBibliographicEntityObject("1577261074");
         nonBoundWithBibliographicEntityObjectList.add(nonBoundWithBibliographicEntityObject);
-        Integer owningInstitutionId = 1;
         Map<String, List< SubmitCollectionReportInfo >> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
-        Set<Integer> processedBibIds = new HashSet<>();
-        processedBibIds.add(1);
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
-        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity();
+        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity("1577261074");
         Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
-        List<String> itemBarcodeList = new ArrayList<>();
-        itemBarcodeList.add("123456");
-        List<ItemEntity> itemEntity = getBibliographicEntity().getItemEntities();
-        Map institutionEntityMap = new HashMap();
-        institutionEntityMap.put(1,"NYPL");
-        institutionEntityMap.put(2,"Available");
-
-        Map institutionEntityMap1 = new HashMap();
-        institutionEntityMap1.put(1,"Available");
-        institutionEntityMap1.put(2,"NYPL");
-        Mockito.when(setupDataService.getItemStatusIdCodeMap().get(1)).thenReturn(institutionEntityMap1);
-        Mockito.when(setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId())).thenReturn(institutionEntityMap);
+        List<ItemEntity> itemEntity = getBibliographicEntity("1577261074").getItemEntities();
+        Mockito.when(setupDataService.getItemStatusIdCodeMap().get(1)).thenReturn(getMap("Available","NYPL"));
+        Mockito.when(setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId())).thenReturn(getMap("NYPL","Available"));
         Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,owningInstitutionId)).thenReturn(itemEntity);
+        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(Arrays.asList("123456"),1)).thenReturn(itemEntity);
         Mockito.when(submitCollectionValidationService.isExistingBoundWithItem(itemEntity.get(0))).thenReturn(false);
-        List<BibliographicEntity> bibliographicEntities =submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(nonBoundWithBibliographicEntityObjectList,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        List<BibliographicEntity> bibliographicEntities =submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(nonBoundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
         assertNotNull(bibliographicEntities);
     }
+
+    private Set<Integer> getIntegers() {
+        Set<Integer> processedBibIds = new HashSet<>();
+        processedBibIds.add(1);
+        return processedBibIds;
+    }
+
+    private Map getMap(String one,String two) {
+        Map institutionEntityMap = new HashMap();
+        institutionEntityMap.put(1,one);
+        institutionEntityMap.put(2,two);
+        return institutionEntityMap;
+    }
+
+    @Test
+    public void updateBibliographicEntityInBatchForNonBoundWithDummy() throws Exception{
+        List<NonBoundWithBibliographicEntityObject> nonBoundWithBibliographicEntityObjectList = new ArrayList<>();
+        NonBoundWithBibliographicEntityObject nonBoundWithBibliographicEntityObject = getNonBoundWithBibliographicEntityObject("8d");
+        nonBoundWithBibliographicEntityObjectList.add(nonBoundWithBibliographicEntityObject);
+        Map<String, List< SubmitCollectionReportInfo >> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity("1d");
+        Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+        List<ItemEntity> itemEntity = getBibliographicEntity("d1").getItemEntities();
+        Mockito.when(setupDataService.getItemStatusIdCodeMap().get(1)).thenReturn(getMap("Available","NYPL"));
+        Mockito.when(setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId())).thenReturn(getMap("NYPL","Available"));
+        Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
+        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(Arrays.asList("123456"),1)).thenReturn(itemEntity);
+        Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
+        Mockito.when(submitCollectionValidationService.isExistingBoundWithItem(itemEntity.get(0))).thenReturn(false);
+        Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
+        Mockito.doNothing().when(bibliographicDetailsRepository).delete(Mockito.any());
+        Mockito.doNothing().when(bibliographicDetailsRepository).flush();
+        Mockito.when(bibliographicDetailsRepository.saveAndFlush(Mockito.any())).thenReturn(incomingBibliographicEntity);
+        Mockito.when(repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(),Mockito.anyString())).thenReturn(getBibliographicEntity("1577261074"));
+        List<BibliographicEntity> bibliographicEntities =submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(nonBoundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        assertNotNull(bibliographicEntities);
+    }
+
     @Test
     public void updateBibliographicEntityInBatchForNonBoundWithExistingBound() throws Exception{
         List<NonBoundWithBibliographicEntityObject> nonBoundWithBibliographicEntityObjectList = new ArrayList<>();
-        NonBoundWithBibliographicEntityObject nonBoundWithBibliographicEntityObject = getNonBoundWithBibliographicEntityObject();
+        NonBoundWithBibliographicEntityObject nonBoundWithBibliographicEntityObject = getNonBoundWithBibliographicEntityObject("1577261074");
         nonBoundWithBibliographicEntityObjectList.add(nonBoundWithBibliographicEntityObject);
-        Integer owningInstitutionId = 1;
         Map<String, List< SubmitCollectionReportInfo >> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
-        Set<Integer> processedBibIds = new HashSet<>();
-        processedBibIds.add(1);
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
-        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity();
         Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
-        List<String> itemBarcodeList = new ArrayList<>();
-        itemBarcodeList.add("123456");
-        List<ItemEntity> itemEntity = getBibliographicEntity().getItemEntities();
+        List<ItemEntity> itemEntity = getBibliographicEntity("1577261074").getItemEntities();
         Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,owningInstitutionId)).thenReturn(itemEntity);
+        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(Arrays.asList("123456"),1)).thenReturn(itemEntity);
         Mockito.when(submitCollectionValidationService.isExistingBoundWithItem(itemEntity.get(0))).thenReturn(true);
-        List<BibliographicEntity> bibliographicEntities =submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(nonBoundWithBibliographicEntityObjectList,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        List<BibliographicEntity> bibliographicEntities =submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(nonBoundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
         assertNotNull(bibliographicEntities);
     }
     @Test
     public void updateBibliographicEntityInBatchForNonBoundWithDifferentOwingInsBibId() throws Exception{
         List<NonBoundWithBibliographicEntityObject> nonBoundWithBibliographicEntityObjectList = new ArrayList<>();
-        NonBoundWithBibliographicEntityObject nonBoundWithBibliographicEntityObject = getNonBoundWithBibliographicEntityObject();
-        BibliographicEntity bibliographicEntity = getBibliographicEntity();
+        NonBoundWithBibliographicEntityObject nonBoundWithBibliographicEntityObject = getNonBoundWithBibliographicEntityObject("1577261074");
+        BibliographicEntity bibliographicEntity = getBibliographicEntity("1577261074");
         bibliographicEntity.setOwningInstitutionBibId("234566");
         nonBoundWithBibliographicEntityObject.setBibliographicEntityList(Arrays.asList(bibliographicEntity));
         nonBoundWithBibliographicEntityObjectList.add(nonBoundWithBibliographicEntityObject);
-        Integer owningInstitutionId = 1;
         Map<String, List< SubmitCollectionReportInfo >> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
-        Set<Integer> processedBibIds = new HashSet<>();
-        processedBibIds.add(1);
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
-        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity();
         Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
-        List<String> itemBarcodeList = new ArrayList<>();
-        itemBarcodeList.add("123456");
-        List<ItemEntity> itemEntity = getBibliographicEntity().getItemEntities();
+        List<ItemEntity> itemEntity = getBibliographicEntity("1577261074").getItemEntities();
         Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,owningInstitutionId)).thenReturn(itemEntity);
+        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(Arrays.asList("123456"),1)).thenReturn(itemEntity);
         Mockito.when(submitCollectionValidationService.isExistingBoundWithItem(itemEntity.get(0))).thenReturn(false);
-        List<BibliographicEntity> bibliographicEntities =submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(nonBoundWithBibliographicEntityObjectList,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        List<BibliographicEntity> bibliographicEntities =submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(nonBoundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
         assertNotNull(bibliographicEntities);
     }
+
+    @Test
+    public void updateBibliographicEntityInBatchForBoundWithMismatch(){
+        List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList = new ArrayList<>();
+        BoundWithBibliographicEntityObject boundWithBibliographicEntityObject = getBoundWithBibliographicEntityObject();
+        boundWithBibliographicEntityObjectList.add(boundWithBibliographicEntityObject);
+        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
+        Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+        List<ItemEntity> itemEntity = getBibliographicEntity("1577261074").getItemEntities();
+        Map<String,BibliographicEntity> bibliographicEntityMap = new HashMap<>();
+        bibliographicEntityMap.put("1",getBibliographicEntity("1577261074"));
+        Map<String, ItemEntity> fetchedBarcodeItemEntityMap = new HashMap<>();
+        fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity("1577261074").getItemEntities().get(0));
+        List<BibliographicEntity> fetchedBibliographicEntityList = new ArrayList<>();
+        fetchedBibliographicEntityList.add(getBibliographicEntity("1577261074"));
+        Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
+        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(Arrays.asList("123456"),1)).thenReturn(itemEntity);
+        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountIsSameAsExistingItem(Mockito.anyMap(),Mockito.anyMap(),Mockito.anyList())).thenReturn(true);
+        Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap=new HashMap<>();
+        fetchedOwnInstBibIdBibliographicEntityMap.put("34558",getBibliographicEntity("1577261074"));
+        Mockito.when(submitCollectionValidationService.getOwnInstBibIdBibliographicEntityMap(Mockito.anyList())).thenReturn(fetchedOwnInstBibIdBibliographicEntityMap);
+        Mockito.doCallRealMethod().when(submitCollectionValidationService).verifyAndSetMisMatchBoundWithOwnInstBibIdIfAny(Mockito.anyList(),Mockito.anyList(),Mockito.anyList(),Mockito.anyList());
+        List<BibliographicEntity> bibliographicEntities = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        assertNotNull(bibliographicEntities);
+
+    }
+
     @Test
     public void updateBibliographicEntityInBatchForBoundWith(){
         List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList = new ArrayList<>();
         BoundWithBibliographicEntityObject boundWithBibliographicEntityObject = getBoundWithBibliographicEntityObject();
         boundWithBibliographicEntityObjectList.add(boundWithBibliographicEntityObject);
-        Integer owningInstitutionId = 1;
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
-        Set<Integer> processedBibIds = new HashSet<>();
-        processedBibIds.add(1);
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
         Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
-        List<String> itemBarcodeList = new ArrayList<>();
-        itemBarcodeList.add("123456");
-        List<ItemEntity> itemEntity = getBibliographicEntity().getItemEntities();
+        List<ItemEntity> itemEntity = getBibliographicEntity("1577261074").getItemEntities();
         Map<String,BibliographicEntity> bibliographicEntityMap = new HashMap<>();
-        bibliographicEntityMap.put("1",getBibliographicEntity());
+        bibliographicEntityMap.put("1",getBibliographicEntity("1577261074"));
         Map<String, ItemEntity> fetchedBarcodeItemEntityMap = new HashMap<>();
-        fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity().getItemEntities().get(0));
+        fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity("1577261074").getItemEntities().get(0));
         List<BibliographicEntity> fetchedBibliographicEntityList = new ArrayList<>();
-        fetchedBibliographicEntityList.add(getBibliographicEntity());
-//        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountIsSameAsExistingItem(submitCollectionReportInfoMap,fetchedBarcodeItemEntityMap,boundWithBibliographicEntityObject.getBibliographicEntityList())).thenReturn(true);
+        fetchedBibliographicEntityList.add(getBibliographicEntity("1577261074"));
         Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,owningInstitutionId)).thenReturn(itemEntity);
-        List<BibliographicEntity> bibliographicEntities = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(Arrays.asList("123456"),1)).thenReturn(itemEntity);
+        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountIsSameAsExistingItem(Mockito.anyMap(),Mockito.anyMap(),Mockito.anyList())).thenReturn(true);
+        Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap=new HashMap<>();
+        fetchedOwnInstBibIdBibliographicEntityMap.put("34558",getBibliographicEntity2("1577261074"));
+        Mockito.when(submitCollectionValidationService.getOwnInstBibIdBibliographicEntityMap(Mockito.anyList())).thenReturn(fetchedOwnInstBibIdBibliographicEntityMap);
+        Mockito.when(setupDataService.getItemStatusIdCodeMap().get(1)).thenReturn(getMap("Available","NYPL"));
+        List<BibliographicEntity> bibliographicEntities = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
         assertNotNull(bibliographicEntities);
     }
-    @Test
-    public void updateBibliographicEntityInBatchForBoundWithGreaterIncomingBibliographicEntity(){
-        List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList = new ArrayList<>();
 
+    @Test
+    public void updateBibliographicEntityInBatchForBoundWithGreaterIncomingBibDummy(){
+        List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList = new ArrayList<>();
         BoundWithBibliographicEntityObject boundWithBibliographicEntityObject = getBoundWithBibliographicEntityObject();
-        BibliographicEntity bibliographicEntity = getBibliographicEntity();
+        BibliographicEntity bibliographicEntity = getBibliographicEntity("1577261074");
         bibliographicEntity.setOwningInstitutionBibId("245466");
-        BibliographicEntity bibliographicEntity1 = getBibliographicEntity();
+        BibliographicEntity bibliographicEntity1 = getBibliographicEntity("1577261074");
         bibliographicEntity1.setOwningInstitutionBibId("657786");
         List<BibliographicEntity> bibliographicEntities = new ArrayList<>();
         bibliographicEntities.add(bibliographicEntity);
         bibliographicEntities.add(bibliographicEntity1);
         boundWithBibliographicEntityObject.setBibliographicEntityList(bibliographicEntities);
         boundWithBibliographicEntityObjectList.add(boundWithBibliographicEntityObject);
-        Integer owningInstitutionId = 1;
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
-        Set<Integer> processedBibIds = new HashSet<>();
-        processedBibIds.add(1);
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
         Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
-        List<String> itemBarcodeList = new ArrayList<>();
-        itemBarcodeList.add("123456");
-        List<ItemEntity> itemEntity = getBibliographicEntity().getItemEntities();
+        List<ItemEntity> itemEntity = getBibliographicEntity("d1").getItemEntities();
         Map<String,BibliographicEntity> bibliographicEntityMap = new HashMap<>();
-        bibliographicEntityMap.put("1",getBibliographicEntity());
+        bibliographicEntityMap.put("1",getBibliographicEntity("1577261074"));
         Map<String, ItemEntity> fetchedBarcodeItemEntityMap = new HashMap<>();
-        fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity().getItemEntities().get(0));
+        fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity("1577261074").getItemEntities().get(0));
         List<BibliographicEntity> fetchedBibliographicEntityList = new ArrayList<>();
-        fetchedBibliographicEntityList.add(getBibliographicEntity());
-//        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountIsSameAsExistingItem(submitCollectionReportInfoMap,fetchedBarcodeItemEntityMap,boundWithBibliographicEntityObject.getBibliographicEntityList())).thenReturn(true);
+        fetchedBibliographicEntityList.add(getBibliographicEntity("1577261074"));
         Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,owningInstitutionId)).thenReturn(itemEntity);
-        List<BibliographicEntity> bibliographicEntities1 = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(Arrays.asList("123456"),1)).thenReturn(itemEntity);
+        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountGreaterThanExistingItem(Mockito.anyMap(),Mockito.anyList(),Mockito.anyList())).thenReturn(true);
+        Mockito.when(submitCollectionHelperService.getBibliographicEntityIfExist(Mockito.anyString(),Mockito.anyInt())).thenReturn(getBibliographicEntity("1577261074"));
+        Mockito.when(setupDataService.getItemStatusIdCodeMap().get(1)).thenReturn(getMap("NYPL","Available"));
+        Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(),Mockito.anyString())).thenReturn(getBibliographicEntity("1577261074"));
+        List<BibliographicEntity> bibliographicEntities1 = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
         assertNotNull(bibliographicEntities1);
     }
-    @Test
-    public void updateBibliographicEntityInBatchForBoundWithGreaterExistingBibliographicEntity(){
-        List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList = new ArrayList<>();
 
+    @Test
+    public void updateBibliographicEntityInBatchForBoundWithGreaterIncomingBib(){
+        List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList = new ArrayList<>();
+        BoundWithBibliographicEntityObject boundWithBibliographicEntityObject = getBoundWithBibliographicEntityObject();
+        BibliographicEntity bibliographicEntity = getBibliographicEntity("1577261074");
+        bibliographicEntity.setOwningInstitutionBibId("245466");
+        BibliographicEntity bibliographicEntity1 = getBibliographicEntity("1577261074");
+        bibliographicEntity1.setOwningInstitutionBibId("657786");
+        List<BibliographicEntity> bibliographicEntities = new ArrayList<>();
+        bibliographicEntities.add(bibliographicEntity);
+        bibliographicEntities.add(bibliographicEntity1);
+        boundWithBibliographicEntityObject.setBibliographicEntityList(bibliographicEntities);
+        boundWithBibliographicEntityObjectList.add(boundWithBibliographicEntityObject);
+        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
+        Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+        List<ItemEntity> itemEntity = getBibliographicEntity("1577261074").getItemEntities();
+        Map<String,BibliographicEntity> bibliographicEntityMap = new HashMap<>();
+        bibliographicEntityMap.put("1",getBibliographicEntity("1577261074"));
+        Map<String, ItemEntity> fetchedBarcodeItemEntityMap = new HashMap<>();
+        fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity("1577261074").getItemEntities().get(0));
+        List<BibliographicEntity> fetchedBibliographicEntityList = new ArrayList<>();
+        fetchedBibliographicEntityList.add(getBibliographicEntity("1577261074"));
+        Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
+        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(Arrays.asList("123456"),1)).thenReturn(itemEntity);
+        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountGreaterThanExistingItem(Mockito.anyMap(),Mockito.anyList(),Mockito.anyList())).thenReturn(true);
+        Mockito.when(submitCollectionHelperService.getBibliographicEntityIfExist(Mockito.anyString(),Mockito.anyInt())).thenReturn(getBibliographicEntity("1577261074"));
+        Mockito.when(setupDataService.getItemStatusIdCodeMap().get(1)).thenReturn(getMap("NYPL","Available"));
+        Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(),Mockito.anyString())).thenReturn(getBibliographicEntity("1577261074"));
+        Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap=new HashMap<>();
+        fetchedOwnInstBibIdBibliographicEntityMap.put("245466",getBibliographicEntity("1577261074"));
+        Mockito.when(submitCollectionValidationService.getOwnInstBibIdBibliographicEntityMap(Mockito.anyList())).thenReturn(fetchedOwnInstBibIdBibliographicEntityMap);
+        List<BibliographicEntity> bibliographicEntities1 = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        assertNotNull(bibliographicEntities1);
+    }
+
+    @Test
+    public void updateBibliographicEntityInBatchForBoundWithGreaterIncomingBibComplete(){
+        List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList = new ArrayList<>();
+        BoundWithBibliographicEntityObject boundWithBibliographicEntityObject = getBoundWithBibliographicEntityObject();
+        BibliographicEntity bibliographicEntity = getBibliographicEntity("1577261074");
+        bibliographicEntity.setOwningInstitutionBibId("245466");
+        BibliographicEntity bibliographicEntity1 = getBibliographicEntity("1577261074");
+        bibliographicEntity1.setOwningInstitutionBibId("657786");
+        List<BibliographicEntity> bibliographicEntities = new ArrayList<>();
+        bibliographicEntities.add(bibliographicEntity);
+        bibliographicEntities.add(bibliographicEntity1);
+        boundWithBibliographicEntityObject.setBibliographicEntityList(bibliographicEntities);
+        boundWithBibliographicEntityObjectList.add(boundWithBibliographicEntityObject);
+        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
+        Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+        List<ItemEntity> itemEntity = getBibliographicEntity("1577261074").getItemEntities();
+        Map<String,BibliographicEntity> bibliographicEntityMap = new HashMap<>();
+        bibliographicEntityMap.put("1",getBibliographicEntity("1577261074"));
+        Map<String, ItemEntity> fetchedBarcodeItemEntityMap = new HashMap<>();
+        fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity("1577261074").getItemEntities().get(0));
+        List<BibliographicEntity> fetchedBibliographicEntityList = new ArrayList<>();
+        fetchedBibliographicEntityList.add(getBibliographicEntity("1577261074"));
+        Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
+        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(Arrays.asList("123456"),1)).thenReturn(itemEntity);
+        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountGreaterThanExistingItem(Mockito.anyMap(),Mockito.anyList(),Mockito.anyList())).thenReturn(true);
+        Mockito.when(submitCollectionHelperService.getBibliographicEntityIfExist(Mockito.anyString(),Mockito.anyInt())).thenReturn(null);
+        Mockito.when(setupDataService.getItemStatusIdCodeMap().get(1)).thenReturn(getMap("NYPL","Available"));
+        Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
+        Mockito.when(bibliographicDetailsRepository.saveAndFlush(Mockito.any())).thenReturn(getBibliographicEntity("1577261074"));
+
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(),Mockito.anyString())).thenReturn(getBibliographicEntity("1577261074"));
+        List<BibliographicEntity> bibliographicEntities1 = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        assertNotNull(bibliographicEntities1);
+    }
+
+    @Test
+    public void updateBibliographicEntityInBatchForBoundWithGreaterExistingBibliographicEntityelse(){
+        List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList = new ArrayList<>();
         BoundWithBibliographicEntityObject boundWithBibliographicEntityObject = getBoundWithBibliographicEntityObject();
         boundWithBibliographicEntityObjectList.add(boundWithBibliographicEntityObject);
-        Integer owningInstitutionId = 1;
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
-        Set<Integer> processedBibIds = new HashSet<>();
-        processedBibIds.add(1);
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
         Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
         List<String> itemBarcodeList = new ArrayList<>();
         itemBarcodeList.add("123456");
-        List<ItemEntity> itemEntity = getBibliographicEntity().getItemEntities();
+        List<ItemEntity> itemEntity = getBibliographicEntityBoundwith("1577261074","2435").getItemEntities();
         Map<String,BibliographicEntity> bibliographicEntityMap = new HashMap<>();
-        bibliographicEntityMap.put("1",getBibliographicEntity());
+        bibliographicEntityMap.put("1",getBibliographicEntity("1577261074"));
         Map<String, ItemEntity> fetchedBarcodeItemEntityMap = new HashMap<>();
-        fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity().getItemEntities().get(0));
+        fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity("1577261074").getItemEntities().get(0));
         List<BibliographicEntity> fetchedBibliographicEntityList = new ArrayList<>();
-        fetchedBibliographicEntityList.add(getBibliographicEntity());
-//        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountIsSameAsExistingItem(submitCollectionReportInfoMap,fetchedBarcodeItemEntityMap,boundWithBibliographicEntityObject.getBibliographicEntityList())).thenReturn(true);
+        fetchedBibliographicEntityList.add(getBibliographicEntity("1577261074"));
         Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,owningInstitutionId)).thenReturn(itemEntity);
-        List<BibliographicEntity> bibliographicEntities1 = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,owningInstitutionId,submitCollectionReportInfoMap,processedBibIds,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,1)).thenReturn(itemEntity);
+        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountLesserThanExistingItem(Mockito.anyMap(),Mockito.anyList(),Mockito.anyList(),Mockito.anyList(),Mockito.any())).thenReturn(true);
+        List<BibliographicEntity> bibliographicEntities1 = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
         assertNotNull(bibliographicEntities1);
     }
+
+    @Test
+    public void updateBibliographicEntityInBatchForBoundWithGreaterExistingBibliographicEntityif(){
+        List<BoundWithBibliographicEntityObject> boundWithBibliographicEntityObjectList = new ArrayList<>();
+        BoundWithBibliographicEntityObject boundWithBibliographicEntityObject = getBoundWithBibliographicEntityObject();
+        boundWithBibliographicEntityObjectList.add(boundWithBibliographicEntityObject);
+        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
+        Set<String> processedBarcodeSetForDummyRecords = new HashSet<>();
+        List<String> itemBarcodeList = new ArrayList<>();
+        itemBarcodeList.add("123456");
+        List<ItemEntity> itemEntity = getBibliographicEntityBoundwith("1577261074","2435").getItemEntities();
+        Map<String,BibliographicEntity> bibliographicEntityMap = new HashMap<>();
+        bibliographicEntityMap.put("1",getBibliographicEntity("1577261074"));
+        Map<String, ItemEntity> fetchedBarcodeItemEntityMap = new HashMap<>();
+        fetchedBarcodeItemEntityMap.put("123456",getBibliographicEntity("1577261074").getItemEntities().get(0));
+        List<BibliographicEntity> fetchedBibliographicEntityList = new ArrayList<>();
+        fetchedBibliographicEntityList.add(getBibliographicEntity("1577261074"));
+        Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
+        Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(itemBarcodeList,1)).thenReturn(itemEntity);
+        Mockito.when(submitCollectionValidationService.validateIncomingItemHavingBibCountLesserThanExistingItem(Mockito.anyMap(),Mockito.anyList(),Mockito.anyList(),Mockito.anyList(),Mockito.any())).thenReturn(true);
+        Map<String,BibliographicEntity> fetchedOwnInstBibIdBibliographicEntityMap=new HashMap<>();
+        fetchedOwnInstBibIdBibliographicEntityMap.put("64343",getBibliographicEntity("1577261074"));
+        Mockito.when(submitCollectionValidationService.getOwnInstBibIdBibliographicEntityMap(Mockito.anyList())).thenReturn(fetchedOwnInstBibIdBibliographicEntityMap);
+        Mockito.when(setupDataService.getItemStatusIdCodeMap().get(1)).thenReturn(getMap("Available","NYPL"));
+        List<BibliographicEntity> bibliographicEntities1 = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
+        assertNotNull(bibliographicEntities1);
+    }
+
     @Test
     public void prepareExceptionReport(){
         List<String> incomingItemBarcodeList = new ArrayList<>();
         incomingItemBarcodeList.add("123456");
         List<String> fetchedItemBarcodeList = new ArrayList<>();
         fetchedItemBarcodeList.add("67380");
-        String message = "test";
-        List<ItemEntity> itemEntityList = getBibliographicEntity().getItemEntities();
+        List<ItemEntity> itemEntityList = getBibliographicEntity("1577261074").getItemEntities();
         Map<String,ItemEntity> incomingBarcodeItemEntityMapFromBibliographicEntityList = new HashMap<>();
-        incomingBarcodeItemEntityMapFromBibliographicEntityList.put("123456",getBibliographicEntity().getItemEntities().get(0));
+        incomingBarcodeItemEntityMapFromBibliographicEntityList.put("123456",getBibliographicEntity("1577261074").getItemEntities().get(0));
         Map<String,List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
         Mockito.when(submitCollectionReportHelperService.isBarcodeAlreadyAdded("123456",submitCollectionReportInfoMap)).thenReturn(false);
         Mockito.when(submitCollectionReportHelperService.isBarcodeAlreadyAdded(itemEntityList.get(0).getBarcode(),submitCollectionReportInfoMap)).thenReturn(false);
-//        Mockito.doNothing().when(submitCollectionReportHelperService).setSubmitCollectionExceptionReportInfo(itemEntityList,submitCollectionReportInfoMap.get(RecapConstants.SUBMIT_COLLECTION_EXCEPTION_LIST), message);
-        submitCollectionDAOService.prepareExceptionReport(incomingItemBarcodeList,fetchedItemBarcodeList,incomingBarcodeItemEntityMapFromBibliographicEntityList,submitCollectionReportInfoMap);
+        submitCollectionDAOService.prepareExceptionReport(Arrays.asList("123456"),fetchedItemBarcodeList,incomingBarcodeItemEntityMapFromBibliographicEntityList,submitCollectionReportInfoMap);
     }
     @Test
     public  void updateDummyRecord(){
-        BibliographicEntity bibliographicEntity = getBibliographicEntity();
+        BibliographicEntity bibliographicEntity = getBibliographicEntity("1577261074");
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         List< ItemChangeLogEntity > itemChangeLogEntityList = new ArrayList<>();
@@ -261,9 +480,9 @@ public class SubmitCollectionDAOServiceUT {
         itemChangeLogEntityList.add(itemChangeLogEntity);
         Set<String> processedBarcodeSet = new HashSet<>();
         processedBarcodeSet.add("123456");
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity();
-        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity();
-        List<ItemEntity> itemEntities = getBibliographicEntity().getItemEntities();
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity("1577261074");
+        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity("1577261074");
+        List<ItemEntity> itemEntities = getBibliographicEntity("1577261074").getItemEntities();
         Mockito.when(submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(bibliographicEntity.getItemEntities())).thenReturn(itemEntities);
         Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
         Mockito.when(repositoryService.getItemChangeLogDetailsRepository()).thenReturn(itemChangeLogDetailsRepository);
@@ -271,7 +490,6 @@ public class SubmitCollectionDAOServiceUT {
         Mockito.doNothing().when(bibliographicDetailsRepository).flush();
         Mockito.when(bibliographicDetailsRepository.saveAndFlush(bibliographicEntity)).thenReturn(bibliographicEntity);
         Mockito.when(repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(), bibliographicEntity.getOwningInstitutionBibId())).thenReturn(bibliographicEntity);
-//        Mockito.when(repositoryService.getItemChangeLogDetailsRepository().saveAll(itemChangeLogEntityList)).thenReturn(itemChangeLogEntityList);
         Mockito.doNothing().when(entityManager).refresh(bibliographicEntity);
         BibliographicEntity bibliographicEntity1 = submitCollectionDAOService.updateDummyRecord(bibliographicEntity,submitCollectionReportInfoMap,idMapToRemoveIndexList,processedBarcodeSet,savedBibliographicEntity,fetchBibliographicEntity);
         assertNotNull(bibliographicEntity1);
@@ -279,27 +497,27 @@ public class SubmitCollectionDAOServiceUT {
 
     @Test
     public  void updateDummyRecordWithoutCollectionGroupId(){
-        BibliographicEntity bibliographicEntity = getBibliographicEntity2();
+        BibliographicEntity bibliographicEntity = getBibliographicEntity2("1577261074");
         bibliographicEntity.getItemEntities().get(0).setCollectionGroupId(null);
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         Set<String> processedBarcodeSet = new HashSet<>();
         processedBarcodeSet.add("123456");
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity();
-        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity();
-        List<ItemEntity> itemEntities = getBibliographicEntity().getItemEntities();
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity("1577261074");
+        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity("1577261074");
+        List<ItemEntity> itemEntities = getBibliographicEntity("1577261074").getItemEntities();
         Mockito.when(submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(bibliographicEntity.getItemEntities())).thenReturn(itemEntities);
         BibliographicEntity bibliographicEntity1 = submitCollectionDAOService.updateDummyRecord(bibliographicEntity,submitCollectionReportInfoMap,idMapToRemoveIndexList,processedBarcodeSet,savedBibliographicEntity,fetchBibliographicEntity);
         assertNotNull(bibliographicEntity1);
     }
     @Test
     public void updateDummyRecordForNonBoundWith(){
-        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity();
+        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity("1577261074");
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         Set<String> processedBarcodeSet = new HashSet<>();
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity();
-        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity();
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity("1577261074");
+        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity("1577261074");
         List<ItemChangeLogEntity> itemChangeLogEntityList = new ArrayList<>();
         Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
         Mockito.doNothing().when(bibliographicDetailsRepository).delete(fetchBibliographicEntity);
@@ -310,39 +528,40 @@ public class SubmitCollectionDAOServiceUT {
     }
     @Test
     public void updateDummyRecordForNonBoundWithoutCollectionGroupId(){
-        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity();
+        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity("1577261074");
         incomingBibliographicEntity.getItemEntities().get(0).setCollectionGroupId(null);
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         Set<String> processedBarcodeSet = new HashSet<>();
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity();
-        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity();
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity("1577261074");
+        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity("1577261074");
         List<ItemChangeLogEntity> itemChangeLogEntityList = new ArrayList<>();
         Mockito.when(submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(incomingBibliographicEntity.getItemEntities())).thenReturn(Collections.EMPTY_LIST);
         submitCollectionDAOService.updateDummyRecordForNonBoundWith(incomingBibliographicEntity,submitCollectionReportInfoMap,idMapToRemoveIndexList,processedBarcodeSet,savedBibliographicEntity,fetchBibliographicEntity,itemChangeLogEntityList);
     }
     @Test
     public void updateDummyRecordForNonBoundWithfetchedItemBasedOnOwningInstitutionItemId(){
-        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity();
+        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity("1577261074");
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         Set<String> processedBarcodeSet = new HashSet<>();
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity();
-        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity();
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity("1577261074");
+        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity("1577261074");
         List<ItemChangeLogEntity> itemChangeLogEntityList = new ArrayList<>();
-        List<ItemEntity> fetchedItemBasedOnOwningInstitutionItemId = getBibliographicEntity().getItemEntities();
+        List<ItemEntity> fetchedItemBasedOnOwningInstitutionItemId = getBibliographicEntity("1577261074").getItemEntities();
         Mockito.when(submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(incomingBibliographicEntity.getItemEntities())).thenReturn(fetchedItemBasedOnOwningInstitutionItemId);
         submitCollectionDAOService.updateDummyRecordForNonBoundWith(incomingBibliographicEntity,submitCollectionReportInfoMap,idMapToRemoveIndexList,processedBarcodeSet,savedBibliographicEntity,fetchBibliographicEntity,itemChangeLogEntityList);
     }
+
     @Test
     public void updateDummyRecordForBoundWith(){
-        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity2();
+        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity2("1577261074");
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         Set<String> processedBarcodeSet = new HashSet<>();
         processedBarcodeSet.add("123456");
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity();
-        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity();
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity("1577261074");
+        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity("1577261074");
         List< ItemChangeLogEntity > itemChangeLogEntityList = new ArrayList<>();
         boolean deleteDummyRecord = true;
         Set<Integer> processedBibIds = new HashSet<>();
@@ -350,20 +569,20 @@ public class SubmitCollectionDAOServiceUT {
         Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
         Mockito.doNothing().when(bibliographicDetailsRepository).delete(fetchBibliographicEntity);
         Mockito.doNothing().when(bibliographicDetailsRepository).flush();
-        Mockito.when(repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(incomingBibliographicEntity.getOwningInstitutionId(), incomingBibliographicEntity.getOwningInstitutionBibId())).thenReturn(getBibliographicEntity());
+        Mockito.when(repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(incomingBibliographicEntity.getOwningInstitutionId(), incomingBibliographicEntity.getOwningInstitutionBibId())).thenReturn(getBibliographicEntity("1577261074"));
         BibliographicEntity bibliographicEntity = submitCollectionDAOService.updateDummyRecordForBoundWith(incomingBibliographicEntity,submitCollectionReportInfoMap,idMapToRemoveIndexList,processedBarcodeSet,savedBibliographicEntity,fetchBibliographicEntity,itemChangeLogEntityList,deleteDummyRecord,processedBibIds);
         assertNotNull(bibliographicEntity);
     }
     @Test
     public void updateDummyRecordForBoundWithoutCollectionGroupId(){
-        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity();
+        BibliographicEntity incomingBibliographicEntity = getBibliographicEntity("1577261074");
         incomingBibliographicEntity.getItemEntities().get(0).setCollectionGroupId(null);
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         Set<String> processedBarcodeSet = new HashSet<>();
         processedBarcodeSet.add("123456");
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity();
-        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity();
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity("1577261074");
+        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity("1577261074");
         List< ItemChangeLogEntity > itemChangeLogEntityList = new ArrayList<>();
         boolean deleteDummyRecord = true;
         Set<Integer> processedBibIds = new HashSet<>();
@@ -373,18 +592,19 @@ public class SubmitCollectionDAOServiceUT {
     }
     private BoundWithBibliographicEntityObject getBoundWithBibliographicEntityObject(){
         BoundWithBibliographicEntityObject boundWithBibliographicEntityObject = new BoundWithBibliographicEntityObject();
-        BibliographicEntity bibliographicEntity = getBibliographicEntity2();
+        BibliographicEntity bibliographicEntity = getBibliographicEntity2("1577261074");
         boundWithBibliographicEntityObject.setBarcode("123456");
         boundWithBibliographicEntityObject.setBibliographicEntityList(Arrays.asList(bibliographicEntity));
         return boundWithBibliographicEntityObject;
     }
-    private NonBoundWithBibliographicEntityObject getNonBoundWithBibliographicEntityObject(){
+    private NonBoundWithBibliographicEntityObject getNonBoundWithBibliographicEntityObject(String OwningInstitutionBibId){
         NonBoundWithBibliographicEntityObject nonBoundWithBibliographicEntityObject = new NonBoundWithBibliographicEntityObject();
-        BibliographicEntity bibliographicEntity = getBibliographicEntity();
+        BibliographicEntity bibliographicEntity = getBibliographicEntity(OwningInstitutionBibId);
         nonBoundWithBibliographicEntityObject.setBibliographicEntityList(Arrays.asList(bibliographicEntity));
-        nonBoundWithBibliographicEntityObject.setOwningInstitutionBibId("1577261074");
+        nonBoundWithBibliographicEntityObject.setOwningInstitutionBibId(OwningInstitutionBibId);
         return nonBoundWithBibliographicEntityObject;
     }
+
     private Map<String, List< SubmitCollectionReportInfo >> getSubmitCollectionReportInfoMap(){
         Map<String, List< SubmitCollectionReportInfo >> submitCollectionReportInfoMap = new HashMap<>();
         SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
@@ -405,21 +625,17 @@ public class SubmitCollectionDAOServiceUT {
         return itemChangeLogEntity;
     }
 
-    private BibliographicEntity getBibliographicEntity(){
-        InstitutionEntity institutionEntity = new InstitutionEntity();
-        institutionEntity.setId(1);
-        institutionEntity.setInstitutionName("PUL");
-        institutionEntity.setInstitutionCode("PUL");
+    private BibliographicEntity getBibliographicEntity(String OwningInstitutionBibId){
 
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(123456);
+        bibliographicEntity.setBibliographicId(4);
         bibliographicEntity.setContent("Test".getBytes());
         bibliographicEntity.setCreatedDate(new Date());
         bibliographicEntity.setLastUpdatedDate(new Date());
         bibliographicEntity.setCreatedBy("tst");
         bibliographicEntity.setLastUpdatedBy("tst");
         bibliographicEntity.setOwningInstitutionId(1);
-        bibliographicEntity.setOwningInstitutionBibId("1577261074");
+        bibliographicEntity.setOwningInstitutionBibId(OwningInstitutionBibId);
         bibliographicEntity.setDeleted(false);
         bibliographicEntity.setCatalogingStatus("inComplete");
 
@@ -457,18 +673,82 @@ public class SubmitCollectionDAOServiceUT {
 
         itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
-        itemEntity.setInstitutionEntity(institutionEntity);
+        itemEntity.setInstitutionEntity(getInstitutionEntity());
         holdingsEntity.setItemEntities(itemEntities);
         bibliographicEntity.setHoldingsEntities(holdingsEntities);
         bibliographicEntity.setItemEntities(itemEntities);
 
         return bibliographicEntity;
     }
-    private BibliographicEntity getBibliographicEntity2(){
+
+    private BibliographicEntity getBibliographicEntityBoundwith(String OwningInstitutionBibId,String OwningInstitutionHoldingsId){
+
+        BibliographicEntity bibliographicEntity = new BibliographicEntity();
+        bibliographicEntity.setBibliographicId(4);
+        bibliographicEntity.setContent("Test".getBytes());
+        bibliographicEntity.setCreatedDate(new Date());
+        bibliographicEntity.setLastUpdatedDate(new Date());
+        bibliographicEntity.setCreatedBy("tst");
+        bibliographicEntity.setLastUpdatedBy("tst");
+        bibliographicEntity.setOwningInstitutionId(1);
+        bibliographicEntity.setOwningInstitutionBibId(OwningInstitutionBibId);
+        bibliographicEntity.setDeleted(false);
+        bibliographicEntity.setCatalogingStatus("inComplete");
+
+        BibliographicEntity bibliographicEntity1 =bibliographicEntity;
+        bibliographicEntity.setOwningInstitutionBibId("64343");
+
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
+        itemEntity.setItemId(1);
+        itemEntity.setLastUpdatedDate(new Date());
+        itemEntity.setOwningInstitutionItemId("843617540");
+        itemEntity.setOwningInstitutionId(1);
+        itemEntity.setBarcode("123456");
+        itemEntity.setCallNumber("x.12321");
+        itemEntity.setCollectionGroupId(1);
+        itemEntity.setCallNumberType("1");
+        itemEntity.setCustomerCode("123");
+        itemEntity.setCreatedDate(new Date());
+        itemEntity.setCreatedBy("tst");
+        itemEntity.setLastUpdatedBy("tst");
+        itemEntity.setCatalogingStatus("Complete");
+        itemEntity.setItemAvailabilityStatusId(1);
+        itemEntity.setDeleted(false);
+        itemEntities.add(itemEntity);
+
+        List<HoldingsEntity> holdingsEntities = new ArrayList<>();
+        HoldingsEntity holdingsEntity = new HoldingsEntity();
+        holdingsEntity.setCreatedDate(new Date());
+        holdingsEntity.setLastUpdatedDate(new Date());
+        holdingsEntity.setCreatedBy("tst");
+        holdingsEntity.setLastUpdatedBy("tst");
+        holdingsEntity.setOwningInstitutionId(1);
+        holdingsEntity.setOwningInstitutionHoldingsId(OwningInstitutionHoldingsId);
+        holdingsEntity.setDeleted(false);
+        //holdingsEntity.setItemEntities(itemEntities);
+        holdingsEntities.add(holdingsEntity);
+
+
+        itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity,bibliographicEntity1));
+        itemEntity.setInstitutionEntity(getInstitutionEntity());
+        holdingsEntity.setItemEntities(itemEntities);
+        bibliographicEntity.setHoldingsEntities(holdingsEntities);
+        bibliographicEntity.setItemEntities(itemEntities);
+
+        return bibliographicEntity;
+    }
+
+    private InstitutionEntity getInstitutionEntity() {
         InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setId(1);
         institutionEntity.setInstitutionName("PUL");
         institutionEntity.setInstitutionCode("PUL");
+        return institutionEntity;
+    }
+
+    private BibliographicEntity getBibliographicEntity2(String OwningInstitutionBibId){
 
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setBibliographicId(123456);
@@ -478,7 +758,7 @@ public class SubmitCollectionDAOServiceUT {
         bibliographicEntity.setCreatedBy("tst");
         bibliographicEntity.setLastUpdatedBy("tst");
         bibliographicEntity.setOwningInstitutionId(1);
-        bibliographicEntity.setOwningInstitutionBibId("1577261074");
+        bibliographicEntity.setOwningInstitutionBibId(OwningInstitutionBibId);
         bibliographicEntity.setDeleted(false);
         bibliographicEntity.setCatalogingStatus("inComplete");
 
@@ -509,11 +789,11 @@ public class SubmitCollectionDAOServiceUT {
         itemEntity.setDeleted(false);
         itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
-        itemEntity.setInstitutionEntity(institutionEntity);
+        itemEntity.setInstitutionEntity(getInstitutionEntity());
         List<BibliographicEntity> bibliographicEntities = new ArrayList<>();
-        BibliographicEntity bibliographicEntity1 = getBibliographicEntity();
+        BibliographicEntity bibliographicEntity1 = getBibliographicEntity("1577261074");
         bibliographicEntity.setOwningInstitutionBibId("34558");
-        BibliographicEntity bibliographicEntity2= getBibliographicEntity();
+        BibliographicEntity bibliographicEntity2= getBibliographicEntity("1577261074");
         bibliographicEntity.setOwningInstitutionBibId("34558");
         bibliographicEntity1.setOwningInstitutionBibId("45568");
         bibliographicEntities.add(bibliographicEntity1);

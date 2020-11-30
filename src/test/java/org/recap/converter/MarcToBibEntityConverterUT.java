@@ -1,206 +1,256 @@
 package org.recap.converter;
 
-import org.junit.Assert;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.marc4j.marc.Record;
-import org.recap.BaseTestCase;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.recap.BaseTestCaseUT;
+import org.recap.RecapCommonConstants;
+import org.recap.RecapConstants;
 import org.recap.model.jpa.BibliographicEntity;
+import org.recap.model.jpa.CustomerCodeEntity;
+import org.recap.model.jpa.HoldingsEntity;
 import org.recap.model.jpa.InstitutionEntity;
+import org.recap.model.jpa.ItemEntity;
+import org.recap.model.marc.BibMarcRecord;
+import org.recap.model.marc.HoldingsMarcRecord;
+import org.recap.model.marc.ItemMarcRecord;
+import org.recap.repository.jpa.CustomerCodeDetailsRepository;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
+import org.recap.repository.jpa.ItemDetailsRepository;
+import org.recap.util.CommonUtil;
+import org.recap.util.DBReportUtil;
 import org.recap.util.MarcUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Created by premkb on 21/12/16.
  */
-public class MarcToBibEntityConverterUT extends BaseTestCase {
+public class MarcToBibEntityConverterUT extends BaseTestCaseUT {
 
-    @Autowired
-    private MarcToBibEntityConverter marcToBibEntityConverter;
+    @InjectMocks
+    MarcToBibEntityConverter marcToBibEntityConverter;
 
-    @Autowired
-    private MarcUtil marcUtil;
+    @Mock
+    MarcUtil marcUtil;
 
-    @Autowired
-    private InstitutionDetailsRepository institutionDetailsRepository;
+    @Mock
+    CommonUtil commonUtil;
 
-    private String marcXmlContent = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">\n" +
-            "<record>\n" +
-            "    <leader>01011cam a2200289 a 4500</leader>\n" +
-            "    <controlfield tag=\"001\">115115</controlfield>\n" +
-            "    <controlfield tag=\"005\">20160503221017.0</controlfield>\n" +
-            "    <controlfield tag=\"008\">820315s1982 njua b 00110 eng</controlfield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"010\">\n" +
-            "        <subfield code=\"a\">81008543</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"020\">\n" +
-            "        <subfield code=\"a\">0132858908</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"035\">\n" +
-            "        <subfield code=\"a\">(OCoLC)7555877</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"035\">\n" +
-            "        <subfield code=\"a\">(CStRLIN)NJPG82-B5675</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"035\">\n" +
-            "        <subfield code=\"9\">AAS9821TS</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\"0\" ind2=\" \" tag=\"039\">\n" +
-            "        <subfield code=\"a\">2</subfield>\n" +
-            "        <subfield code=\"b\">3</subfield>\n" +
-            "        <subfield code=\"c\">3</subfield>\n" +
-            "        <subfield code=\"d\">3</subfield>\n" +
-            "        <subfield code=\"e\">3</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\"0\" ind2=\" \" tag=\"050\">\n" +
-            "        <subfield code=\"a\">QE28.3</subfield>\n" +
-            "        <subfield code=\"b\">.S76 1982</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\"0\" ind2=\" \" tag=\"082\">\n" +
-            "        <subfield code=\"a\">551.7</subfield>\n" +
-            "        <subfield code=\"2\">19</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\"1\" ind2=\" \" tag=\"100\">\n" +
-            "        <subfield code=\"a\">Stokes, William Lee,</subfield>\n" +
-            "        <subfield code=\"d\">1915-1994.</subfield>\n" +
-            "        <subfield code=\"0\">(uri)http://id.loc.gov/authorities/names/n50011514</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\"1\" ind2=\"0\" tag=\"245\">\n" +
-            "        <subfield code=\"a\">Essentials of earth history :</subfield>\n" +
-            "        <subfield code=\"b\">an introduction to historical geology /</subfield>\n" +
-            "        <subfield code=\"c\">W. Lee Stokes.</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"250\">\n" +
-            "        <subfield code=\"a\">4th ed.</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"260\">\n" +
-            "        <subfield code=\"a\">Englewood Cliffs, N.J. :</subfield>\n" +
-            "        <subfield code=\"b\">Prentice-Hall,</subfield>\n" +
-            "        <subfield code=\"c\">c1982.</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"300\">\n" +
-            "        <subfield code=\"a\">xiv, 577 p. :</subfield>\n" +
-            "        <subfield code=\"b\">ill. ;</subfield>\n" +
-            "        <subfield code=\"c\">24 cm.</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"504\">\n" +
-            "        <subfield code=\"a\">Includes bibliographies and index.</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\"0\" tag=\"650\">\n" +
-            "        <subfield code=\"a\">Historical geology.</subfield>\n" +
-            "        <subfield code=\"0\">\n" +
-            "            (uri)http://id.loc.gov/authorities/subjects/sh85061190\n" +
-            "        </subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"998\">\n" +
-            "        <subfield code=\"a\">03/15/82</subfield>\n" +
-            "        <subfield code=\"s\">9110</subfield>\n" +
-            "        <subfield code=\"n\">NjP</subfield>\n" +
-            "        <subfield code=\"w\">DCLC818543B</subfield>\n" +
-            "        <subfield code=\"d\">03/15/82</subfield>\n" +
-            "        <subfield code=\"c\">ZG</subfield>\n" +
-            "        <subfield code=\"b\">WZ</subfield>\n" +
-            "        <subfield code=\"i\">820315</subfield>\n" +
-            "        <subfield code=\"l\">NJPG</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"948\">\n" +
-            "        <subfield code=\"a\">AACR2</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"911\">\n" +
-            "        <subfield code=\"a\">19921028</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"912\">\n" +
-            "        <subfield code=\"a\">19900820000000.0</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\" \" ind2=\" \" tag=\"959\">\n" +
-            "        <subfield code=\"a\">2000-06-13 00:00:00 -0500</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\"0\" ind2=\"0\" tag=\"852\">\n" +
-            "        <subfield code=\"0\">128532</subfield>\n" +
-            "        <subfield code=\"b\">rcppa</subfield>\n" +
-            "        <subfield code=\"h\">QE28.3 .S76 1982</subfield>\n" +
-            "        <subfield code=\"t\">1</subfield>\n" +
-            "        <subfield code=\"x\">tr fr sci</subfield>\n" +
-            "    </datafield>\n" +
-            "    <datafield ind1=\"0\" ind2=\"0\" tag=\"876\">\n" +
-            "        <subfield code=\"0\">128532</subfield>\n" +
-            "        <subfield code=\"a\">123431</subfield>\n" +
-            "        <subfield code=\"h\"/>\n" +
-            "        <subfield code=\"j\">Not Charged</subfield>\n" +
-            "        <subfield code=\"p\">32101068878931</subfield>\n" +
-            "        <subfield code=\"t\">1</subfield>\n" +
-            "        <subfield code=\"x\">Shared</subfield>\n" +
-            "        <subfield code=\"z\">PA</subfield>\n" +
-            "    </datafield>\n" +
-            "</record>\n" +
-            "</collection>\n";
+    @Mock
+    DBReportUtil dbReportUtil;
+
+    @Mock
+    BibMarcRecord bibMarcRecord;
+
+    @Mock
+    Record bibRecord;
+
+    @Mock
+    InstitutionDetailsRepository institutionDetailsRepository;
+
+    @Mock
+    HoldingsMarcRecord holdingsMarcRecord;
+
+    @Mock
+    ItemMarcRecord itemMarcRecord;
+
+    @Mock
+    Record itemRecord;
+
+    @Mock
+    CustomerCodeDetailsRepository customerCodeDetailsRepository;
+
+    @Mock
+    ItemDetailsRepository itemDetailsRepository;
 
     @Test
-    public void convert(){
-        List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode("PUL");
-        Map convertedMap = marcToBibEntityConverter.convert(recordList.get(0),institutionEntity);
+    public void convert() throws Exception {
+        List<Record> records = getRecords();
+        Map institutionEntityMap=new HashMap();
+        institutionEntityMap.put("PUL",1);
+        Mockito.when(commonUtil.getInstitutionEntityMap()).thenReturn(institutionEntityMap);
+        Mockito.when(marcUtil.getControlFieldValue(Mockito.any(),Mockito.anyString())).thenReturn("1");
+        Mockito.when(marcUtil.buildBibMarcRecord(Mockito.any(Record.class))).thenReturn(bibMarcRecord);
+        Mockito.when(bibMarcRecord.getBibRecord()).thenReturn(bibRecord);
+        List<HoldingsMarcRecord> holdingsMarcRecords=new ArrayList<>();
+        holdingsMarcRecords.add(holdingsMarcRecord);
+        Mockito.when(bibMarcRecord.getHoldingsMarcRecords()).thenReturn(holdingsMarcRecords);
+        List<ItemMarcRecord> itemMarcRecordList=new ArrayList<>();
+        itemMarcRecordList.add(itemMarcRecord);
+        Mockito.when(customerCodeDetailsRepository.findByCustomerCode(Mockito.anyString())).thenReturn(getCustomerCodeEntity());
+        Mockito.when(holdingsMarcRecord.getItemMarcRecordList()).thenReturn(itemMarcRecordList);
+        Mockito.when(itemMarcRecord.getItemRecord()).thenReturn(itemRecord);
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'z')).thenReturn("PA");
+        Record record = (Record) records.get(0);
+        Mockito.when(holdingsMarcRecord.getHoldingsRecord()).thenReturn(record);
+        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.anyString())).thenReturn(saveBibSingleHoldingsSingleItem("32101095533293","PA","1","1").getHoldingsEntities().get(0));
+        Mockito.when(marcUtil.getDataFieldValue(record, "852", '0')).thenReturn("5123222f-2333-413e-8c9c-cb8709f010c3");
+        Map<String, Object> map1=new HashMap<>();
+        map1.put("holdingsEntity",saveBibSingleHoldingsSingleItem("32101095533293","PA","1","1").getHoldingsEntities().get(0));
+        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.anyMap(),Mockito.any(),Mockito.anyString())).thenReturn(map1);
+        Map<String, Object> map = new HashMap<>();
+        BibliographicEntity bibliographicEntity1=saveBibSingleHoldingsSingleItem("32101095533293","PA","1","115115");
+        map.put(RecapConstants.BIBLIOGRAPHIC_ENTITY,bibliographicEntity1);
+        Mockito.when(marcUtil.extractXmlAndSetEntityToMap(Mockito.any(),Mockito.any(),Mockito.anyMap(),Mockito.any())).thenReturn(map);
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'p')).thenReturn("32101095533293");
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 't')).thenReturn("0");
+        Mockito.when(institutionDetailsRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(getInstitutionEntity()));
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'x')).thenReturn(RecapCommonConstants.SHARED_CGD);
+        Map collectionGroupMap=new HashMap();
+        collectionGroupMap.put("Shared",1);
+        Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'h')).thenReturn("Library");
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'a')).thenReturn("7453441");
+        Map convertedMap = marcToBibEntityConverter.convert(records.get(0),null);
         BibliographicEntity bibliographicEntity = (BibliographicEntity)convertedMap.get("bibliographicEntity");
         assertNotNull(bibliographicEntity);
         assertEquals("115115",bibliographicEntity.getOwningInstitutionBibId());
-        assertEquals(new Integer(1),bibliographicEntity.getOwningInstitutionId());
-        assertEquals("128532",bibliographicEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId());
-        assertEquals("PA",bibliographicEntity.getItemEntities().get(0).getCustomerCode());
+        assertEquals(new Integer(3),bibliographicEntity.getOwningInstitutionId());
+        assertEquals("5123222f-2333-413e-8c9c-cb8709f010c3",bibliographicEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId());
+   }
+
+    @Test
+    public void convertError() throws Exception {
+        List<Record> records = getRecords();
+        Map institutionEntityMap=new HashMap();
+        institutionEntityMap.put("PUL",1);
+        Mockito.when(commonUtil.getInstitutionEntityMap()).thenReturn(institutionEntityMap);
+        Mockito.when(marcUtil.getControlFieldValue(Mockito.any(),Mockito.anyString())).thenReturn("");
+        Mockito.when(marcUtil.buildBibMarcRecord(Mockito.any(Record.class))).thenReturn(bibMarcRecord);
+        Mockito.when(bibMarcRecord.getBibRecord()).thenReturn(bibRecord);
+        List<HoldingsMarcRecord> holdingsMarcRecords=new ArrayList<>();
+        holdingsMarcRecords.add(holdingsMarcRecord);
+        Mockito.when(bibMarcRecord.getHoldingsMarcRecords()).thenReturn(holdingsMarcRecords);
+        List<ItemMarcRecord> itemMarcRecordList=new ArrayList<>();
+        itemMarcRecordList.add(itemMarcRecord);
+        Mockito.when(holdingsMarcRecord.getItemMarcRecordList()).thenReturn(itemMarcRecordList);
+        Mockito.when(itemMarcRecord.getItemRecord()).thenReturn(itemRecord);
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'z')).thenReturn(null);
+        Record record = (Record) records.get(0);
+        Mockito.when(holdingsMarcRecord.getHoldingsRecord()).thenReturn(record);
+        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.anyString())).thenReturn(saveBibSingleHoldingsSingleItem("32101095533293","PA","1","1").getHoldingsEntities().get(0));
+        Mockito.when(marcUtil.getDataFieldValue(record, "852", '0')).thenReturn("5123222f-2333-413e-8c9c-cb8709f010c3");
+        Map<String, Object> map1=new HashMap<>();
+        map1.put("holdingsEntity",saveBibSingleHoldingsSingleItem("32101095533293","PA","1","1").getHoldingsEntities().get(0));
+        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.anyMap(),Mockito.any(),Mockito.anyString())).thenReturn(map1);
+        Map<String, Object> map = new HashMap<>();
+        BibliographicEntity bibliographicEntity1=saveBibSingleHoldingsSingleItem("32101095533293","PA","1","115115");
+        map.put(RecapConstants.BIBLIOGRAPHIC_ENTITY,bibliographicEntity1);
+        Mockito.when(marcUtil.extractXmlAndSetEntityToMap(Mockito.any(),Mockito.any(),Mockito.anyMap(),Mockito.any())).thenReturn(map);
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'p')).thenReturn("32101095533293").thenReturn("");
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 't')).thenReturn("0");
+        Mockito.when(institutionDetailsRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(getInstitutionEntity()));
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'x')).thenReturn(RecapCommonConstants.SHARED_CGD);
+        Map collectionGroupMap=new HashMap();
+        collectionGroupMap.put("Shared",1);
+        Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'h')).thenReturn("Library");
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'a')).thenReturn("");
+        Mockito.when(itemDetailsRepository.findByBarcode(Mockito.anyString())).thenReturn(saveBibSingleHoldingsSingleItem("32101095533293","PA","1","115115").getItemEntities());
+        Map convertedMap = marcToBibEntityConverter.convert(records.get(0),null);
+        BibliographicEntity bibliographicEntity = (BibliographicEntity)convertedMap.get("bibliographicEntity");
+        assertNotNull(bibliographicEntity);
+        assertEquals("115115",bibliographicEntity.getOwningInstitutionBibId());
+        assertEquals(new Integer(3),bibliographicEntity.getOwningInstitutionId());
+        assertEquals("5123222f-2333-413e-8c9c-cb8709f010c3",bibliographicEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId());
     }
 
     @Test
-    public void testDataFieldValueStartsWith(){
-        List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        String response = marcUtil.getDataFieldValueStartsWith(recordList.get(0),"100");
-        assertNotNull(response);
-        assertEquals(response,"Stokes, William Lee, 1915-1994. (uri)http://id.loc.gov/authorities/names/n50011514");
+    public void convertException() throws Exception {
+        List<Record> records = getRecords();
+        Map institutionEntityMap=new HashMap();
+        institutionEntityMap.put("PUL",1);
+        Mockito.when(commonUtil.getInstitutionEntityMap()).thenReturn(institutionEntityMap);
+        Mockito.when(marcUtil.getControlFieldValue(Mockito.any(),Mockito.anyString())).thenReturn("1");
+        Mockito.when(marcUtil.buildBibMarcRecord(Mockito.any(Record.class))).thenThrow(NullPointerException.class);
+        Map convertedMap = marcToBibEntityConverter.convert(records.get(0),null);
+        BibliographicEntity bibliographicEntity = (BibliographicEntity)convertedMap.get("bibliographicEntity");
+        assertNull(bibliographicEntity);
+      }
+
+    private List<Record> getRecords() throws Exception {
+        URL resource = getClass().getResource("sampleRecord.xml");
+        File file = new File(resource.toURI());
+        String marcXmlString = FileUtils.readFileToString(file, "UTF-8");
+        MarcUtil marcUtil = new MarcUtil();
+        return marcUtil.readMarcXml(marcXmlString);
     }
 
-    @Test
-    public void testDataFieldValueSubFieldValueStartsWith(){
-        List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        List<Character> subfieldTag = new ArrayList<>();
-        subfieldTag.add('a');
-        String response = marcUtil.getDataFieldValueStartsWith(recordList.get(0),"100",subfieldTag);
-        assertNotNull(response);
-        assertEquals(response,"Stokes, William Lee,");
+    private CustomerCodeEntity getCustomerCodeEntity() {
+        CustomerCodeEntity customerCodeEntity=new CustomerCodeEntity();
+        customerCodeEntity.setId(1);
+        customerCodeEntity.setOwningInstitutionId(1);
+        customerCodeEntity.setDescription("Princeton");
+        customerCodeEntity.setCustomerCode("PUL");
+        InstitutionEntity institutionEntity=new InstitutionEntity();
+        institutionEntity.setInstitutionCode("PUL");
+        customerCodeEntity.setInstitutionEntity(institutionEntity);
+        return customerCodeEntity;
     }
-
-    @Test
-    public void testListDataFieldValueSubFieldValueStartsWith(){
-        List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        List<Character> subfieldTag = new ArrayList<>();
-        subfieldTag.add('a');
-        subfieldTag.add('d');
-        List<String> response = marcUtil.getListOfDataFieldValuesStartsWith(recordList.get(0),"100",subfieldTag);
-        assertNotNull(response);
-        assertEquals(response.size(),2);
+    private InstitutionEntity getInstitutionEntity() {
+        InstitutionEntity institutionEntity = new InstitutionEntity();
+        institutionEntity.setId(1);
+        institutionEntity.setInstitutionName("PUL");
+        institutionEntity.setInstitutionCode("PUL");
+        return institutionEntity;
     }
+    public BibliographicEntity saveBibSingleHoldingsSingleItem(String itemBarcode, String customerCode, String institution,String owningInstBibId) throws Exception {
 
-    @Test
-    public void testGetDataFieldValue(){
-        List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        String response = marcUtil.getDataFieldValue(recordList.get(0),"100",null,null,"a");
-        assertNotNull(response);
-        Assert.assertEquals(response,"Stokes, William Lee,");
+        BibliographicEntity bibliographicEntity = new BibliographicEntity();
+        bibliographicEntity.setContent("sourceBibContent".getBytes());
+        bibliographicEntity.setCreatedDate(new Date());
+        bibliographicEntity.setLastUpdatedDate(new Date());
+        bibliographicEntity.setCreatedBy("tst");
+        bibliographicEntity.setLastUpdatedBy("tst");
+        bibliographicEntity.setOwningInstitutionId(3);
+        bibliographicEntity.setOwningInstitutionBibId(owningInstBibId);
+
+        HoldingsEntity holdingsEntity = new HoldingsEntity();
+        holdingsEntity.setDeleted(false);
+        holdingsEntity.setCreatedDate(new Date());
+        holdingsEntity.setCreatedBy(RecapCommonConstants.ACCESSION);
+        holdingsEntity.setLastUpdatedDate(new Date());
+        holdingsEntity.setLastUpdatedBy(RecapCommonConstants.ACCESSION);
+        holdingsEntity.setOwningInstitutionId(3);
+        holdingsEntity.setOwningInstitutionHoldingsId("5123222f-2333-413e-8c9c-cb8709f010c3");
+
+        ItemEntity itemEntity = new ItemEntity();
+        itemEntity.setLastUpdatedDate(new Date());
+        itemEntity.setOwningInstitutionItemId(".i100000046");
+        itemEntity.setOwningInstitutionId(1);
+        itemEntity.setBarcode(itemBarcode);
+        itemEntity.setCallNumber("1");
+        itemEntity.setCollectionGroupId(1);
+        itemEntity.setCallNumberType("1");
+        itemEntity.setCustomerCode(customerCode);
+        itemEntity.setCreatedDate(new Date());
+        itemEntity.setCreatedBy("tst");
+        itemEntity.setLastUpdatedBy("tst");
+        itemEntity.setItemAvailabilityStatusId(1);itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
+        List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity));
+        holdingsEntity.setItemEntities(itemEntitylist);
+        bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
+        return bibliographicEntity;
+
     }
-
-    @Test
-    public void testGetMultipleDataFieldValue(){
-        List<Record> recordList = marcUtil.convertMarcXmlToRecord(marcXmlContent);
-        List<String> response = marcUtil.getMultiDataFieldValues(recordList.get(0),"100",null,null,"a,d");
-        assertNotNull(response);
-        Assert.assertEquals(response.size(),2);
-        Assert.assertEquals(response.get(0),"Stokes, William Lee,");
-        Assert.assertEquals(response.get(1),"1915-1994.");
-    }
-
 
 }

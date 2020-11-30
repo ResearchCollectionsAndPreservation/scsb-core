@@ -2,11 +2,9 @@ package org.recap.service.submitcollection;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.recap.BaseTestCase;
+import org.recap.BaseTestCaseUT;
 import org.recap.model.reports.ReportDataRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
@@ -16,8 +14,8 @@ import static junit.framework.TestCase.assertNotNull;
 /**
  * Created by premkb on 23/3/17.
  */
-@RunWith(MockitoJUnitRunner.class)
-public class SubmitCollectionReportGeneratorUT{
+
+public class SubmitCollectionReportGeneratorUT extends BaseTestCaseUT {
 
     @Mock
     private SubmitCollectionReportGenerator submitCollectionReportGenerator;

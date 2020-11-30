@@ -68,10 +68,8 @@ public class CommonUtilUT extends BaseTestCaseUT {
     @Mock
     AccessionUtil accessionUtil;
 
-    @Before
-    public  void setup(){
-        MockitoAnnotations.initMocks(this);
-    }
+    @Mock
+    Record record;
 
     private String scsbXmlContent = "<bibRecords>\n" +
             "    <bibRecord>\n" +
@@ -229,6 +227,12 @@ public class CommonUtilUT extends BaseTestCaseUT {
     }
 
     @Test
+    public void getBarcodesList(){
+        List<String> itemBarcodes=commonUtil.getBarcodesList(Arrays.asList(getItemEntity()));
+        assertEquals("123456",itemBarcodes.get(0));
+    }
+
+    @Test
     public void getAllInstitutionCodes(){
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(getInstitutionEntities());
         Map response1= commonUtil.getInstitutionEntityMap();
@@ -292,7 +296,6 @@ public class CommonUtilUT extends BaseTestCaseUT {
         Set<AccessionResponse> accessionResponsesList=new HashSet<>();
         List<ReportDataEntity> reportDataEntityList=new ArrayList<>();
         AccessionRequest accessionRequest=new AccessionRequest();
-        Record record= PowerMockito.mock(Record.class);
         Mockito.when(accessionUtil.updateData(Mockito.any(),Mockito.anyString(),Mockito.anyList(),Mockito.any(),Mockito.anyBoolean(),Mockito.anyBoolean())).thenReturn(RecapCommonConstants.SUCCESS);
         String updatedDataResponse=commonUtil.getUpdatedDataResponse(accessionResponsesList,responseMapList,"",reportDataEntityList,accessionRequest,true,1,record);
         assertEquals(RecapCommonConstants.SUCCESS,updatedDataResponse);
@@ -411,6 +414,18 @@ public class CommonUtilUT extends BaseTestCaseUT {
         holdingsEntity.setOwningInstitutionHoldingsId("34567");
         holdingsEntity.setDeleted(false);
 
+        ItemEntity itemEntity = getItemEntity();
+        itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
+        itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+
+        holdingsEntity.setItemEntities(Arrays.asList(itemEntity));
+        bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
+
+        return bibliographicEntity;
+    }
+
+    private ItemEntity getItemEntity() {
         ItemEntity itemEntity = new ItemEntity();
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setOwningInstitutionItemId("843617540");
@@ -426,13 +441,6 @@ public class CommonUtilUT extends BaseTestCaseUT {
         itemEntity.setCatalogingStatus("Complete");
         itemEntity.setItemAvailabilityStatusId(1);
         itemEntity.setDeleted(false);
-        itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
-        itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
-
-        holdingsEntity.setItemEntities(Arrays.asList(itemEntity));
-        bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
-        bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
-
-        return bibliographicEntity;
+        return itemEntity;
     }
 }

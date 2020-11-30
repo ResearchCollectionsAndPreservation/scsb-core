@@ -1,169 +1,116 @@
 package org.recap.camel.dailyreconciliation;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.camel.spi.RouteController;
 import org.junit.Test;
-import org.recap.BaseTestCase;
-import org.recap.camel.dailyreconciliation.DailyReconciliationProcessor;
-import org.recap.model.jpa.BibliographicEntity;
-import org.recap.model.jpa.HoldingsEntity;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.recap.BaseTestCaseUT;
+import org.recap.RecapConstants;
+import org.recap.model.csv.DailyReconcilationRecord;
 import org.recap.model.jpa.InstitutionEntity;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.model.jpa.ItemStatusEntity;
 import org.recap.model.jpa.RequestItemEntity;
 import org.recap.model.jpa.RequestTypeEntity;
+import org.recap.repository.jpa.ItemDetailsRepository;
 import org.recap.repository.jpa.RequestItemDetailsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.Random;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by akulak on 8/5/17.
  */
-public class DailyReconciliationProcessorUT extends BaseTestCase {
+public class DailyReconciliationProcessorUT extends BaseTestCaseUT {
 
-    @PersistenceContext
-    EntityManager entityManager;
-
-    @Autowired
+    @InjectMocks
     DailyReconciliationProcessor dailyReconciliationProcessor;
 
-    @Autowired
+    @Mock
     RequestItemDetailsRepository requestItemDetailsRepository;
 
-    @Autowired
+    @Mock
     CamelContext camelContext;
 
-    @Autowired
+    @Mock
     ProducerTemplate producerTemplate;
 
-    @Test
-    public void testCreateCell() throws Exception{
-        XSSFWorkbook xssfWorkbook = new XSSFWorkbook();
-        XSSFSheet testSheet = xssfWorkbook.createSheet("test");
-        XSSFRow row = testSheet.createRow(0);
-        CellStyle cellStyle = xssfWorkbook.createCellStyle();
-        cellStyle.setAlignment(HorizontalAlignment.LEFT);
+    @Mock
+    Exchange exchange;
 
-        dailyReconciliationProcessor.createCell(xssfWorkbook,row,cellStyle,"test",0);
-        XSSFSheet test = xssfWorkbook.getSheet("test");
-        XSSFRow testRow = test.getRow(0);
-        assertNotNull(testRow);
-        XSSFCell cell = testRow.getCell(0);
-        assertEquals("test",cell.getStringCellValue());
+    @Mock
+    Message message;
+
+    @Mock
+    RouteController routeController;
+
+    @Mock
+    ItemDetailsRepository itemDetailsRepository;
+
+    @Test
+    public void processInput() throws Exception {
+        Mockito.when(exchange.getIn()).thenReturn(message);
+        List<DailyReconcilationRecord> dailyReconcilationRecords=new ArrayList<>();
+        dailyReconcilationRecords.add(getDailyReconcilationRecord("12345","1",RecapConstants.GFA_STATUS_IN));
+        dailyReconcilationRecords.add(getDailyReconcilationRecord("2345","1",RecapConstants.GFA_STATUS_IN ));
+        Mockito.when(message.getBody()).thenReturn(dailyReconcilationRecords);
+        Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
+        Mockito.when(requestItemDetailsRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(saveRequestItemEntity(1, getItemEntity())));
+        dailyReconciliationProcessor.processInput(exchange);
     }
 
     @Test
-    public void testBuildRequestsRows() throws Exception{
-        XSSFWorkbook xssfWorkbook = new XSSFWorkbook();
-        XSSFSheet testSheet = xssfWorkbook.createSheet("test");
-        BibliographicEntity bibliographicEntity = saveBibHoldingItemEntity();
-        ItemEntity itemEntity = bibliographicEntity.getItemEntities().get(0);
-        RequestItemEntity requestItemEntity = saveRequestItemEntity(itemEntity.getItemId(),itemEntity);
-        XSSFCellStyle xssfCellStyleForDate = dailyReconciliationProcessor.getXssfCellStyleForDate(xssfWorkbook);
-        dailyReconciliationProcessor.buildRequestsRows(xssfWorkbook,testSheet,xssfCellStyleForDate,0, String.valueOf(requestItemEntity.getId()));
-        XSSFSheet test = xssfWorkbook.getSheet("test");
-        XSSFRow testRow = test.getRow(0);
-        assertNotNull(testRow);
-        Cell cell0 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 0);
-        Cell cell1 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 1);
-        Cell cell2 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 2);
-        Cell cell3 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 3);
-        Cell cell4 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 4);
-        Cell cell7 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 7);
-        Cell cell8 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 8);
-        Cell cell9 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 9);
-        Cell cell10 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 10);
-
-        assertEquals(String.valueOf(requestItemEntity.getId()),cell0.getStringCellValue());
-        assertEquals(String.valueOf(itemEntity.getBarcode()),cell1.getStringCellValue());
-        assertEquals(String.valueOf(itemEntity.getCustomerCode()),cell2.getStringCellValue());
-        assertEquals(String.valueOf(requestItemEntity.getStopCode()),cell3.getStringCellValue());
-        assertEquals(String.valueOf(requestItemEntity.getPatronId()),cell4.getStringCellValue());
-        assertEquals(String.valueOf(requestItemEntity.getInstitutionEntity().getInstitutionCode()),cell7.getStringCellValue());
-        assertEquals(String.valueOf(itemEntity.getInstitutionEntity().getInstitutionCode()),cell8.getStringCellValue());
-        assertEquals(requestItemEntity.getRequestTypeEntity().getRequestTypeCode(),cell9.getStringCellValue());
-        assertEquals(itemEntity.getItemStatusEntity().getStatusCode(),cell10.getStringCellValue());
-
+    public void processInputRequestId() throws Exception {
+        Mockito.when(exchange.getIn()).thenReturn(message);
+        List<DailyReconcilationRecord> dailyReconcilationRecords=new ArrayList<>();
+        dailyReconcilationRecords.add(getDailyReconcilationRecord("12345",null, RecapConstants.GFA_STATUS_SCH_ON_REFILE_WORK_ORDER));
+        dailyReconcilationRecords.add(getDailyReconcilationRecord("23451",null,RecapConstants.GFA_STATUS_SCH_ON_REFILE_WORK_ORDER));
+        Mockito.when(message.getBody()).thenReturn(dailyReconcilationRecords);
+        Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
+       Mockito.when(itemDetailsRepository.findByBarcode(Mockito.anyString())).thenReturn(Arrays.asList(getItemEntity()));
+        dailyReconciliationProcessor.processInput(exchange);
     }
 
 
     @Test
-    public void testBuildDeacessionRows() throws Exception{
-        XSSFWorkbook xssfWorkbook = new XSSFWorkbook();
-        XSSFSheet testSheet = xssfWorkbook.createSheet("test");
-        BibliographicEntity bibliographicEntity = saveBibHoldingItemEntity();
-        ItemEntity itemEntity = bibliographicEntity.getItemEntities().get(0);
-        XSSFCellStyle xssfCellStyleForDate = dailyReconciliationProcessor.getXssfCellStyleForDate(xssfWorkbook);
-        dailyReconciliationProcessor.buildDeacessionRows(xssfWorkbook,testSheet,xssfCellStyleForDate,0,itemEntity.getBarcode());
-        XSSFSheet test = xssfWorkbook.getSheet("test");
-        XSSFRow testRow = test.getRow(0);
-        assertNotNull(testRow);
-        Cell cell1 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 1);
-        Cell cell2 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 2);
-        Cell cell8 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 8);
-        Cell cell10 = dailyReconciliationProcessor.getRowValuesForCompare(testRow, 10);
-        assertEquals(itemEntity.getBarcode(),cell1.getStringCellValue());
-        assertEquals(itemEntity.getCustomerCode(),cell2.getStringCellValue());
-        assertEquals(itemEntity.getInstitutionEntity().getInstitutionCode(),cell8.getStringCellValue());
-        assertEquals(itemEntity.getItemStatusEntity().getStatusCode(),cell10.getStringCellValue());
+    public void processInputException() throws Exception {
+        Mockito.when(exchange.getIn()).thenReturn(message);
+        List<DailyReconcilationRecord> dailyReconcilationRecords=new ArrayList<>();
+        DailyReconcilationRecord dailyReconcilationRecord = getDailyReconcilationRecord("12345","1","IN");
+        dailyReconcilationRecords.add(dailyReconcilationRecord);
+        Mockito.when(message.getBody()).thenReturn(dailyReconcilationRecords);
+        Mockito.when(camelContext.getRouteController()).thenThrow(NullPointerException.class);
+        dailyReconciliationProcessor.processInput(exchange);
     }
 
-
-    @Test
-    public void testCompareLasAndScsbSheets() throws Exception{
-        XSSFWorkbook xssfWorkbook = new XSSFWorkbook();
-        XSSFSheet testSheet = xssfWorkbook.createSheet("test");
-        testSheet.createRow(1).createCell(0).setCellValue("1");
-        XSSFSheet testSheet1 = xssfWorkbook.createSheet("test1");
-        testSheet1.createRow(1).createCell(0).setCellValue("1");
-        xssfWorkbook.setSheetOrder("test",0);
-        xssfWorkbook.setSheetOrder("test1",1); CellStyle cellStyle = xssfWorkbook.createCellStyle();
-        cellStyle.setAlignment(HorizontalAlignment.LEFT);
-        dailyReconciliationProcessor.compareLasAndScsbSheets(xssfWorkbook,cellStyle);
-        XSSFSheet compareSheet = xssfWorkbook.getSheetAt(2);
-        assertEquals("1",compareSheet.getRow(2).getCell(0).getStringCellValue());
-        assertEquals("1",compareSheet.getRow(2).getCell(3).getStringCellValue());
-        assertEquals("Matched",compareSheet.getRow(2).getCell(6).getStringCellValue());
+    private DailyReconcilationRecord getDailyReconcilationRecord(String barcode,String requestId,String status) {
+        DailyReconcilationRecord dailyReconcilationRecord=new DailyReconcilationRecord();
+        dailyReconcilationRecord.setCustomerCode("PA");
+        dailyReconcilationRecord.setRequestId(requestId);
+        dailyReconcilationRecord.setBarcode(barcode);
+        dailyReconcilationRecord.setStopCode("PA");
+        dailyReconcilationRecord.setPatronId("2");
+        dailyReconcilationRecord.setCreateDate(new Date().toString());
+        dailyReconcilationRecord.setOwningInst("1");
+        dailyReconcilationRecord.setLastUpdatedDate(new Date().toString());
+        dailyReconcilationRecord.setRequestingInst("1");
+        dailyReconcilationRecord.setDeliveryMethod("test");
+        dailyReconcilationRecord.setStatus(status);
+        dailyReconcilationRecord.setErrorCode("");
+        dailyReconcilationRecord.setErrorNote("");
+        return dailyReconcilationRecord;
     }
 
-
-    private BibliographicEntity saveBibHoldingItemEntity() throws Exception {
-        Random random = new Random();
-        String owningInstitutionBibId = String.valueOf(random.nextInt());
-        BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        bibliographicEntity.setContent("Mock Bib Content".getBytes());
-        bibliographicEntity.setCreatedDate(new Date());
-        bibliographicEntity.setCreatedBy("ut");
-        bibliographicEntity.setLastUpdatedBy("ut");
-        bibliographicEntity.setLastUpdatedDate(new Date());
-        bibliographicEntity.setOwningInstitutionBibId(owningInstitutionBibId);
-        bibliographicEntity.setOwningInstitutionId(1);
-
-        HoldingsEntity holdingsEntity = new HoldingsEntity();
-        holdingsEntity.setContent("mock holdings".getBytes());
-        holdingsEntity.setCreatedDate(new Date());
-        holdingsEntity.setCreatedBy("ut");
-        holdingsEntity.setLastUpdatedDate(new Date());
-        holdingsEntity.setLastUpdatedBy("ut");
-        holdingsEntity.setOwningInstitutionId(1);
-        holdingsEntity.setOwningInstitutionHoldingsId(String.valueOf(random.nextInt()));
-
+    private ItemEntity getItemEntity() {
         ItemEntity itemEntity = new ItemEntity();
         itemEntity.setItemId(new Random().nextInt());
         itemEntity.setBarcode("b3");
@@ -181,21 +128,10 @@ public class DailyReconciliationProcessorUT extends BaseTestCase {
         itemEntity.setUseRestrictions("no");
         itemEntity.setVolumePartYear("v3");
         itemEntity.setOwningInstitutionItemId(String.valueOf(new Random().nextInt()));
-        InstitutionEntity institutionEntity = getInstitutionEntity();
-        ItemStatusEntity itemStatusEntity = getItemStatusEntity();
-        itemEntity.setItemStatusEntity(itemStatusEntity);
-        itemEntity.setInstitutionEntity(institutionEntity);
+        itemEntity.setItemStatusEntity(getItemStatusEntity());
+        itemEntity.setInstitutionEntity(getInstitutionEntity());
         itemEntity.setDeleted(false);
-
-        itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
-
-        bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
-        bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
-
-        BibliographicEntity savedBibliographicEntity = bibliographicDetailsRepository.saveAndFlush(bibliographicEntity);
-        entityManager.refresh(savedBibliographicEntity);
-
-        return savedBibliographicEntity;
+        return itemEntity;
     }
 
     public RequestItemEntity saveRequestItemEntity(Integer itemId,ItemEntity itemEntity){
@@ -211,12 +147,10 @@ public class DailyReconciliationProcessorUT extends BaseTestCase {
         requestItemEntity.setEmailId("test@mail");
         requestItemEntity.setRequestStatusId(1);
         requestItemEntity.setRequestingInstitutionId(1);
-        RequestTypeEntity requestTypeEntity = getRequestTypeEntity();
-        requestItemEntity.setRequestTypeEntity(requestTypeEntity);
+        requestItemEntity.setInstitutionEntity(getInstitutionEntity());
+        requestItemEntity.setRequestTypeEntity(getRequestTypeEntity());
         requestItemEntity.setItemEntity(itemEntity);
-        RequestItemEntity requestItemEntity1 = requestItemDetailsRepository.saveAndFlush(requestItemEntity);
-        entityManager.refresh(requestItemEntity1);
-        return requestItemEntity1;
+        return requestItemEntity;
     }
 
     private RequestTypeEntity getRequestTypeEntity() {

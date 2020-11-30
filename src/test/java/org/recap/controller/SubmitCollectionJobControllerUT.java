@@ -67,4 +67,20 @@ public class SubmitCollectionJobControllerUT extends BaseTestCaseUT {
         String result = submitCollectionJobController.startSubmitCollection();
         assertEquals(RecapCommonConstants.SUCCESS,result);
     }
+    @Test
+    public void startSubmitCollectionException() throws Exception{
+        message.setMessageId("1");
+        message.setBody("SUBMIT COLLECTION");
+        exchange.setIn(message);
+        Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
+        Mockito.doNothing().when(routeController).startRoute(RecapConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE);
+        Mockito.when(camelContext.getEndpoint(RecapConstants.SUBMIT_COLLECTION_COMPLETION_QUEUE_TO)).thenReturn(endpoint);
+        Mockito.when(endpoint.createPollingConsumer()).thenThrow(NullPointerException.class);
+        Mockito.when(pollingConsumer.receive()).thenReturn(exchange);
+        Mockito.when(exchange.getIn()).thenReturn(message);
+        List<String> allInstitutionCodeExceptHTC= Arrays.asList("PUL","CUL","NYPL");
+        Mockito.when(institutionDetailsRepository.findAllInstitutionCodeExceptHTC()).thenReturn(allInstitutionCodeExceptHTC);
+        String result = submitCollectionJobController.startSubmitCollection();
+        assertEquals(RecapCommonConstants.SUCCESS,result);
+    }
 }

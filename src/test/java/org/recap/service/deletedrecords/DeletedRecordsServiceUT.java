@@ -1,11 +1,10 @@
 package org.recap.service.deletedrecords;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.recap.BaseTestCaseUT;
 import org.recap.RecapConstants;
 import org.recap.repository.jpa.DeletedRecordsRepository;
 import org.recap.service.EmailService;
@@ -15,8 +14,8 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by sudhishk on 5/6/17.
  */
-@RunWith(MockitoJUnitRunner.class)
-public class DeletedRecordsServiceUT{
+
+public class DeletedRecordsServiceUT extends BaseTestCaseUT {
     @InjectMocks
     DeletedRecordsService deletedRecordsService;
 

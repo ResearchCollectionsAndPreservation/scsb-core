@@ -1,5 +1,6 @@
 package org.recap.service.accession;
 
+import org.apache.camel.component.mock.AssertionTask;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.marc4j.MarcReader;
@@ -9,6 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.recap.BaseTestCaseUT;
+import org.recap.RecapCommonConstants;
+import org.recap.RecapConstants;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.jaxb.BibRecord;
 import org.recap.model.jaxb.JAXBHandler;
@@ -22,11 +25,13 @@ import org.recap.repository.jpa.CustomerCodeDetailsRepository;
 import org.recap.repository.jpa.HoldingsDetailsRepository;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
 import org.recap.repository.jpa.ItemDetailsRepository;
+import org.recap.util.AccessionUtil;
 import org.recap.util.MarcUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import javax.validation.constraints.AssertFalse;
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -41,7 +46,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -69,6 +76,38 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
 
     @Mock
     private ItemDetailsRepository itemDetailsRepository;
+
+    @Mock
+    AccessionUtil accessionUtil;
+
+    @Test
+    public void validateBarcodeOrCustomerCode(){
+        Mockito.when(accessionUtil.getOwningInstitution(Mockito.anyString())).thenReturn("").thenReturn("PUL");
+        AccessionValidationService.AccessionValidationResponse invalidBarcodeLength=accessionValidationService.validateBarcodeOrCustomerCode("12345123451234512345123451234512345123451234512345","PA");
+        assertEquals(RecapConstants.INVALID_BARCODE_LENGTH,invalidBarcodeLength.getMessage());
+        assertNull(invalidBarcodeLength.getOwningInstitution());
+        assertFalse(invalidBarcodeLength.isValid());
+
+        AccessionValidationService.AccessionValidationResponse blankBarcode=accessionValidationService.validateBarcodeOrCustomerCode("","PA");
+        assertEquals(RecapConstants.ITEM_BARCODE_EMPTY,blankBarcode.getMessage());
+        assertNull(blankBarcode.getOwningInstitution());
+        assertFalse(blankBarcode.isValid());
+
+        AccessionValidationService.AccessionValidationResponse customerCode=accessionValidationService.validateBarcodeOrCustomerCode("123456","PA");
+        assertEquals(RecapCommonConstants.CUSTOMER_CODE_DOESNOT_EXIST,customerCode.getMessage());
+        assertNull(customerCode.getOwningInstitution());
+        assertFalse(customerCode.isValid());
+
+        AccessionValidationService.AccessionValidationResponse customerCodeEmpty=accessionValidationService.validateBarcodeOrCustomerCode("123456","");
+        assertEquals(RecapConstants.CUSTOMER_CODE_EMPTY,customerCodeEmpty.getMessage());
+        assertNull(customerCodeEmpty.getOwningInstitution());
+        assertFalse(customerCodeEmpty.isValid());
+
+        AccessionValidationService.AccessionValidationResponse response=accessionValidationService.validateBarcodeOrCustomerCode("123456","PA");
+        assertEquals("",response.getMessage());
+        assertEquals("PUL",response.getOwningInstitution());
+        assertTrue(response.isValid());
+    }
 
     @Test
     public void validateBoundWithValidMarcRecordFromIls() throws URISyntaxException, IOException {

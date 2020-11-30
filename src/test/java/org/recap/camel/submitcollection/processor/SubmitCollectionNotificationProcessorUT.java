@@ -2,15 +2,13 @@ package org.recap.camel.submitcollection.processor;
 
 import org.apache.camel.ProducerTemplate;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.recap.BaseTestCaseUT;
+
 import static org.junit.Assert.assertTrue;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SubmitCollectionNotificationProcessorUT {
+public class SubmitCollectionNotificationProcessorUT extends BaseTestCaseUT {
     @InjectMocks
     SubmitCollectionNotificationProcessor submitCollectionNotificationProcessor;
     @Mock

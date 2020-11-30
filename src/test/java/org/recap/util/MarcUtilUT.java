@@ -3,8 +3,10 @@ package org.recap.util;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.VariableField;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.recap.BaseTestCaseUT;
 import org.recap.RecapConstants;
 import org.recap.model.jaxb.marc.BibRecords;
@@ -15,7 +17,6 @@ import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.marc.BibMarcRecord;
 import org.recap.model.marc.HoldingsMarcRecord;
 import org.recap.model.marc.ItemMarcRecord;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.xml.bind.JAXBContext;
@@ -48,8 +49,11 @@ public class MarcUtilUT extends BaseTestCaseUT {
     @InjectMocks
     MarcUtil marcUtil;
 
-    @Value("${submit.collection.input.limit}")
-    Integer inputLimit;
+    @Mock
+    Record record;
+
+    @Mock
+    VariableField variableField;
 
     private String marcXML = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n" +
             "          <record>\n" +
@@ -292,6 +296,42 @@ public class MarcUtilUT extends BaseTestCaseUT {
     }
 
     @Test
+    public void getListOfDataFieldValuesStartsWith(){
+        List<Character> subFieldTags=new ArrayList<>();
+        subFieldTags.add('a');
+        List<Record> records = marcUtil.convertMarcXmlToRecord(marcXML);
+        records.get(0).getVariableFields().get(0).setId(1l);
+        List<String> fieldValues = marcUtil.getListOfDataFieldValuesStartsWith(records.get(0),"9",subFieldTags);
+        assertNotNull(fieldValues);
+    }
+
+    @Test
+    public void extractXmlAndSetEntityToMap(){
+        List<Record> records = marcUtil.convertMarcXmlToRecord(marcXML);
+        StringBuilder errorMessage=new StringBuilder();
+        Map<String, Object> map=new HashMap<>();
+        BibliographicEntity bibliographicEntity=new BibliographicEntity();
+        Map<String, Object> extractXmlAndSetEntityToMap= marcUtil.extractXmlAndSetEntityToMap(records.get(0),errorMessage,map,bibliographicEntity);
+        assertNotNull(extractXmlAndSetEntityToMap);
+    }
+
+    @Test
+    public void convertAndValidateXml(){
+        List<Record> records = marcUtil.convertMarcXmlToRecord(marcXML);
+        ReflectionTestUtils.setField(marcUtil,"inputLimit",0);
+        String extractXmlAndSetEntityToMap= marcUtil.convertAndValidateXml(marcXML,true,records);
+        assertTrue(extractXmlAndSetEntityToMap.contains(RecapConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE));
+    }
+
+    @Test
+    public void convertAndValidateXmlInvalid(){
+        List<Record> records = marcUtil.convertMarcXmlToRecord(marcXML);
+        String extractXmlAndSetEntityToMap= marcUtil.convertAndValidateXml(marcXML,true,records);
+        assertTrue(extractXmlAndSetEntityToMap.contains(RecapConstants.INVALID_MARC_XML_FORMAT_MESSAGE));
+    }
+
+
+    @Test
     public void getDataFieldValueStartsWith(){
 
         List<Record> records =
@@ -490,19 +530,5 @@ public class MarcUtilUT extends BaseTestCaseUT {
         String content = marcUtil.writeMarcXml(record);
         assertNotNull(content);
         assertTrue(content.length() > 0);
-    }
-
-    @Test
-    public void convertAndValidateXml() throws Exception {
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",0);
-        String message=marcUtil.convertAndValidateXml(marcXML,true,getRecords());
-        assertTrue(message.contains(RecapConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE));
-    }
-
-    @Test
-    public void convertAndValidateXmlException() throws Exception {
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",0);
-        String message=marcUtil.convertAndValidateXml("test",true,getRecords());
-        assertEquals(message,RecapConstants.INVALID_MARC_XML_FORMAT_MESSAGE);
     }
 }

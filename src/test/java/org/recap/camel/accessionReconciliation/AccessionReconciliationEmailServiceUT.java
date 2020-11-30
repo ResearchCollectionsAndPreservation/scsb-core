@@ -1,29 +1,25 @@
-/*
 package org.recap.camel.accessionReconciliation;
 
-import org.apache.camel.*;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.ProducerTemplate;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.recap.RecapConstants;
-import org.recap.camel.EmailPayLoad;
+import org.mockito.MockitoAnnotations;
+import org.recap.BaseTestCaseUT;
 import org.recap.camel.accessionreconciliation.AccessionReconciliationEmailService;
 import org.recap.util.PropertyUtil;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.Assert.*;
-
-*/
+import static org.junit.Assert.assertEquals;
 /**
  * Created by akulak on 25/5/17.
- *//*
+ */
 
-@RunWith(MockitoJUnitRunner.class)
-public class AccessionReconciliationEmailServiceUT {
+public class AccessionReconciliationEmailServiceUT extends BaseTestCaseUT {
 
     @InjectMocks
     AccessionReconciliationEmailService accessionReconciliationEmailService;
@@ -35,59 +31,26 @@ public class AccessionReconciliationEmailServiceUT {
     Message message;
 
     @Mock
-    Header dataheader;
+    PropertyUtil propertyUtil;
 
     @Mock
     ProducerTemplate producerTemplate;
 
-    @Mock
-    PropertyUtil propertyUtil;
+    String institutionCode = "CUL";
 
-    @Mock
-    EmailPayLoad emailPayLoad;
+    @Before
+    public  void setup(){
+        MockitoAnnotations.initMocks(this);
+     }
 
-    String emailAddress = "test@mail.com";
-
-    String ccEmailAddress = "testcc@mail.com";
-
-
-
-    */
-/*@Test
-    public void testEmailIdTo() throws Exception{
-        String institution = "PUL";
-        AccessionReconciliationEmailService accessionReconciliationEmailService = new AccessionReconciliationEmailService(institution);
-        String result = accessionReconciliationEmailService.emailIdTo(institution, emailPayLoad);
-        assertNull(result);
-    }*//*
-
-   */
-/* @Test
-    public void getEmailPayLoad(){
-        String institutionCode = "NYPL";
-        AccessionReconciliationEmailService accessionReconciliationEmailService1 = new AccessionReconciliationEmailService(institutionCode);
-        emailPayLoad.setTo(emailAddress);
-        emailPayLoad.setCc(ccEmailAddress);
-        message.setHeader("CamelFileNameProduced",dataheader);
-        Mockito.when(exchange.getIn()).thenReturn(message);
-        EmailPayLoad emailPayLoad = accessionReconciliationEmailService1.getEmailPayLoad(exchange);
-        assertNotNull(emailPayLoad);
-    }*//*
-
-
-    */
-/*@Test
+    @Test
     public void processInput(){
-        producerTemplate.setThreadedAsyncMode(true);
-        producerTemplate.setDefaultEndpointUri("endpoint.com");
-        producerTemplate.setEventNotifierEnabled(true);
-        AccessionReconciliationEmailService accessionReconciliationEmailService1 = new AccessionReconciliationEmailService("CUL",producerTemplate);
-        message.setHeader("CamelFileNameProduced",dataheader);
+        ReflectionTestUtils.setField(accessionReconciliationEmailService,"institutionCode",institutionCode);
+        message.setHeader("CamelFileNameProduced","AccessionReconciliationFile");
+        exchange.setIn(message);
         Mockito.when(exchange.getIn()).thenReturn(message);
-        Mockito.doNothing().when(producerTemplate).sendBodyAndHeader(RecapConstants.EMAIL_Q, emailPayLoad, RecapConstants.EMAIL_BODY_FOR, "AccessionReconcilation");
-        accessionReconciliationEmailService1.processInput(exchange);
-    }*//*
-
+        accessionReconciliationEmailService.processInput(exchange);
+        assertEquals("CUL",institutionCode);
+    }
 
 }
-*/

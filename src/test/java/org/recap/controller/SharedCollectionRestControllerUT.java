@@ -8,22 +8,44 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.recap.BaseTestCaseUT;
 import org.recap.RecapCommonConstants;
+import org.recap.RecapConstants;
+import org.recap.converter.MarcToBibEntityConverter;
 import org.recap.model.accession.AccessionModelRequest;
 import org.recap.model.accession.AccessionRequest;
+import org.recap.model.jpa.BibliographicEntity;
+import org.recap.model.jpa.HoldingsEntity;
+import org.recap.model.jpa.InstitutionEntity;
+import org.recap.model.jpa.ItemEntity;
 import org.recap.model.submitcollection.SubmitCollectionResponse;
+import org.recap.repository.jpa.InstitutionDetailsRepository;
 import org.recap.service.accession.AccessionService;
 import org.recap.service.accession.BulkAccessionService;
+import org.recap.service.common.RepositoryService;
 import org.recap.service.common.SetupDataService;
 import org.recap.service.submitcollection.SubmitCollectionBatchService;
+import org.recap.service.submitcollection.SubmitCollectionDAOService;
+import org.recap.service.submitcollection.SubmitCollectionService;
+import org.recap.service.submitcollection.SubmitCollectionValidationService;
+import org.recap.util.MarcUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by premkb on 26/12/16.
@@ -49,8 +71,33 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
     @Mock
     BulkAccessionService bulkAccessionService;
 
+    @Mock
+    SubmitCollectionValidationService validationService;
+
+    @Mock
+    RepositoryService repositoryService;
+
+    @Mock
+    InstitutionDetailsRepository institutionDetailsRepository;
+
+    @Mock
+    MarcUtil marcUtil;
+
+    @Mock
+    MarcToBibEntityConverter marcToBibEntityConverter;
+
+    @Mock
+    SubmitCollectionDAOService submitCollectionDAOService;
+
+    @Mock
+    SubmitCollectionService submitCollectionService;
+
     @Value("${ongoing.accession.input.limit}")
     private Integer inputLimit;
+
+
+    @Value("${submit.collection.partition.size}")
+    Integer partitionSize;
 
     String updatedMarcXml = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">\n" +
             "<record>\n" +
@@ -185,28 +232,84 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         List<SubmitCollectionResponse> submitCollectionResponseList = new ArrayList<>();
         submitCollectionResponseList.add(submitCollectionResponse);
         Mockito.when(setupDataService.getInstitutionCodeIdMap()).thenReturn(map);
-        Mockito.when(submitCollectionBatchService.process(institution, inputRecords, processedBibIdSet, idMapToRemoveIndexList, bibIdMapToRemoveIndexList, "", reportRecordNumberList, true, isCGDProtection, updatedBoundWithDummyRecordOwnInstBibIdSet)).thenReturn(submitCollectionResponseList);
+        Mockito.when(submitCollectionBatchService.process(institution, inputRecords, processedBibIdSet, idMapToRemoveIndexList, bibIdMapToRemoveIndexList, "", reportRecordNumberList, true, isCGDProtection, updatedBoundWithDummyRecordOwnInstBibIdSet)).thenCallRealMethod();
+        Mockito.when(submitCollectionBatchService.getValidationService()).thenReturn(validationService);
+        Mockito.when(submitCollectionBatchService.getRepositoryService()).thenReturn(repositoryService);
+        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenReturn(institutionDetailsRepository);
+        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        Mockito.when(submitCollectionBatchService.processMarc(Mockito.anyString(),Mockito.anySet(),Mockito.anyMap(),Mockito.anyList(),Mockito.anyList(),Mockito.anyBoolean(),Mockito.anyBoolean(),Mockito.any(),Mockito.anySet())).thenCallRealMethod();
+        Mockito.when(submitCollectionBatchService.getMarcUtil()).thenReturn(marcUtil);
+        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList())).thenCallRealMethod();
+        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
+        ReflectionTestUtils.setField(marcUtil,"inputLimit",2);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"partitionSize",partitionSize);
+        Map responseMap=new HashMap();
+        StringBuilder stringBuilder=new StringBuilder();
+        responseMap.put("errorMessage",stringBuilder);
+        responseMap.put(RecapCommonConstants.BIBLIOGRAPHICENTITY,getBibliographicEntityMultiVolume("456"));
+        List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
+        BibliographicEntity bibliographicEntity=getBibliographicEntities("456");
+        bibliographicEntity.setBibliographicId(null);
+        updatedBibliographicEntityList.add(bibliographicEntity);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"marcToBibEntityConverter",marcToBibEntityConverter);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"submitCollectionDAOService",submitCollectionDAOService);
+        Mockito.when(marcToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
+        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anySet())).thenReturn(updatedBibliographicEntityList);
+        Mockito.when(submitCollectionBatchService.getConverter(Mockito.anyString())).thenCallRealMethod();
+        ReflectionTestUtils.setField(submitCollectionBatchService,"marcToBibEntityConverter",marcToBibEntityConverter);
+        Mockito.when(submitCollectionBatchService.getMarcToBibEntityConverter()).thenCallRealMethod();
+        Mockito.when(submitCollectionBatchService.getSubmitCollectionDAOService()).thenCallRealMethod();
+
         ResponseEntity response = sharedCollectionRestController.submitCollection(requestParameters);
         assertNotNull(response);
     }
 
     @Test
+    public void submitCollectionException() throws Exception{
+        SubmitCollectionResponse submitCollectionResponse = new SubmitCollectionResponse();
+        submitCollectionResponse.setItemBarcode("32101068878931");
+        submitCollectionResponse.setMessage("ExceptionRecord");
+        String inputRecords = updatedMarcXml;
+        String institution = "PUL";
+        boolean isCGDProtection = true;
+        Map map = new HashMap();
+        map.put(1,"PUL");
+        Map<String,Object> requestParameters = new HashedMap();
+        requestParameters.put(RecapCommonConstants.INPUT_RECORDS,updatedMarcXml);
+        requestParameters.put(RecapCommonConstants.INSTITUTION,"PUL");
+        requestParameters.put(RecapCommonConstants.IS_CGD_PROTECTED,"true");
+        List<Integer> reportRecordNumberList = new ArrayList<>();
+        Set<Integer> processedBibIdSet = new HashSet<>();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();//Added to remove dummy record in solr
+        List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();//Added to remove orphan record while unlinking
+        Set<String> updatedBoundWithDummyRecordOwnInstBibIdSet = new HashSet<>();
+        List<SubmitCollectionResponse> submitCollectionResponseList = new ArrayList<>();
+        submitCollectionResponseList.add(submitCollectionResponse);
+        Mockito.when(setupDataService.getInstitutionCodeIdMap()).thenReturn(map);
+        Mockito.when(submitCollectionBatchService.process(institution, inputRecords, processedBibIdSet, idMapToRemoveIndexList, bibIdMapToRemoveIndexList, "", reportRecordNumberList, true, isCGDProtection, updatedBoundWithDummyRecordOwnInstBibIdSet)).thenThrow(NullPointerException.class);
+        ResponseEntity response = sharedCollectionRestController.submitCollection(requestParameters);
+        assertEquals(RecapConstants.SUBMIT_COLLECTION_INTERNAL_ERROR,response.getBody());
+    }
+
+    @Test
     public void accessionBatch() throws Exception{
-        ResponseEntity response = sharedCollectionRestController.accessionBatch(getAccessionModelRequest());
+        AccessionModelRequest accessionModelRequest=new AccessionModelRequest();
+        ResponseEntity response = sharedCollectionRestController.accessionBatch(accessionModelRequest);
         assertEquals(HttpStatus.OK,response.getStatusCode());
     }
 
     @Test
     public void accession() throws Exception{
+        AccessionModelRequest accessionModelRequest=new AccessionModelRequest();
+        accessionModelRequest.setAccessionRequests(getAccessionRequests());
         ReflectionTestUtils.setField(sharedCollectionRestController,"inputLimit",inputLimit);
-        ResponseEntity response = sharedCollectionRestController.accession(getAccessionModelRequest(),exchange);
+        ResponseEntity response = sharedCollectionRestController.accession(accessionModelRequest,exchange);
         assertEquals(HttpStatus.OK,response.getStatusCode());
     }
 
     @Test
     public void accessionExceedLimit() throws Exception{
-        AccessionModelRequest accessionModelRequest = new AccessionModelRequest();
-        accessionModelRequest.setImsLocationCode(RecapCommonConstants.IMS_LOCATION_RECAP);
         List<AccessionRequest> accessionRequestList=new ArrayList<>();
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
@@ -215,6 +318,7 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         accessionRequest1.setCustomerCode("PA");
         accessionRequest1.setItemBarcode("32101095533294");
         accessionRequestList.add(accessionRequest1);
+        AccessionModelRequest accessionModelRequest=new AccessionModelRequest();
         accessionModelRequest.setAccessionRequests(accessionRequestList);
         ReflectionTestUtils.setField(sharedCollectionRestController,"inputLimit",0);
         ResponseEntity response = sharedCollectionRestController.accession(accessionModelRequest,exchange);
@@ -229,21 +333,103 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
 
     @Test
     public void ongoingAccessionJobFailure() throws Exception{
-        Mockito.when(bulkAccessionService.getAccessionRequest(Mockito.anyList())).thenReturn(getAccessionModelRequest().getAccessionRequests());
+        Mockito.when(bulkAccessionService.getAccessionRequest(Mockito.anyList())).thenReturn(getAccessionRequests());
         String response = sharedCollectionRestController.ongoingAccessionJob(exchange);
         assertEquals(RecapCommonConstants.FAILURE,response);
     }
 
-    private AccessionModelRequest getAccessionModelRequest() {
-        AccessionModelRequest accessionModelRequest = new AccessionModelRequest();
-        accessionModelRequest.setImsLocationCode(RecapCommonConstants.IMS_LOCATION_RECAP);
+    private List<AccessionRequest> getAccessionRequests() {
         List<AccessionRequest> accessionRequestList = new ArrayList<>();
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("32101095533293");
         accessionRequestList.add(accessionRequest);
-        accessionModelRequest.setAccessionRequests(accessionRequestList);
-        return accessionModelRequest;
+        return accessionRequestList;
+    }
+
+    private InstitutionEntity getInstitutionEntity() {
+        InstitutionEntity institutionEntity = new InstitutionEntity();
+        institutionEntity.setId(1);
+        institutionEntity.setInstitutionName("PUL");
+        institutionEntity.setInstitutionCode("PUL");
+        return institutionEntity;
+    }
+    private BibliographicEntity getBibliographicEntityMultiVolume(String owningInstitutionBibId){
+        BibliographicEntity bibliographicEntity = getBibliographicEntity(1,owningInstitutionBibId);
+        HoldingsEntity holdingsEntity = getHoldingsEntity();
+        ItemEntity itemEntity = getItemEntity("843617540");
+        List<BibliographicEntity> bibliographicEntitylist = new LinkedList(Arrays.asList(bibliographicEntity));
+        List<HoldingsEntity> holdingsEntitylist = new LinkedList(Arrays.asList(holdingsEntity));
+        List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity,getItemEntity("78547557")));
+        holdingsEntity.setBibliographicEntities(bibliographicEntitylist);
+        holdingsEntity.setItemEntities(itemEntitylist);
+        bibliographicEntity.setHoldingsEntities(holdingsEntitylist);
+        bibliographicEntity.setItemEntities(itemEntitylist);
+        itemEntity.setHoldingsEntities(holdingsEntitylist);
+        itemEntity.setBibliographicEntities(bibliographicEntitylist);
+        return bibliographicEntity;
+    }
+    private HoldingsEntity getHoldingsEntity() {
+        HoldingsEntity holdingsEntity = new HoldingsEntity();
+        holdingsEntity.setCreatedDate(new Date());
+        holdingsEntity.setLastUpdatedDate(new Date());
+        holdingsEntity.setCreatedBy("tst");
+        holdingsEntity.setLastUpdatedBy("tst");
+        holdingsEntity.setOwningInstitutionId(1);
+        holdingsEntity.setOwningInstitutionHoldingsId("34567");
+        holdingsEntity.setDeleted(false);
+        return  holdingsEntity;
+    }
+
+    private ItemEntity getItemEntity(String OwningInstitutionItemId) {
+        ItemEntity itemEntity = new ItemEntity();
+        itemEntity.setItemId(1);
+        itemEntity.setLastUpdatedDate(new Date());
+        itemEntity.setOwningInstitutionItemId("843617540");
+        itemEntity.setOwningInstitutionId(1);
+        itemEntity.setBarcode("123456");
+        itemEntity.setCallNumber("x.12321");
+        itemEntity.setCollectionGroupId(1);
+        itemEntity.setCallNumberType("1");
+        itemEntity.setCustomerCode("123");
+        itemEntity.setCreatedDate(new Date());
+        itemEntity.setCreatedBy("tst");
+        itemEntity.setLastUpdatedBy("tst");
+        itemEntity.setCatalogingStatus("Complete");
+        itemEntity.setItemAvailabilityStatusId(1);
+        itemEntity.setDeleted(false);
+        itemEntity.setInstitutionEntity(getInstitutionEntity());
+        return itemEntity;
+    }
+
+    private BibliographicEntity getBibliographicEntities(String owningInstitutionBibId){
+        BibliographicEntity bibliographicEntity = getBibliographicEntity(1,owningInstitutionBibId);
+        HoldingsEntity holdingsEntity = getHoldingsEntity();
+        ItemEntity itemEntity = getItemEntity("843617540");
+        List<BibliographicEntity> bibliographicEntitylist = new LinkedList(Arrays.asList(bibliographicEntity));
+        List<HoldingsEntity> holdingsEntitylist = new LinkedList(Arrays.asList(holdingsEntity));
+        List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity));
+        holdingsEntity.setBibliographicEntities(bibliographicEntitylist);
+        holdingsEntity.setItemEntities(itemEntitylist);
+        bibliographicEntity.setHoldingsEntities(holdingsEntitylist);
+        bibliographicEntity.setItemEntities(itemEntitylist);
+        itemEntity.setHoldingsEntities(holdingsEntitylist);
+        itemEntity.setBibliographicEntities(bibliographicEntitylist);
+        return bibliographicEntity;
+    }
+
+    private BibliographicEntity getBibliographicEntity(int bibliographicId,String owningInstitutionBibId) {
+        BibliographicEntity bibliographicEntity = new BibliographicEntity();
+        bibliographicEntity.setBibliographicId(bibliographicId);
+        bibliographicEntity.setContent("Test".getBytes());
+        bibliographicEntity.setCreatedDate(new Date());
+        bibliographicEntity.setLastUpdatedDate(new Date());
+        bibliographicEntity.setCreatedBy("tst");
+        bibliographicEntity.setLastUpdatedBy("tst");
+        bibliographicEntity.setOwningInstitutionId(1);
+        bibliographicEntity.setOwningInstitutionBibId(owningInstitutionBibId);
+        bibliographicEntity.setDeleted(false);
+        return bibliographicEntity;
     }
 
 

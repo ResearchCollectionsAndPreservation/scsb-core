@@ -1,6 +1,7 @@
 
 package org.recap.service.submitcollection;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.marc4j.marc.Leader;
@@ -9,7 +10,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.recap.BaseTestCaseUT;
+import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
+import org.recap.converter.MarcToBibEntityConverter;
 import org.recap.converter.SCSBToBibEntityConverter;
 import org.recap.model.jaxb.Bib;
 import org.recap.model.jaxb.BibRecord;
@@ -26,6 +29,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.xml.bind.JAXBException;
+import java.io.File;
+import java.net.URL;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -36,6 +42,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 
@@ -54,13 +61,16 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
     Leader leader;
 
     @Mock
-    private MarcUtil marcUtil;
+    MarcUtil marcUtil;
 
     @Mock
     CommonUtil commonUtil;
 
     @Mock
     SCSBToBibEntityConverter scsbToBibEntityConverter;
+
+    @Mock
+    MarcToBibEntityConverter marcToBibEntityConverter;
 
     @Mock
     SubmitCollectionReportHelperService submitCollectionReportHelperService;
@@ -75,113 +85,117 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
     Integer partitionSize;
 
 
-    private String inputRecords = "\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n\" +\n" +
-            "            \"<collection>\\n\" +\n" +
-            "            \"   <record>\\n\" +\n" +
-            "            \"      <leader>01302cas a2200361 a 4500</leader>\\n\" +\n" +
-            "            \"      <controlfield tag=\\\"001\\\">202304</controlfield>\\n\" +\n" +
-            "            \"      <controlfield tag=\\\"005\\\">20160526232735.0</controlfield>\\n\" +\n" +
-            "            \"      <controlfield tag=\\\"008\\\">830323c19819999iluqx p   gv  0    0eng d</controlfield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"010\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">82640039</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"z\\\">81640039</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"z\\\">sn 81001329</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\"0\\\" ind2=\\\" \\\" tag=\\\"022\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">0276-9948</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"035\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">(OCoLC)7466281</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"035\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">(CStRLIN)NJPG83-S372</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"035\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"9\\\">ABB7255TS-test</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"040\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">NSDP</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"d\\\">NjP</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"042\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">nsdp</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">lc</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"043\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">n-us-il</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\"0\\\" ind2=\\\"0\\\" tag=\\\"050\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">K25</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"b\\\">.N63</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\"0\\\" tag=\\\"222\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">University of Illinois law review</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\"0\\\" ind2=\\\"0\\\" tag=\\\"245\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">University of Michigan.</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\"3\\\" ind2=\\\"0\\\" tag=\\\"246\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">Law review</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"260\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">Champaign, IL :</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"b\\\">University of Illinois at Urbana-Champaign, College of Law,</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"c\\\">c1981-</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"300\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">v. ;</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"c\\\">27 cm.</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"310\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">5 times a year,</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"b\\\">2001-&amp;lt;2013&amp;gt;</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"321\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">Quarterly,</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"b\\\">1981-2000</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\"0\\\" ind2=\\\" \\\" tag=\\\"362\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">Vol. 1981, no. 1-</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"588\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">Title from cover.</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"588\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">Latest issue consulted: Vol. 2013, no. 5.</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\"0\\\" tag=\\\"650\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">Law reviews</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"z\\\">Illinois.</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"0\\\">(uri)http://id.loc.gov/authorities/subjects/sh2009129243</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\"2\\\" ind2=\\\" \\\" tag=\\\"710\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">University of Illinois at Urbana-Champaign.</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"b\\\">College of Law.</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"0\\\">(uri)http://id.loc.gov/authorities/names/n50049213</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\"0\\\" ind2=\\\"0\\\" tag=\\\"780\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"t\\\">University of Illinois law forum</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"x\\\">0041-963X</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"998\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">09/09/94</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"s\\\">9110</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"n\\\">NjP</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"w\\\">DCLC82640039S</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"d\\\">03/23/83</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"c\\\">DLJ</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"b\\\">SZF</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"i\\\">940909</subfield>\\n\" +\n" +
-            "            \"         <subfield code=\\\"l\\\">NJPG</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"911\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">19940916</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"      <datafield ind1=\\\" \\\" ind2=\\\" \\\" tag=\\\"912\\\">\\n\" +\n" +
-            "            \"         <subfield code=\\\"a\\\">19970731060735.8</subfield>\\n\" +\n" +
-            "            \"      </datafield>\\n\" +\n" +
-            "            \"   </record>\\n\" +\n" +
-            "            \"</collection>\";\n";
+    private String inputRecords =  "<collection xmlns=\"http://www.loc.gov/MARC21/slim\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">\n" +
+            "<record>\n" +
+            "<leader>01011cam a2200289 a 4500</leader>\n" +
+            "<controlfield tag=\"001\">115115</controlfield>\n" +
+            "<controlfield tag=\"005\">20160503221017.0</controlfield>\n" +
+            "<controlfield tag=\"008\">820315s1982 njua b 00110 eng</controlfield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"010\">\n" +
+            "<subfield code=\"a\">81008543</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"020\">\n" +
+            "<subfield code=\"a\">0132858908</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"035\">\n" +
+            "<subfield code=\"a\">(OCoLC)7555877</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"035\">\n" +
+            "<subfield code=\"a\">(CStRLIN)NJPG82-B5675</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"035\">\n" +
+            "<subfield code=\"9\">AAS9821TS</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\" \" tag=\"039\">\n" +
+            "<subfield code=\"a\">2</subfield>\n" +
+            "<subfield code=\"b\">3</subfield>\n" +
+            "<subfield code=\"c\">3</subfield>\n" +
+            "<subfield code=\"d\">3</subfield>\n" +
+            "<subfield code=\"e\">3</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\" \" tag=\"050\">\n" +
+            "<subfield code=\"a\">QE28.3</subfield>\n" +
+            "<subfield code=\"b\">.S76 1982</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\" \" tag=\"082\">\n" +
+            "<subfield code=\"a\">551.7</subfield>\n" +
+            "<subfield code=\"2\">19</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"1\" ind2=\" \" tag=\"100\">\n" +
+            "<subfield code=\"a\">Stokes, William Lee,</subfield>\n" +
+            "<subfield code=\"d\">1915-1994.</subfield>\n" +
+            "<subfield code=\"0\">(uri)http://id.loc.gov/authorities/names/n50011514</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"1\" ind2=\"0\" tag=\"245\">\n" +
+            "<subfield code=\"a\">Essentials of earth history :</subfield>\n" +
+            "<subfield code=\"b\">an introduction to historical geology /</subfield>\n" +
+            "<subfield code=\"c\">W. Lee Stokes.</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"250\">\n" +
+            "<subfield code=\"a\">4th ed.</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"260\">\n" +
+            "<subfield code=\"a\">Englewood Cliffs, N.J. :</subfield>\n" +
+            "<subfield code=\"b\">Prentice-Hall,</subfield>\n" +
+            "<subfield code=\"c\">c1982.</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"300\">\n" +
+            "<subfield code=\"a\">xiv, 577 p. :</subfield>\n" +
+            "<subfield code=\"b\">ill. ;</subfield>\n" +
+            "<subfield code=\"c\">24 cm.</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"504\">\n" +
+            "<subfield code=\"a\">Includes bibliographies and index.</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\"0\" tag=\"650\">\n" +
+            "<subfield code=\"a\">Historical geology.</subfield>\n" +
+            "<subfield code=\"0\">\n" +
+            "(uri)http://id.loc.gov/authorities/subjects/sh85061190\n" +
+            "</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"998\">\n" +
+            "<subfield code=\"a\">03/15/82</subfield>\n" +
+            "<subfield code=\"s\">9110</subfield>\n" +
+            "<subfield code=\"n\">NjP</subfield>\n" +
+            "<subfield code=\"w\">DCLC818543B</subfield>\n" +
+            "<subfield code=\"d\">03/15/82</subfield>\n" +
+            "<subfield code=\"c\">ZG</subfield>\n" +
+            "<subfield code=\"b\">WZ</subfield>\n" +
+            "<subfield code=\"i\">820315</subfield>\n" +
+            "<subfield code=\"l\">NJPG</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"948\">\n" +
+            "<subfield code=\"a\">AACR2</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"911\">\n" +
+            "<subfield code=\"a\">19921028</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"912\">\n" +
+            "<subfield code=\"a\">19900820000000.0</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\" \" ind2=\" \" tag=\"959\">\n" +
+            "<subfield code=\"a\">2000-06-13 00:00:00 -0500</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\"0\" tag=\"852\">\n" +
+            "<subfield code=\"0\">128532</subfield>\n" +
+            "<subfield code=\"b\">rcppa</subfield>\n" +
+            "<subfield code=\"h\">QE28.3 .S76 1982</subfield>\n" +
+            "<subfield code=\"t\">1</subfield>\n" +
+            "<subfield code=\"x\">tr fr sci</subfield>\n" +
+            "</datafield>\n" +
+            "<datafield ind1=\"0\" ind2=\"0\" tag=\"876\">\n" +
+            "<subfield code=\"0\">128532</subfield>\n" +
+            "<subfield code=\"a\">123431</subfield>\n" +
+            "<subfield code=\"h\"/>\n" +
+            "<subfield code=\"j\">Not Charged</subfield>\n" +
+            "<subfield code=\"p\">32101068878931</subfield>\n" +
+            "<subfield code=\"t\">1</subfield>\n" +
+            "<subfield code=\"x\">Shared</subfield>\n" +
+            "<subfield code=\"z\">PA</subfield>\n" +
+            "</datafield>\n" +
+            "</record>\n" +
+            "</collection>";
+
     @Test
     public void processMarc(){
         Set<Integer> processedBibIds = new HashSet<>();
@@ -209,6 +223,20 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
         record.setType("Submit");
         List<Record> recordList = new ArrayList<>();
         recordList.add(record);
+        ReflectionTestUtils.setField(marcUtil,"inputLimit",2);
+        ReflectionTestUtils.setField(submitCollectionBatchService,"partitionSize",partitionSize);
+        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList())).thenCallRealMethod();
+        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
+        Map responseMap=new HashMap();
+        StringBuilder stringBuilder=new StringBuilder();
+        responseMap.put("errorMessage",stringBuilder);
+        responseMap.put(RecapCommonConstants.BIBLIOGRAPHICENTITY,getBibliographicEntityMultiVolume("456"));
+        List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
+        BibliographicEntity bibliographicEntity=getBibliographicEntities("456");
+        bibliographicEntity.setBibliographicId(null);
+        updatedBibliographicEntityList.add(bibliographicEntity);
+        Mockito.when(marcToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
+        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anySet())).thenReturn(updatedBibliographicEntityList);
         String result = submitCollectionBatchService.processMarc(inputRecords, processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,checkLimit,isCGDProtection,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
         assertNull(result);
     }
@@ -275,10 +303,10 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
         Map responseMap=new HashMap();
         StringBuilder errorMessage = new StringBuilder();
         responseMap.put("errorMessage",errorMessage);
-        responseMap.put("bibliographicEntity",getBibliographicEntity());
+        responseMap.put("bibliographicEntity",getBibliographicEntities("456"));
         Mockito.when(scsbToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
         List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
-        updatedBibliographicEntityList.add(getBibliographicEntity());
+        updatedBibliographicEntityList.add(getBibliographicEntities("456"));
         Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anySet())).thenReturn(updatedBibliographicEntityList);
         String result =  submitCollectionBatchService.processSCSB(inputRecords,processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,true,true,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
         assertEquals(null,result);
@@ -304,10 +332,10 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
         Map responseMap=new HashMap();
         StringBuilder errorMessage = new StringBuilder();
         responseMap.put("errorMessage",errorMessage);
-        responseMap.put("bibliographicEntity",getBibliographicEntity2());
+        responseMap.put("bibliographicEntity",getBibliographicEntityBoundwith());
         Mockito.when(scsbToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
         List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
-        updatedBibliographicEntityList.add(getBibliographicEntity2());
+        updatedBibliographicEntityList.add(getBibliographicEntityBoundwith());
         Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anySet())).thenReturn(updatedBibliographicEntityList);
         String result =  submitCollectionBatchService.processSCSB(inputRecords,processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,true,true,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
         assertEquals(null,result);
@@ -335,10 +363,10 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
         StringBuilder errorMessage = new StringBuilder();
         errorMessage.append(1);
         responseMap.put("errorMessage",errorMessage);
-        responseMap.put("bibliographicEntity",getBibliographicEntity2());
+        responseMap.put("bibliographicEntity",getBibliographicEntityBoundwith());
         Mockito.when(scsbToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
         List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
-        updatedBibliographicEntityList.add(getBibliographicEntity2());
+        updatedBibliographicEntityList.add(getBibliographicEntityBoundwith());
         Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anySet())).thenReturn(updatedBibliographicEntityList);
         String result =  submitCollectionBatchService.processSCSB(inputRecords,processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,true,true,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
         assertEquals(null,result);
@@ -364,10 +392,10 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
         Mockito.when(commonUtil.extractBibRecords(Mockito.anyString())).thenReturn(bibRecords);
         Map responseMap=new HashMap();
         responseMap.put("errorMessage",null);
-        responseMap.put("bibliographicEntity",getBibliographicEntity2());
+        responseMap.put("bibliographicEntity",getBibliographicEntityBoundwith());
         Mockito.when(scsbToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
         List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
-        updatedBibliographicEntityList.add(getBibliographicEntity2());
+        updatedBibliographicEntityList.add(getBibliographicEntityBoundwith());
         Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anySet())).thenReturn(updatedBibliographicEntityList);
         String result =  submitCollectionBatchService.processSCSB(inputRecords,processedBibIds,submitCollectionReportInfoMap,idMapToRemoveIndexList,bibIdMapToRemoveIndexList,true,true,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
         assertEquals(null,result);
@@ -387,6 +415,9 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
         assertEquals(RecapConstants.INVALID_SCSB_XML_FORMAT_MESSAGE,result);
     }
 
+
+
+
     private InstitutionEntity getInstitutionEntity(){
         InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setId(1);
@@ -394,76 +425,22 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
         institutionEntity.setInstitutionCode("PUL");
         return institutionEntity;
     }
-    private BibliographicEntity getBibliographicEntity(){
+
+    private BibliographicEntity getBibliographicEntity(int bibliographicId,String owningInstitutionBibId) {
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(1);
+        bibliographicEntity.setBibliographicId(bibliographicId);
         bibliographicEntity.setContent("Test".getBytes());
         bibliographicEntity.setCreatedDate(new Date());
         bibliographicEntity.setLastUpdatedDate(new Date());
         bibliographicEntity.setCreatedBy("tst");
         bibliographicEntity.setLastUpdatedBy("tst");
         bibliographicEntity.setOwningInstitutionId(1);
-        bibliographicEntity.setOwningInstitutionBibId("456");
+        bibliographicEntity.setOwningInstitutionBibId(owningInstitutionBibId);
         bibliographicEntity.setDeleted(false);
-
-        InstitutionEntity institutionEntity = new InstitutionEntity();
-        institutionEntity.setId(1);
-        institutionEntity.setInstitutionName("PUL");
-        institutionEntity.setInstitutionCode("PUL");
-
-        HoldingsEntity holdingsEntity = new HoldingsEntity();
-        holdingsEntity.setCreatedDate(new Date());
-        holdingsEntity.setLastUpdatedDate(new Date());
-        holdingsEntity.setCreatedBy("tst");
-        holdingsEntity.setLastUpdatedBy("tst");
-        holdingsEntity.setOwningInstitutionId(1);
-        holdingsEntity.setOwningInstitutionHoldingsId("34567");
-        holdingsEntity.setDeleted(false);
-
-        ItemEntity itemEntity = new ItemEntity();
-        itemEntity.setLastUpdatedDate(new Date());
-        itemEntity.setOwningInstitutionItemId("843617540");
-        itemEntity.setOwningInstitutionId(1);
-        itemEntity.setBarcode("123456");
-        itemEntity.setCallNumber("x.12321");
-        itemEntity.setCollectionGroupId(1);
-        itemEntity.setCallNumberType("1");
-        itemEntity.setCustomerCode("123");
-        itemEntity.setCreatedDate(new Date());
-        itemEntity.setCreatedBy("tst");
-        itemEntity.setLastUpdatedBy("tst");
-        itemEntity.setCatalogingStatus("Complete");
-        itemEntity.setItemAvailabilityStatusId(1);
-        itemEntity.setDeleted(false);
-        itemEntity.setInstitutionEntity(institutionEntity);
-        itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
-        itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
-
-        holdingsEntity.setItemEntities(Arrays.asList(itemEntity));
-        bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
-        bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
-
         return bibliographicEntity;
     }
 
-    private BibliographicEntity getBibliographicEntity2(){
-        InstitutionEntity institutionEntity = new InstitutionEntity();
-        institutionEntity.setId(1);
-        institutionEntity.setInstitutionName("PUL");
-        institutionEntity.setInstitutionCode("PUL");
-
-        BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(123456);
-        bibliographicEntity.setContent("Test".getBytes());
-        bibliographicEntity.setCreatedDate(new Date());
-        bibliographicEntity.setLastUpdatedDate(new Date());
-        bibliographicEntity.setCreatedBy("tst");
-        bibliographicEntity.setLastUpdatedBy("tst");
-        bibliographicEntity.setOwningInstitutionId(1);
-        bibliographicEntity.setOwningInstitutionBibId("1577261074");
-        bibliographicEntity.setDeleted(false);
-        bibliographicEntity.setCatalogingStatus("inComplete");
-
+    private HoldingsEntity getHoldingsEntity() {
         HoldingsEntity holdingsEntity = new HoldingsEntity();
         holdingsEntity.setCreatedDate(new Date());
         holdingsEntity.setLastUpdatedDate(new Date());
@@ -472,7 +449,10 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
         holdingsEntity.setOwningInstitutionId(1);
         holdingsEntity.setOwningInstitutionHoldingsId("34567");
         holdingsEntity.setDeleted(false);
+        return  holdingsEntity;
+    }
 
+    private ItemEntity getItemEntity(String OwningInstitutionItemId) {
         ItemEntity itemEntity = new ItemEntity();
         itemEntity.setItemId(1);
         itemEntity.setLastUpdatedDate(new Date());
@@ -489,22 +469,55 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
         itemEntity.setCatalogingStatus("Complete");
         itemEntity.setItemAvailabilityStatusId(1);
         itemEntity.setDeleted(false);
+        itemEntity.setInstitutionEntity(getInstitutionEntity());
+        return itemEntity;
+    }
+
+    private BibliographicEntity getBibliographicEntities(String owningInstitutionBibId){
+        BibliographicEntity bibliographicEntity = getBibliographicEntity(1,owningInstitutionBibId);
+        HoldingsEntity holdingsEntity = getHoldingsEntity();
+        ItemEntity itemEntity = getItemEntity("843617540");
+        List<BibliographicEntity> bibliographicEntitylist = new LinkedList(Arrays.asList(bibliographicEntity));
+        List<HoldingsEntity> holdingsEntitylist = new LinkedList(Arrays.asList(holdingsEntity));
+        List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity));
+        holdingsEntity.setBibliographicEntities(bibliographicEntitylist);
+        holdingsEntity.setItemEntities(itemEntitylist);
+        bibliographicEntity.setHoldingsEntities(holdingsEntitylist);
+        bibliographicEntity.setItemEntities(itemEntitylist);
+        itemEntity.setHoldingsEntities(holdingsEntitylist);
+        itemEntity.setBibliographicEntities(bibliographicEntitylist);
+        return bibliographicEntity;
+    }
+
+    private BibliographicEntity getBibliographicEntityMultiVolume(String owningInstitutionBibId){
+        BibliographicEntity bibliographicEntity = getBibliographicEntity(1,owningInstitutionBibId);
+        HoldingsEntity holdingsEntity = getHoldingsEntity();
+        ItemEntity itemEntity = getItemEntity("843617540");
+        List<BibliographicEntity> bibliographicEntitylist = new LinkedList(Arrays.asList(bibliographicEntity));
+        List<HoldingsEntity> holdingsEntitylist = new LinkedList(Arrays.asList(holdingsEntity));
+        List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity,getItemEntity("78547557")));
+        holdingsEntity.setBibliographicEntities(bibliographicEntitylist);
+        holdingsEntity.setItemEntities(itemEntitylist);
+        bibliographicEntity.setHoldingsEntities(holdingsEntitylist);
+        bibliographicEntity.setItemEntities(itemEntitylist);
+        itemEntity.setHoldingsEntities(holdingsEntitylist);
+        itemEntity.setBibliographicEntities(bibliographicEntitylist);
+        return bibliographicEntity;
+    }
+
+    private BibliographicEntity getBibliographicEntityBoundwith(){
+        BibliographicEntity bibliographicEntity = getBibliographicEntity(123456,"34558");
+        bibliographicEntity.setCatalogingStatus("inComplete");
+        HoldingsEntity holdingsEntity =getHoldingsEntity();
+        ItemEntity itemEntity =getItemEntity("843617540");
         itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
-        itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
-        itemEntity.setInstitutionEntity(institutionEntity);
         List<BibliographicEntity> bibliographicEntities = new ArrayList<>();
-        BibliographicEntity bibliographicEntity1 = getBibliographicEntity();
-        bibliographicEntity.setOwningInstitutionBibId("34558");
-        BibliographicEntity bibliographicEntity2= getBibliographicEntity();
-        bibliographicEntity.setOwningInstitutionBibId("34558");
-        bibliographicEntity1.setOwningInstitutionBibId("45568");
-        bibliographicEntities.add(bibliographicEntity1);
-        bibliographicEntities.add(bibliographicEntity2);
+        bibliographicEntities.add(getBibliographicEntities("45568"));
+        bibliographicEntities.add(getBibliographicEntities("456"));
         itemEntity.setBibliographicEntities(bibliographicEntities);
         holdingsEntity.setItemEntities(Arrays.asList(itemEntity));
         bibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
-
         return bibliographicEntity;
     }
 
