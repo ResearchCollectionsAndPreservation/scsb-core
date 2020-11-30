@@ -5,32 +5,44 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultExchange;
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.recap.BaseTestCaseUT;
+import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
 import org.recap.camel.accessionreconciliation.AccessionReconciliationProcessor;
 import org.recap.camel.accessionreconciliation.BarcodeReconcilitaionReport;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.event.annotation.AfterTestMethod;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-@RunWith(MockitoJUnitRunner.class)
-public class AccessionReconciliationProcessorUT {
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({RestTemplate.class,AccessionReconciliationProcessor.class})
+public class AccessionReconciliationProcessorUT extends BaseTestCaseUT {
     @InjectMocks
     AccessionReconciliationProcessor mockedAccessionReconciliationProcessor;
-
-    @Mock
-    CamelContext mockedCamelContext;
 
     @Mock
     Exchange exchange;
@@ -38,45 +50,93 @@ public class AccessionReconciliationProcessorUT {
     @Mock
     Message message;
 
-    @Mock
-    HttpEntity httpEntity;
+    @Value("${scsb.solr.client.url}")
+    String solrSolrClientUrl;
 
-    @Mock
-    RestTemplate restTemplate;
+    @Value("${accession.reconciliation.filePath}")
+    String accessionFilePath;
 
-    private String solrSolrClientUrl = "http://localhost:9090/";
+    @AfterTestMethod
+    public void finall() throws IOException {
+        ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "solrSolrClientUrl", solrSolrClientUrl);
+        ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "accessionFilePath", accessionFilePath);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(RecapConstants.BARCODE_RECONCILIATION_FILE_DATE_FORMAT);
+        Path filePathPul = Paths.get(accessionFilePath+ RecapCommonConstants.PATH_SEPARATOR+"pul"+RecapCommonConstants.PATH_SEPARATOR+ RecapConstants.ACCESSION_RECONCILATION_FILE_NAME+"pul"+simpleDateFormat.format(new Date())+".csv");
+        Path filePathCul = Paths.get(accessionFilePath+ RecapCommonConstants.PATH_SEPARATOR+"cul"+RecapCommonConstants.PATH_SEPARATOR+ RecapConstants.ACCESSION_RECONCILATION_FILE_NAME+"cul"+simpleDateFormat.format(new Date())+".csv");
+        Path filePathNypl = Paths.get(accessionFilePath+ RecapCommonConstants.PATH_SEPARATOR+"nypl"+RecapCommonConstants.PATH_SEPARATOR+ RecapConstants.ACCESSION_RECONCILATION_FILE_NAME+"nypl"+simpleDateFormat.format(new Date())+".csv");
+        boolean deletedPul = Files.deleteIfExists(filePathPul);
+        Assert.assertTrue(deletedPul);
+        boolean deletedCul = Files.deleteIfExists(filePathCul);
+        Assert.assertTrue(deletedCul);
+        boolean deletedNypl = Files.deleteIfExists(filePathNypl);
+        Assert.assertTrue(deletedNypl);
 
-    @Before
-    public  void setup(){
-        MockitoAnnotations.initMocks(this);
+    }
+    @Test
+    public void processInput() throws Exception {
+        ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "solrSolrClientUrl", solrSolrClientUrl);
+        ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "accessionFilePath", accessionFilePath);
+        BarcodeReconcilitaionReport barcodeReconcilitaionReport = getBarcodeReconcilitaionReport();
+        ArrayList<BarcodeReconcilitaionReport> barcodeReconcilitaionReports = new ArrayList<>();
+        barcodeReconcilitaionReports.add(0,barcodeReconcilitaionReport);
+        CamelContext ctx = new DefaultCamelContext();
+        Exchange ex = getExchange(barcodeReconcilitaionReports, ctx);
+        ex.setProperty(RecapConstants.CAMEL_SPLIT_INDEX,1);
+        Map<String, Boolean> map = new HashMap<>();
+        map.put("accessionReconcilationService", true);
+        ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "institutionCode", "pul");
+        ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "camelContext", ctx);
+        ResponseEntity<Map> responseEntity = new ResponseEntity<Map>(map, HttpStatus.OK);
+        HashMap<String,String> barcodesAndCustomerCodes=new HashMap<>();
+        barcodesAndCustomerCodes.put(barcodeReconcilitaionReport.getBarcode(),barcodeReconcilitaionReport.getCustomerCode());
+        HttpEntity httpEntity = new HttpEntity(barcodesAndCustomerCodes);
+        RestTemplate restTemplate = PowerMockito.mock(RestTemplate.class);
+        PowerMockito.whenNew(RestTemplate.class).withNoArguments().thenReturn(restTemplate);
+        Mockito.when(restTemplate.exchange(solrSolrClientUrl+ RecapConstants.ACCESSION_RECONCILATION_SOLR_CLIENT_URL, HttpMethod.POST, httpEntity,Map.class)).thenReturn(responseEntity);
+      mockedAccessionReconciliationProcessor.processInput(ex);
     }
 
     @Test
-    public void processInput(){
+    public void processInputWithoutIndex() throws Exception {
+        ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "solrSolrClientUrl", solrSolrClientUrl);
+        ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "accessionFilePath", accessionFilePath);
+        BarcodeReconcilitaionReport barcodeReconcilitaionReport = getBarcodeReconcilitaionReport();
+        ArrayList<BarcodeReconcilitaionReport> barcodeReconcilitaionReports = new ArrayList<>();
+        barcodeReconcilitaionReports.add(0,barcodeReconcilitaionReport);
+        CamelContext ctx = new DefaultCamelContext();
+        Exchange ex = getExchange(barcodeReconcilitaionReports, ctx);
+        ex.setProperty(RecapConstants.CAMEL_SPLIT_INDEX,0);
+        Map<String, Boolean> map = new HashMap<>();
+        map.put("accessionReconcilationService", true);
+        ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "institutionCode", "cul");
+        ResponseEntity<Map> responseEntity = new ResponseEntity<Map>(map, HttpStatus.OK);
+        HashMap<String,String> barcodesAndCustomerCodes=new HashMap<>();
+        barcodesAndCustomerCodes.put(barcodeReconcilitaionReport.getBarcode(),barcodeReconcilitaionReport.getCustomerCode());
+        HttpEntity httpEntity = new HttpEntity(barcodesAndCustomerCodes);
+        RestTemplate restTemplate = PowerMockito.mock(RestTemplate.class);
+        PowerMockito.whenNew(RestTemplate.class).withNoArguments().thenReturn(restTemplate);
+        Mockito.when(restTemplate.exchange(solrSolrClientUrl+ RecapConstants.ACCESSION_RECONCILATION_SOLR_CLIENT_URL, HttpMethod.POST, httpEntity,Map.class)).thenReturn(responseEntity);
+        mockedAccessionReconciliationProcessor.processInput(ex);
+        ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "camelContext", ctx);
+        ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "institutionCode", "nypl");
+        mockedAccessionReconciliationProcessor.processInput(ex);
+    }
+
+    private Exchange getExchange(ArrayList<BarcodeReconcilitaionReport> barcodeReconcilitaionReports, CamelContext ctx) {
+        Exchange ex = new DefaultExchange(ctx);
+        Message in = ex.getIn();
+        ex.setMessage(in);
+        ex.setIn(in);
+        ex.setProperty(RecapConstants.CAMEL_SPLIT_COMPLETE,true);
+        in.setBody(barcodeReconcilitaionReports);
+        return ex;
+    }
+
+    private BarcodeReconcilitaionReport getBarcodeReconcilitaionReport() {
         BarcodeReconcilitaionReport barcodeReconcilitaionReport = new BarcodeReconcilitaionReport();
         barcodeReconcilitaionReport.setBarcode("123456");
         barcodeReconcilitaionReport.setCustomerCode("PA");
         barcodeReconcilitaionReport.setStatus("SUCCESS");
-        ArrayList<BarcodeReconcilitaionReport> barcodeReconcilitaionReports = new ArrayList<>();
-        barcodeReconcilitaionReports.add(0,barcodeReconcilitaionReport);
-
-        CamelContext ctx = new DefaultCamelContext();
-        Exchange ex = new DefaultExchange(ctx);
-        Message in = ex.getIn();
-        ex.setMessage(in);
-        in.setBody(barcodeReconcilitaionReports);
-        ex.setIn(in);
-        message.setMessageId("1");
-        message.setBody(barcodeReconcilitaionReports, ArrayList.class);
-        exchange.setProperty(RecapConstants.CAMEL_SPLIT_INDEX,1);
-        Map<String, Boolean> map = new HashMap<>();
-        map.put("accessionReconcilationService", true);
-        ResponseEntity<Map> responseEntity = new ResponseEntity<Map>(map, HttpStatus.OK);
-//        Mockito.when(exchange.getProperty(RecapConstants.CAMEL_SPLIT_INDEX)).thenReturn(1);
-       /* Mockito.when(restTemplate.exchange(ArgumentMatchers.anyString(),
-                ArgumentMatchers.any(HttpMethod.class),
-                ArgumentMatchers.any(),
-                ArgumentMatchers.<Class<Map>>any())).thenReturn(responseEntity);*/
-//        mockedAccessionReconciliationProcessor.processInput(ex);
+        return barcodeReconcilitaionReport;
     }
 }

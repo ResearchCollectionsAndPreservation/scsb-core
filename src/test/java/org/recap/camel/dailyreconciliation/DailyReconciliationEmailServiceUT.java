@@ -7,15 +7,14 @@ import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.recap.BaseTestCaseUT;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DailyReconciliationEmailServiceUT {
+
+public class DailyReconciliationEmailServiceUT extends BaseTestCaseUT {
 
     @InjectMocks
     DailyReconciliationEmailService dailyReconciliationEmailService;

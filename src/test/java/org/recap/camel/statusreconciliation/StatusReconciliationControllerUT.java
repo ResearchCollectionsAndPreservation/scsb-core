@@ -2,55 +2,49 @@ package org.recap.camel.statusreconciliation;
 
 import org.apache.camel.ProducerTemplate;
 import org.junit.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.recap.BaseTestCase;
-import org.recap.RecapConstants;
+import org.recap.BaseTestCaseUT;
+import org.recap.RecapCommonConstants;
 import org.recap.controller.StatusReconciliationController;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.model.jpa.ItemStatusEntity;
+import org.recap.model.jpa.RequestStatusEntity;
 import org.recap.repository.jpa.ItemChangeLogDetailsRepository;
 import org.recap.repository.jpa.ItemDetailsRepository;
 import org.recap.repository.jpa.ItemStatusDetailsRepository;
 import org.recap.repository.jpa.RequestItemDetailsRepository;
 import org.recap.repository.jpa.RequestItemStatusDetailsRepository;
+import org.recap.service.statusreconciliation.StatusReconciliationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
 /**
  * Created by hemalathas on 2/6/17.
  */
-public class StatusReconciliationControllerUT extends BaseTestCase{
-
-    @Mock
-    private StatusReconciliationController statusReconciliationController;
+public class StatusReconciliationControllerUT extends BaseTestCaseUT {
 
     private static final Logger logger = LoggerFactory.getLogger(StatusReconciliationController.class);
 
-    private Integer batchSize = 100;
-
-    @Value("${status.reconciliation.day.limit}")
-    private Integer statusReconciliationDayLimit;
+    @InjectMocks
+    StatusReconciliationController statusReconciliationController;
 
     @Mock
     private ItemStatusDetailsRepository itemStatusDetailsRepository;
 
     @Mock
     private ItemDetailsRepository itemDetailsRepository;
-
-
-    private Integer statusReconciliationLasBarcodeLimit = 100;
 
     @Mock
     private ProducerTemplate producer;
@@ -64,58 +58,68 @@ public class StatusReconciliationControllerUT extends BaseTestCase{
     @Mock
     private ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
 
+    @Mock
+    StatusReconciliationService statusReconciliationService;
+
+    @Value("${status.reconciliation.las.barcode.limit}")
+    private Integer statusReconciliationLasBarcodeLimit;
+
+    @Value("${status.reconciliation.batch.size}")
+    private Integer batchSize;
+
+    @Value("${status.reconciliation.day.limit}")
+    private Integer statusReconciliationDayLimit;
+
     @Test
     public void testStatusReconciliation(){
-        Map<String,Integer> itemCountAndStatusIdMap = new HashMap<>();
-        itemCountAndStatusIdMap.put("itemAvailabilityStatusId",0);
-        itemCountAndStatusIdMap.put("totalPagesCount",0);
-        int totalPagesCount = itemCountAndStatusIdMap.get("totalPagesCount");
-        int itemAvailabilityStatusId = itemCountAndStatusIdMap.get("itemAvailabilityStatusId");
-        List<List<ItemEntity>> itemEntityChunkList = new ArrayList<>();
-        ItemEntity itemEntity = new ItemEntity();
-        itemEntity.setBarcode("3321545824554545");
-        itemEntity.setItemId(1);
-        itemEntity.setItemAvailabilityStatusId(2);
-        List<ItemEntity> itemEntityList = Arrays.asList(itemEntity);
-        itemEntityChunkList = Arrays.asList(itemEntityList);
-        long from = 10 * Long.valueOf(batchSize);
-        Date date = new Date();
-        ItemStatusEntity itemStatusEntity = new ItemStatusEntity();
-        itemStatusEntity.setId(2);
-        Mockito.when(statusReconciliationController.getFromDate(0)).thenReturn(from);
-        Mockito.when(statusReconciliationController.getTotalPageCount(Arrays.asList(1,9), itemStatusEntity.getId())).thenReturn(itemCountAndStatusIdMap);
-        Mockito.when(statusReconciliationController.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
-        Mockito.when(statusReconciliationController.getBatchSize()).thenReturn(batchSize);
-        Mockito.when(statusReconciliationController.getItemStatusDetailsRepository()).thenReturn(itemStatusDetailsRepository);
-        Mockito.when(statusReconciliationController.getRequestItemStatusDetailsRepository()).thenReturn(requestItemStatusDetailsRepository);
-        Mockito.when(statusReconciliationController.getStatusReconciliationDayLimit()).thenReturn(statusReconciliationDayLimit);
-        Mockito.when(statusReconciliationController.getStatusReconciliationLasBarcodeLimit()).thenReturn(statusReconciliationLasBarcodeLimit);
-        Mockito.when(statusReconciliationController.getProducer()).thenReturn(producer);
-        //Mockito.when(statusReconciliationController.getGfaService().itemStatusComparison(Mockito.any(),Mockito.any())).thenCallRealMethod();
-        Mockito.when(statusReconciliationController.getItemDetailsRepository().getNotAvailableItems(statusReconciliationDayLimit,Arrays.asList(1,9),from,batchSize,itemStatusEntity.getId())).thenReturn(itemEntityList);
-        Mockito.when(statusReconciliationController.getTotalPageCount(Arrays.asList(1,9), itemStatusEntity.getId())).thenCallRealMethod();
-        Mockito.when(statusReconciliationController.getItemStatusDetailsRepository().findByStatusCode(RecapConstants.ITEM_STATUS_NOT_AVAILABLE)).thenReturn(itemStatusEntity);
-        Mockito.when(statusReconciliationController.itemStatusReconciliation()).thenCallRealMethod();
+        Mockito.when(itemStatusDetailsRepository.findByStatusCode(Mockito.anyString())).thenReturn(getItemStatusEntity());
+        List<RequestStatusEntity> requestStatusEntityList=new ArrayList<>();
+        requestStatusEntityList.add(getRequestStatusEntity(1,RecapCommonConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED));
+        requestStatusEntityList.add(getRequestStatusEntity(3,RecapCommonConstants.REQUEST_STATUS_EDD));
+        requestStatusEntityList.add(getRequestStatusEntity(5,RecapCommonConstants.REQUEST_STATUS_CANCELED));
+        requestStatusEntityList.add(getRequestStatusEntity(9,RecapCommonConstants.REQUEST_STATUS_INITIAL_LOAD));
+        Mockito.when(requestItemStatusDetailsRepository.findByRequestStatusCodeIn(Mockito.any())).thenReturn(requestStatusEntityList);
+        ReflectionTestUtils.setField(statusReconciliationController,"batchSize",100);
+        ReflectionTestUtils.setField(statusReconciliationController,"statusReconciliationDayLimit",100);
+        ReflectionTestUtils.setField(statusReconciliationController,"statusReconciliationLasBarcodeLimit",100);
+        Mockito.when(itemDetailsRepository.getNotAvailableItemsCount(Mockito.anyInt(),Mockito.anyList(),Mockito.anyInt())).thenReturn(1l);
+        Mockito.when(itemDetailsRepository.getNotAvailableItems(Mockito.anyInt(),Mockito.anyList(),Mockito.anyLong(),Mockito.anyInt(),Mockito.anyInt())).thenReturn(Arrays.asList(getItemEntity()));
         ResponseEntity responseEntity = statusReconciliationController.itemStatusReconciliation();
-        List<Integer> requestStatusIds = new ArrayList<>();
-        requestStatusIds.add(1);
-        requestStatusIds.add(2);
-        Map<String,Integer>  data= statusReconciliationController.getTotalPageCount(requestStatusIds,1);
-        assertNotNull(responseEntity);
-        assertNotNull(data);
         assertEquals(responseEntity.getBody().toString(),"Success");
     }
 
-    @Test
-    public void test(){
-        statusReconciliationController.getBatchSize();
-        statusReconciliationController.getFromDate(1);
-        statusReconciliationController.getItemDetailsRepository();
-        statusReconciliationController.getItemStatusDetailsRepository();
-        statusReconciliationController.getProducer();
-        statusReconciliationController.getRequestItemStatusDetailsRepository();
-        statusReconciliationController.getStatusReconciliationDayLimit();
-        statusReconciliationController.getStatusReconciliationLasBarcodeLimit();
-        assertTrue(true);
+    private RequestStatusEntity getRequestStatusEntity(int id,String status) {
+        RequestStatusEntity requestStatusEntity=new RequestStatusEntity();
+        requestStatusEntity.setId(id);
+        requestStatusEntity.setRequestStatusCode(status);
+        requestStatusEntity.setRequestStatusDescription(status);
+        return requestStatusEntity;
+    }
+
+    private ItemStatusEntity getItemStatusEntity() {
+        ItemStatusEntity itemStatusEntity=new ItemStatusEntity();
+        itemStatusEntity.setId(1);
+        itemStatusEntity.setStatusCode(RecapCommonConstants.AVAILABLE);
+        itemStatusEntity.setStatusDescription(RecapCommonConstants.AVAILABLE);
+        return itemStatusEntity;
+    }
+
+    private ItemEntity getItemEntity() {
+        ItemEntity itemEntity = new ItemEntity();
+        itemEntity.setLastUpdatedDate(new Date());
+        itemEntity.setOwningInstitutionItemId("843617540");
+        itemEntity.setOwningInstitutionId(1);
+        itemEntity.setBarcode("123456");
+        itemEntity.setCallNumber("x.12321");
+        itemEntity.setCollectionGroupId(1);
+        itemEntity.setCallNumberType("1");
+        itemEntity.setCustomerCode("123");
+        itemEntity.setCreatedDate(new Date());
+        itemEntity.setCreatedBy("tst");
+        itemEntity.setLastUpdatedBy("tst");
+        itemEntity.setCatalogingStatus("Complete");
+        itemEntity.setItemAvailabilityStatusId(1);
+        itemEntity.setDeleted(false);
+        return itemEntity;
     }
 }

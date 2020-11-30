@@ -1,25 +1,22 @@
 package org.recap.service.submitcollection;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.recap.BaseTestCaseUT;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.jpa.HoldingsEntity;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.repository.jpa.BibliographicDetailsRepository;
 import org.recap.service.common.RepositoryService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SubmitCollectionHelperServiceUT {
+
+public class SubmitCollectionHelperServiceUT extends BaseTestCaseUT {
 
     @InjectMocks
     SubmitCollectionHelperService submitCollectionHelperService;
@@ -58,6 +55,36 @@ public class SubmitCollectionHelperServiceUT {
         incomingBibliographicEntity.setItemEntities(itemEntities);
         incomingBibliographicEntity.setHoldingsEntities(holdingsEntities1);
         submitCollectionHelperService.attachItemToExistingBib(existingBibliographicEntity,incomingBibliographicEntity);
+        assertNotNull(existingBibliographicEntity);
+    }
+
+    @Test
+    public void attachItemToExistingBibHoldingExist(){
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        itemEntities.add(getItemEntity());
+        List<HoldingsEntity> holdingsEntities = new ArrayList<>();
+        holdingsEntities.add(getHoldingsEntity());
+        BibliographicEntity existingBibliographicEntity = getBibliographicEntity();
+        existingBibliographicEntity.setItemEntities(itemEntities);
+        existingBibliographicEntity.setHoldingsEntities(holdingsEntities);
+        HoldingsEntity holdingsEntity = getHoldingsEntity();
+        holdingsEntity.setOwningInstitutionHoldingsId("234");
+        submitCollectionHelperService.attachItemToExistingBib(existingBibliographicEntity,existingBibliographicEntity);
+        assertNotNull(existingBibliographicEntity);
+    }
+
+    @Test
+    public void getHoldingItemIdMap(){
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        itemEntities.add(getItemEntity());
+        HoldingsEntity holdingsEntity = getHoldingsEntity();
+        holdingsEntity.setItemEntities(itemEntities);
+        holdingsEntity.setOwningInstitutionHoldingsId("234");
+        BibliographicEntity existingBibliographicEntity = getBibliographicEntity();
+        existingBibliographicEntity.setItemEntities(itemEntities);
+        existingBibliographicEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        Map<String,Map<String,ItemEntity>> holdingItemMap=  submitCollectionHelperService.getHoldingItemIdMap(existingBibliographicEntity);
+        assertNotNull(holdingItemMap);
     }
 
     @Test
@@ -68,7 +95,6 @@ public class SubmitCollectionHelperServiceUT {
         assertNotNull(result);
     }
     private BibliographicEntity getBibliographicEntity(){
-
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setBibliographicId(123456);
         bibliographicEntity.setContent("Test".getBytes());
@@ -79,14 +105,10 @@ public class SubmitCollectionHelperServiceUT {
         bibliographicEntity.setOwningInstitutionId(1);
         bibliographicEntity.setOwningInstitutionBibId("1577261074");
         bibliographicEntity.setDeleted(false);
-
         HoldingsEntity holdingsEntity = getHoldingsEntity();
-
         ItemEntity itemEntity = getItemEntity();
         itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
-
         holdingsEntity.setItemEntities(Arrays.asList(itemEntity));
-
         return bibliographicEntity;
     }
 

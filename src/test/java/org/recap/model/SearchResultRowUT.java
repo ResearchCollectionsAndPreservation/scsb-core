@@ -1,7 +1,7 @@
 package org.recap.model;
 
 import org.junit.Test;
-import org.recap.BaseTestCase;
+import org.recap.BaseTestCaseUT;
 import org.recap.model.jpa.SearchItemResultRow;
 import org.recap.model.jpa.SearchResultRow;
 
@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by hemalathas on 14/3/17.
  */
-public class SearchResultRowUT extends BaseTestCase{
+public class SearchResultRowUT extends BaseTestCaseUT {
 
     @Test
     public void testSearchResultRow(){
@@ -40,6 +40,8 @@ public class SearchResultRowUT extends BaseTestCase{
         searchResultRow.setUseRestriction("Others");
         searchResultRow.setSelected(true);
         searchResultRow.setSelectAllItems(true);
+        searchResultRow.setSummaryHoldings("summary");
+        searchResultRow.setShowItems(true);
         assertNotNull(searchResultRow);
         assertNotNull(searchResultRow.getBarcode());
         assertNotNull(searchResultRow.getSearchItemResultRows());
@@ -60,10 +62,10 @@ public class SearchResultRowUT extends BaseTestCase{
         assertNotNull(searchResultRow.getRequestNotes());
         assertNotNull(searchResultRow.getRequestType());
         assertNotNull(searchResultRow.getUseRestriction());
+        assertNotNull(searchResultRow.getSummaryHoldings());
         assertTrue(searchResultRow.isSelected());
+        assertTrue(searchResultRow.isShowItems());
         assertTrue(searchResultRow.isSelectAllItems());
-
-
     }
 
 }
