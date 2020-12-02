@@ -125,7 +125,7 @@ public class SubmitCollectionProcessor {
             String generatedReportFileName = submitCollectionReportGenerator.generateReport(reportRequest);
             producer.sendBodyAndHeader(RecapConstants.EMAIL_Q, getEmailPayLoad(xmlFileName,generatedReportFileName), RecapConstants.EMAIL_BODY_FOR, RecapConstants.SUBMIT_COLLECTION);
             if(awsS3Client.doesObjectExist(bucketName,xmlFileName) && awsS3Client.doesBucketExistV2(bucketName)) {
-                awsS3Client.copyObject(bucketName, xmlFileName, bucketName, "archival/"+xmlFileName);
+                awsS3Client.copyObject(bucketName, xmlFileName, bucketName, "done/"+xmlFileName);
                 awsS3Client.deleteObject(bucketName, xmlFileName);
             }
             stopWatch.stop();

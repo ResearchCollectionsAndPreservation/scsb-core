@@ -40,13 +40,12 @@ public class DailyReconciliationRouteBuilder {
     /**
      * Predicate to identify is the input file is gz
      */
-    Predicate gzipFile = new Predicate() {
-        @Override
-        public boolean matches(Exchange exchange) {
-
-        String fileName = (String) exchange.getIn().getHeader(Exchange.FILE_NAME);
-        return StringUtils.equalsIgnoreCase("gz", FilenameUtils.getExtension(fileName));
-
+    Predicate gzipFile = exchange -> {
+        if (exchange.getIn().getHeader("CamelAwsS3Key") != null) {
+            String fileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+            return StringUtils.equalsIgnoreCase("gz", FilenameUtils.getExtension(fileName));
+        } else {
+            return false;
         }
     };
 
@@ -57,7 +56,7 @@ public class DailyReconciliationRouteBuilder {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    from("aws-s3://{{scsbBucketName}}?prefix="+dailyReconciliationS3+"/&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                    from("aws-s3://{{scsbBucketName}}?prefix="+dailyReconciliationS3+"&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
                             .routeId(RecapConstants.DAILY_RR_FTP_ROUTE_ID)
                             .noAutoStartup()
                             .log("daily reconciliation started")
@@ -69,7 +68,7 @@ public class DailyReconciliationRouteBuilder {
                             .process(new Processor() {
                                 @Override
                                 public void process(Exchange exchange) throws Exception {
-                                String fileName = (String)exchange.getIn().getHeader(Exchange.FILE_NAME);
+                                String fileName = (String)exchange.getIn().getHeader("CamelAwsS3Key");
                                 exchange.getIn().setHeader(Exchange.FILE_NAME, fileName.replaceFirst(".gz", ".csv"));
                                 }
                             })
@@ -99,7 +98,7 @@ public class DailyReconciliationRouteBuilder {
                             .routeId(RecapConstants.DAILY_RR_FS_ROUTE_ID)
                             .noAutoStartup()
                             .setHeader(S3Constants.CONTENT_LENGTH, simple("${in.header.CamelFileLength}"))
-                            .setHeader(S3Constants.KEY,simple("reports/share/recap/daily-reconciliation/BarcodeReconciliation_${date:now:yyyyMMdd_HHmmss}.csv"))
+                            .setHeader(S3Constants.KEY,simple(dailyReconciliationFtpProcessed+"BarcodeReconciliation_${date:now:yyyyMMdd_HHmmss}.csv"))
                             .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
                             .onCompletion()
                             .log("email service started for daily reconciliation")

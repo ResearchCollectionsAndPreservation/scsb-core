@@ -112,7 +112,7 @@ public class AccessionReconciliationProcessor {
         String xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
         String bucketName = exchange.getIn().getHeader("CamelAwsS3BucketName").toString();
         if(awsS3Client.doesObjectExist(bucketName,xmlFileName) && awsS3Client.doesBucketExistV2(bucketName)) {
-            awsS3Client.copyObject(bucketName, xmlFileName, bucketName, "archival/"+xmlFileName);
+            awsS3Client.copyObject(bucketName, xmlFileName, bucketName, "done/"+xmlFileName);
             awsS3Client.deleteObject(bucketName, xmlFileName);
         }
     }
