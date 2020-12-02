@@ -46,10 +46,10 @@ public class StatusReconciliationS3RouteBuilder {
                             .choice()
                             .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION))
                             .marshal().bindy(BindyType.Csv, StatusReconciliationCSVRecord.class)
-                            .setHeader(S3Constants.KEY, simple(statusReconciliation+"/StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv"))
+                            .setHeader(S3Constants.KEY, simple(statusReconciliation+"StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv"))
                             .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
                             .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION_FAILURE))
-                            .setHeader(S3Constants.KEY, simple(statusReconciliation+"/StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv"))
+                            .setHeader(S3Constants.KEY, simple(statusReconciliation+"StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv"))
                             .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
                             .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
                             .log("status reconciliation failure report generated in s3");

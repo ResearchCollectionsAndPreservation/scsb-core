@@ -39,7 +39,7 @@ public class BarcodeReconciliationRouteBuilder extends RouteBuilder {
             } else
                 return false;
         };
-        from("aws-s3://{{scsbBucketName}}?prefix="+accessionReconciliationS3Dir+"/" + institution + "/&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+        from("aws-s3://{{scsbBucketName}}?prefix="+accessionReconciliationS3Dir + institution + "/&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
                 .routeId(institution + "accessionReconcilationS3Route")
                 .noAutoStartup()
                 .choice()
@@ -70,7 +70,7 @@ public class BarcodeReconciliationRouteBuilder extends RouteBuilder {
                 .routeId(institution + "accessionReconcilationFsRoute")
                 .noAutoStartup()
                 .setHeader(S3Constants.CONTENT_LENGTH, simple("${in.header.CamelFileLength}"))
-                .setHeader(S3Constants.KEY, simple(s3AccessionReconciliationProcessedDir+"/" + institution + "/BarcodeReconciliation_" + institution + "_${date:now:yyyyMMdd_HHmmss}.csv"))
+                .setHeader(S3Constants.KEY, simple(s3AccessionReconciliationProcessedDir+ institution + "/BarcodeReconciliation_" + institution + "_${date:now:yyyyMMdd_HHmmss}.csv"))
                 .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
                 .onCompletion()
                 .bean(applicationContext.getBean(AccessionReconciliationEmailService.class, institution), RecapConstants.PROCESS_INPUT)
