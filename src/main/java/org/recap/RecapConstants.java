@@ -537,5 +537,6 @@ public final class RecapConstants {
     public static final String FAILURE_ITEM_REASON = "ReasonForFailureItem";
 
     public static final String EXCEPTION = "exception->";
+    public static final String SCSB_CAMEL_S3_TO_ENDPOINT = "aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})";
 
 }
