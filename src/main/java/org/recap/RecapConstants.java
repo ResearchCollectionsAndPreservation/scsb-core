@@ -211,8 +211,8 @@ public final class RecapConstants {
     public static final String CANNOT_REFILE_FIRST_SCAN_REQUEST ="Cannot place recall for requests placed on first scan LAS status";
     public static final String REQUESTS_STUCK_IN__PENDING = "Requests stuck in pending";
     public static final String NO_PENDING_REQUESTS_FOUND = "There are no pending requests or no new pending request";
-    public static final String PROTECTED = "Protected";
-    public static final String NOT_PROTECTED = "NotProtected";
+    public static final String PROTECTED = "protection";
+    public static final String NOT_PROTECTED = "no_protection";
     public static final String ACCESSION_RECONCILIATION_DIRECT_ROUTE = "accessionReconciliationDirectRoute";
     public static final String CGD_PROTECTED_ROUTE_ID = "CgdProtectedRouteId";
     public static final String CGD_NOT_PROTECTED_ROUTE_ID = "CgdNotProtectedRouteId";
