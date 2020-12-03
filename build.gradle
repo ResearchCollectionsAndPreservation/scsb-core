@@ -61,6 +61,8 @@ dependencies {
 	implementation('io.springfox:springfox-swagger2:2.9.2')
 	implementation('org.codehaus.jettison:jettison:1.4.1')
 	implementation('org.apache.camel.springboot:camel-spring-boot-starter:3.2.0')
+	implementation('org.apache.camel.springboot:camel-aws-s3-starter:3.2.0')
+	implementation('org.apache.camel:camel-aws-s3:3.2.0')
 	implementation('org.apache.camel:camel-activemq:3.2.0')
 	implementation('org.apache.camel:camel-core-engine:3.2.0')
 	implementation('org.apache.camel:camel-core:3.2.0')
@@ -84,8 +86,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.cloud:spring-cloud-starter-sleuth'
-	implementation 'org.springframework.cloud:spring-cloud-starter-zipkin'
-	implementation 'org.springframework.amqp:spring-rabbit'
 	implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
 
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'

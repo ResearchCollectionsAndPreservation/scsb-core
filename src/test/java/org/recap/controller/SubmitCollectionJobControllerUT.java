@@ -14,7 +14,7 @@ import org.mockito.Mockito;
 import org.recap.BaseTestCaseUT;
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
-import org.recap.camel.submitcollection.SubmitCollectionPollingFtpRouteBuilder;
+import org.recap.camel.submitcollection.SubmitCollectionPollingS3RouteBuilder;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
 
 import java.util.Arrays;
@@ -49,7 +49,7 @@ public class SubmitCollectionJobControllerUT extends BaseTestCaseUT {
     InstitutionDetailsRepository institutionDetailsRepository;
 
     @Mock
-    SubmitCollectionPollingFtpRouteBuilder submitCollectionPollingFtpRouteBuilder;
+    SubmitCollectionPollingS3RouteBuilder submitCollectionPollingFtpRouteBuilder;
 
     @Test
     public void startSubmitCollection() throws Exception{

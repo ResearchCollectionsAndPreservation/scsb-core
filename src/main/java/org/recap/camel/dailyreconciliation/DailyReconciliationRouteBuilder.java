@@ -5,6 +5,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.aws.s3.S3Constants;
 import org.apache.camel.model.dataformat.BindyType;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,38 +32,31 @@ public class DailyReconciliationRouteBuilder {
      *
      * @param camelContext                   the camel context
      * @param applicationContext             the application context
-     * @param ftpUserName                    the ftp user name
-     * @param dailyReconciliationFtp          the daily reconciliation ftp
-     * @param dailyReconciliationFtpProcessed the daily reconciliation ftp processed
-     * @param ftpKnownHost                   the ftp known host
-     * @param ftpPrivateKey                  the ftp private key
+     * @param dailyReconciliationFtp          the daily reconciliation s3
+     * @param dailyReconciliationFtpProcessed the daily reconciliation s3 processed
      * @param filePath                       the file path
      */
 
     /**
      * Predicate to identify is the input file is gz
      */
-    Predicate gzipFile = new Predicate() {
-        @Override
-        public boolean matches(Exchange exchange) {
-
-        String fileName = (String) exchange.getIn().getHeader(Exchange.FILE_NAME);
-        return StringUtils.equalsIgnoreCase("gz", FilenameUtils.getExtension(fileName));
-
+    Predicate gzipFile = exchange -> {
+        if (exchange.getIn().getHeader("CamelAwsS3Key") != null) {
+            String fileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+            return StringUtils.equalsIgnoreCase("gz", FilenameUtils.getExtension(fileName));
+        } else {
+            return false;
         }
     };
 
-    public DailyReconciliationRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext,
-                                           @Value("${ftp.server.userName}") String ftpUserName, @Value("${ftp.daily.reconciliation}") String dailyReconciliationFtp,
-                                           @Value("${ftp.daily.reconciliation.processed}") String dailyReconciliationFtpProcessed, @Value("${ftp.server.knownHost}") String ftpKnownHost,
-                                           @Value("${ftp.server.privateKey}") String ftpPrivateKey,
-                                           @Value("${daily.reconciliation.file}") String filePath,
-                                           @Value("${daily.reconciliation.local.work.dir}") String localWorkDir) {
+    public DailyReconciliationRouteBuilder(CamelContext camelContext, ApplicationContext applicationContext, @Value("${s3.daily.reconciliation}") String dailyReconciliationS3,
+                                           @Value("${s3.daily.reconciliation.processed}") String dailyReconciliationFtpProcessed,
+                                           @Value("${daily.reconciliation.file}") String filePath) {
         try {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    from(RecapCommonConstants.SFTP+ ftpUserName +  RecapCommonConstants.AT + dailyReconciliationFtp + RecapCommonConstants.PRIVATE_KEY_FILE + ftpPrivateKey + RecapCommonConstants.KNOWN_HOST_FILE + ftpKnownHost+ RecapConstants.DAILY_RR_FTP_OPTIONS+localWorkDir)
+                    from("aws-s3://{{scsbBucketName}}?prefix="+dailyReconciliationS3+"&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
                             .routeId(RecapConstants.DAILY_RR_FTP_ROUTE_ID)
                             .noAutoStartup()
                             .log("daily reconciliation started")
@@ -74,7 +68,7 @@ public class DailyReconciliationRouteBuilder {
                             .process(new Processor() {
                                 @Override
                                 public void process(Exchange exchange) throws Exception {
-                                String fileName = (String)exchange.getIn().getHeader(Exchange.FILE_NAME);
+                                String fileName = (String)exchange.getIn().getHeader("CamelAwsS3Key");
                                 exchange.getIn().setHeader(Exchange.FILE_NAME, fileName.replaceFirst(".gz", ".csv"));
                                 }
                             })
@@ -103,7 +97,9 @@ public class DailyReconciliationRouteBuilder {
                     from(RecapConstants.DAILY_RR_FS_FILE+filePath+ RecapConstants.DAILY_RR_FS_OPTIONS)
                             .routeId(RecapConstants.DAILY_RR_FS_ROUTE_ID)
                             .noAutoStartup()
-                            .to(RecapCommonConstants.SFTP+ ftpUserName +  RecapCommonConstants.AT + dailyReconciliationFtpProcessed + RecapCommonConstants.PRIVATE_KEY_FILE + ftpPrivateKey + RecapCommonConstants.KNOWN_HOST_FILE + ftpKnownHost)
+                            .setHeader(S3Constants.CONTENT_LENGTH, simple("${in.header.CamelFileLength}"))
+                            .setHeader(S3Constants.KEY,simple(dailyReconciliationFtpProcessed+"BarcodeReconciliation_${date:now:yyyyMMdd_HHmmss}.csv"))
+                            .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
                             .onCompletion()
                             .log("email service started for daily reconciliation")
                             .bean(applicationContext.getBean(DailyReconciliationEmailService.class))

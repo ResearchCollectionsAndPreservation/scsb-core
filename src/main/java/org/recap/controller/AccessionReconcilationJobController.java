@@ -26,15 +26,6 @@ public class AccessionReconcilationJobController {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessionReconcilationJobController.class);
 
-    @Value("${ftp.server.userName}")
-    String ftpUserName;
-
-    @Value("${ftp.server.privateKey}")
-    String ftpPrivateKey;
-
-    @Value("${ftp.server.knownHost}")
-    String ftpKnownHost;
-
     @Autowired
     PropertyUtil propertyUtil;
 
@@ -47,27 +38,36 @@ public class AccessionReconcilationJobController {
     @Autowired
     CamelContext camelContext;
 
+    @Value("${s3.accession.reconciliation.dir}")
+    private String accessionReconciliationPath;
+
+    @Value("${accession.reconciliation.filePath}")
+    private String accessionReconciliationFilePath;
+
+    @Value("${s3.accession.reconciliation.processed.dir}")
+    private String accessionReconciliationProcessedPath;
+
     /**
      * This method is used for generating report by, comparing LAS(ReCAP) barcodes and SCSB barcodes. The LAS barcodes are send to SCSB as CVS files, in specific FTP folder.
      * The barcodes are physically seprated by institution. This method will initiate the comparison of all the three institution at the same time.
+     *
      * @return String
      * @throws Exception
      */
     @PostMapping(value = "/startAccessionReconcilation")
-    public String startAccessionReconcilation() throws Exception{
-        logger.info("Before accession reconciliation process : {}",camelContext.getRoutes().size());
+    public String startAccessionReconcilation() throws Exception {
+        logger.info("Before accession reconciliation process : {}", camelContext.getRoutes().size());
         logger.info("Starting Accession Reconcilation Routes");
         List<String> allInstitutionCodeExceptHTC = institutionDetailsRepository.findAllInstitutionCodeExceptHTC();
         for (String institution : allInstitutionCodeExceptHTC) {
             ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(institution);
-            camelContext.addRoutes(new BarcodeReconciliationRouteBuilder(applicationContext,camelContext,ftpUserName,ftpPrivateKey,ftpKnownHost,
-                    institution,ilsConfigProperties.getFtpAccessionReconciliationDir(),ilsConfigProperties.getAccessionReconciliationWorkdir(),
-                    ilsConfigProperties.getAccessionReconciliationFilepath(),ilsConfigProperties.getFtpAccessionReconciliationProcessedDir()));
+            camelContext.addRoutes(new BarcodeReconciliationRouteBuilder(applicationContext, camelContext,
+                    institution, accessionReconciliationPath, accessionReconciliationFilePath, accessionReconciliationProcessedPath));
         }
         for (String institution : allInstitutionCodeExceptHTC) {
-            camelContext.getRouteController().startRoute(institution+"accessionReconcilationFtpRoute");
+            camelContext.getRouteController().startRoute(institution + "accessionReconcilationS3Route");
         }
-        logger.info("After accession reconciliation process : {}",camelContext.getRoutes().size());
+        logger.info("After accession reconciliation process : {}", camelContext.getRoutes().size());
         return RecapCommonConstants.SUCCESS;
     }
 }
