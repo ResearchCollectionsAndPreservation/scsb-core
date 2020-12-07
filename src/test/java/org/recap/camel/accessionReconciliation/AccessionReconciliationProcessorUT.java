@@ -1,19 +1,17 @@
 package org.recap.camel.accessionReconciliation;
 
+import com.amazonaws.services.s3.AmazonS3;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.spi.RouteController;
 import org.apache.camel.support.DefaultExchange;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.recap.BaseTestCaseUT;
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
@@ -38,8 +36,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({RestTemplate.class,AccessionReconciliationProcessor.class})
+import static org.apache.camel.builder.Builder.simple;
+
+
 public class AccessionReconciliationProcessorUT extends BaseTestCaseUT {
     @InjectMocks
     AccessionReconciliationProcessor mockedAccessionReconciliationProcessor;
@@ -49,6 +48,18 @@ public class AccessionReconciliationProcessorUT extends BaseTestCaseUT {
 
     @Mock
     Message message;
+
+    @Mock
+    CamelContext camelContext;
+
+    @Mock
+    RouteController routeController;
+
+    @Mock
+    RestTemplate restTemplate;
+
+    @Mock
+    AmazonS3 awsS3Client;
 
     @Value("${scsb.solr.client.url}")
     String solrSolrClientUrl;
@@ -90,10 +101,9 @@ public class AccessionReconciliationProcessorUT extends BaseTestCaseUT {
         HashMap<String,String> barcodesAndCustomerCodes=new HashMap<>();
         barcodesAndCustomerCodes.put(barcodeReconcilitaionReport.getBarcode(),barcodeReconcilitaionReport.getCustomerCode());
         HttpEntity httpEntity = new HttpEntity(barcodesAndCustomerCodes);
-        RestTemplate restTemplate = PowerMockito.mock(RestTemplate.class);
-        PowerMockito.whenNew(RestTemplate.class).withNoArguments().thenReturn(restTemplate);
         Mockito.when(restTemplate.exchange(solrSolrClientUrl+ RecapConstants.ACCESSION_RECONCILATION_SOLR_CLIENT_URL, HttpMethod.POST, httpEntity,Map.class)).thenReturn(responseEntity);
-      mockedAccessionReconciliationProcessor.processInput(ex);
+        Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
+        mockedAccessionReconciliationProcessor.processInput(ex);
     }
 
     @Test
@@ -113,10 +123,10 @@ public class AccessionReconciliationProcessorUT extends BaseTestCaseUT {
         HashMap<String,String> barcodesAndCustomerCodes=new HashMap<>();
         barcodesAndCustomerCodes.put(barcodeReconcilitaionReport.getBarcode(),barcodeReconcilitaionReport.getCustomerCode());
         HttpEntity httpEntity = new HttpEntity(barcodesAndCustomerCodes);
-        RestTemplate restTemplate = PowerMockito.mock(RestTemplate.class);
-        PowerMockito.whenNew(RestTemplate.class).withNoArguments().thenReturn(restTemplate);
         Mockito.when(restTemplate.exchange(solrSolrClientUrl+ RecapConstants.ACCESSION_RECONCILATION_SOLR_CLIENT_URL, HttpMethod.POST, httpEntity,Map.class)).thenReturn(responseEntity);
-        mockedAccessionReconciliationProcessor.processInput(ex);
+        Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
+        Mockito.when(awsS3Client.doesObjectExist(Mockito.anyString(),Mockito.anyString())).thenReturn(true);
+        Mockito.when(awsS3Client.doesBucketExistV2(Mockito.anyString())).thenReturn(true);
         ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "camelContext", ctx);
         ReflectionTestUtils.setField(mockedAccessionReconciliationProcessor, "institutionCode", "nypl");
         mockedAccessionReconciliationProcessor.processInput(ex);
@@ -127,7 +137,10 @@ public class AccessionReconciliationProcessorUT extends BaseTestCaseUT {
         Message in = ex.getIn();
         ex.setMessage(in);
         ex.setIn(in);
+
         ex.setProperty(RecapConstants.CAMEL_SPLIT_COMPLETE,true);
+        in.setHeader("CamelAwsS3Key", simple("CamelAwsS3Key"));
+        in.setHeader("CamelAwsS3BucketName", simple("CamelAwsS3BucketName"));
         in.setBody(barcodeReconcilitaionReports);
         return ex;
     }

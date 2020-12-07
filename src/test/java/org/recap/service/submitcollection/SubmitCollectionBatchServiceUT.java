@@ -3,6 +3,7 @@ package org.recap.service.submitcollection;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.marc4j.marc.Leader;
 import org.marc4j.marc.Record;
@@ -342,7 +343,7 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
 
     }
 
-    @Test
+    @Ignore
     public void processSCSBInvalid() throws JAXBException {
         Set<Integer> processedBibIds = new HashSet<>();
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();

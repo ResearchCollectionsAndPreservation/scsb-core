@@ -1,7 +1,7 @@
 package org.recap.model;
 
 import org.junit.Test;
-import org.recap.BaseTestCase;
+import org.recap.BaseTestCaseUT;
 import org.recap.model.jpa.SearchItemResultRow;
 
 import static org.junit.Assert.assertNotNull;
@@ -9,7 +9,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by hemalathas on 20/3/17.
  */
-public class SearchItemResultRowUT extends BaseTestCase{
+public class SearchItemResultRowUT extends BaseTestCaseUT {
 
     @Test
     public void testSearchItemResultRow(){
@@ -24,6 +24,9 @@ public class SearchItemResultRowUT extends BaseTestCase{
         searchItemResultRow.setAvailability("Available");
         searchItemResultRow.setSelectedItem(false);
         searchItemResultRow.setItemId(1);
+        searchItemResultRow.hashCode();
+        searchItemResultRow.compareTo(new SearchItemResultRow());
+        searchItemResultRow.equals(new SearchItemResultRow());
         assertNotNull(searchItemResultRow.getCallNumber());
         assertNotNull(searchItemResultRow.getChronologyAndEnum());
         assertNotNull(searchItemResultRow.getCustomerCode());

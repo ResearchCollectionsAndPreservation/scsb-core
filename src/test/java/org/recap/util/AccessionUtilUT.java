@@ -13,7 +13,6 @@ import org.recap.RecapConstants;
 import org.recap.converter.AccessionXmlToBibEntityConverterInterface;
 import org.recap.converter.XmlToBibEntityConverterFactory;
 import org.recap.model.accession.AccessionRequest;
-import org.recap.model.accession.AccessionResponse;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.jpa.CustomerCodeEntity;
 import org.recap.model.jpa.HoldingsEntity;
@@ -37,11 +36,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -168,6 +165,9 @@ public class AccessionUtilUT extends BaseTestCaseUT{
         customerCodeEntity.setOwningInstitutionId(1);
         customerCodeEntity.setDescription("Princeton");
         customerCodeEntity.setCustomerCode("PUL");
+        customerCodeEntity.hashCode();
+        customerCodeEntity.compareTo(new CustomerCodeEntity());
+        customerCodeEntity.equals(new CustomerCodeEntity());
         InstitutionEntity institutionEntity=new InstitutionEntity();
         institutionEntity.setInstitutionCode("PUL");
         customerCodeEntity.setInstitutionEntity(institutionEntity);
@@ -464,6 +464,8 @@ public class AccessionUtilUT extends BaseTestCaseUT{
         holdingsEntity.setLastUpdatedBy("tst");
         holdingsEntity.setOwningInstitutionHoldingsId("1621");
         holdingsEntity.setHoldingsId(1);
+        holdingsEntity.hashCode();
+        holdingsEntity.equals(new HoldingsEntity());
         List<HoldingsEntity> holdingsEntitylist = new LinkedList(Arrays.asList(holdingsEntity));
 
 

@@ -1,5 +1,6 @@
 package org.recap.camel.dailyreconciliation;
 
+import com.amazonaws.services.s3.AmazonS3;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -56,6 +57,9 @@ public class DailyReconciliationProcessorUT extends BaseTestCaseUT {
     @Mock
     ItemDetailsRepository itemDetailsRepository;
 
+    @Mock
+    AmazonS3 awsS3Client;
+
     @Test
     public void processInput() throws Exception {
         Mockito.when(exchange.getIn()).thenReturn(message);
@@ -63,8 +67,12 @@ public class DailyReconciliationProcessorUT extends BaseTestCaseUT {
         dailyReconcilationRecords.add(getDailyReconcilationRecord("12345","1",RecapConstants.GFA_STATUS_IN));
         dailyReconcilationRecords.add(getDailyReconcilationRecord("2345","1",RecapConstants.GFA_STATUS_IN ));
         Mockito.when(message.getBody()).thenReturn(dailyReconcilationRecords);
+        Mockito.when(message.getHeader(Mockito.anyString())).thenReturn("test");
         Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
         Mockito.when(requestItemDetailsRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(saveRequestItemEntity(1, getItemEntity())));
+        Mockito.when(awsS3Client.doesObjectExist(Mockito.anyString(),Mockito.anyString())).thenReturn(true);
+        Mockito.when(awsS3Client.doesBucketExistV2(Mockito.anyString())).thenReturn(true);
+
         dailyReconciliationProcessor.processInput(exchange);
     }
 

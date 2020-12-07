@@ -22,15 +22,11 @@ import org.recap.repository.jpa.ItemDetailsRepository;
 import org.recap.repository.jpa.ReportDetailRepository;
 import org.recap.service.accession.AccessionInterface;
 import org.recap.service.accession.AccessionResolverFactory;
+import org.recap.spring.SwaggerAPIProvider;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClientException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -66,6 +62,9 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
 
     @Mock
     ReportDetailRepository reportDetailRepository;
+
+    @Mock
+    SwaggerAPIProvider swaggerAPIProvider;
 
     @Mock
     Exception ex;
@@ -178,6 +177,12 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
     public void processRecordsAccession(){
         Set<AccessionResponse> accessionResponses=new HashSet<>();
         List<Map<String, String>> responseMaps=new ArrayList<>();
+        Map<String, String> responseMap1=new HashMap<>();
+        responseMap1.put(RecapCommonConstants.REASON_FOR_BIB_FAILURE,RecapCommonConstants.REASON_FOR_BIB_FAILURE);
+        Map<String, String> responseMap=new HashMap<>();
+        responseMap.put(RecapCommonConstants.REASON_FOR_ITEM_FAILURE,RecapCommonConstants.REASON_FOR_ITEM_FAILURE);
+        responseMaps.add(responseMap);
+        responseMaps.add(responseMap1);
         AccessionRequest accessionRequest=new AccessionRequest();
         accessionRequest.setItemBarcode("12345");
         accessionRequest.setCustomerCode("PA");
@@ -193,11 +198,73 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(RecapCommonConstants.SUCCESS);
         ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
-        Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties).thenThrow(NullPointerException.class);
+        ilsConfigProperties.setIlsRefileEndpointProtocol("REST");
+        Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
         Mockito.when(formatResolver.getBibData(Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenReturn("test");
         Mockito.when(accessionResolverFactory.getFormatResolver(Mockito.anyString())).thenReturn(formatResolver);
         Mockito.when(formatResolver.getItemEntityFromRecord(null,null)).thenReturn(itemEntity);
         List<InstitutionEntity> institutionEntities =new ArrayList<>();
+        Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
+        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true);
+        assertEquals(accessionResponses,accessionResponse);
+    }
+
+    @Test
+    public void removeDuplicateRecord(){
+        List<AccessionRequest> trimmedAccessionRequests=new ArrayList<>();
+        List<AccessionRequest> removeDuplicateRecord=accessionProcessService.removeDuplicateRecord(trimmedAccessionRequests);
+        assertNotNull(removeDuplicateRecord);
+    }
+
+    @Test
+    public void getInstitutionIdCodeMapException(){
+        Mockito.when(institutionDetailsRepository.findAll()).thenThrow(NullPointerException.class);
+        Map<String,Integer> getInstitutionIdCodeMap=accessionProcessService.getInstitutionIdCodeMap();
+        assertNotNull(getInstitutionIdCodeMap);
+    }
+
+    @Test
+    public void getBibData(){
+        AccessionRequest accessionRequest=new AccessionRequest();
+        Set<AccessionResponse> accessionResponses=new HashSet<>();
+        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
+        Mockito.when(formatResolver.getBibData(Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenThrow(NullPointerException.class);
+        String bibData=accessionProcessService.getBibData(accessionResponses,accessionRequest,reportDataEntitys,"PUL","PA","123456",formatResolver);
+
+    }
+
+    @Test
+    public void processRecordsAccessionException(){
+        Set<AccessionResponse> accessionResponses=new HashSet<>();
+        List<Map<String, String>> responseMaps=new ArrayList<>();
+        Map<String, String> responseMap1=new HashMap<>();
+        responseMap1.put(RecapCommonConstants.REASON_FOR_BIB_FAILURE,RecapCommonConstants.REASON_FOR_BIB_FAILURE);
+        Map<String, String> responseMap=new HashMap<>();
+        responseMap.put(RecapCommonConstants.REASON_FOR_ITEM_FAILURE,RecapCommonConstants.REASON_FOR_ITEM_FAILURE);
+        responseMaps.add(responseMap);
+        responseMaps.add(responseMap1);
+        AccessionRequest accessionRequest=new AccessionRequest();
+        accessionRequest.setItemBarcode("12345");
+        accessionRequest.setCustomerCode("PA");
+        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
+        InstitutionEntity institutionEntity=new InstitutionEntity();
+        institutionEntity.setInstitutionCode("PUL");
+        List<ItemEntity> itemEntities=new ArrayList<>();
+        ItemEntity itemEntity=new ItemEntity();
+        itemEntity.setBarcode("12345");
+        itemEntity.setInstitutionEntity(institutionEntity);
+        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
+        Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(RecapCommonConstants.SUCCESS);
+        Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(RecapCommonConstants.SUCCESS);
+        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        ilsConfigProperties.setBibDataFormat("test");
+        ilsConfigProperties.setIlsRefileEndpointProtocol("test");
+        Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
+        Mockito.when(formatResolver.getBibData(Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenReturn("test");
+        Mockito.when(accessionResolverFactory.getFormatResolver(Mockito.anyString())).thenReturn(formatResolver);
+        Mockito.when(formatResolver.getItemEntityFromRecord(null,null)).thenReturn(itemEntity);
+        List<InstitutionEntity> institutionEntities =new ArrayList<>();
+        institutionEntities.add(institutionEntity);
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
         Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true);
         assertEquals(accessionResponses,accessionResponse);
