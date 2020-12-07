@@ -63,7 +63,7 @@ public class BulkAccessionServiceUT extends BaseTestCaseUT {
     @Value("${batch.accession.thread.size}")
     int batchAccessionThreadSize;
 
-    @Ignore
+    @Test
     public void doBulkAccession() {
         List<AccessionRequest> accessionRequestList=getAccessionRequests();
         AccessionSummary accessionSummary=new AccessionSummary("test");
@@ -74,7 +74,7 @@ public class BulkAccessionServiceUT extends BaseTestCaseUT {
         Mockito.when(accessionValidationResponse.getMessage()).thenReturn(RecapConstants.ITEM_ALREADY_ACCESSIONED);
         Mockito.when(accessionValidationResponse.isValid()).thenReturn(true);
         BibDataCallable bibDataCallable = Mockito.mock(BibDataCallable.class);
-        Mockito.when(applicationContext.getBean(Mockito.anyString())).thenReturn(bibDataCallable);
+        Mockito.when(applicationContext.getBean(BibDataCallable.class)).thenReturn(bibDataCallable);
         List<AccessionResponse> response=bulkAccessionService.doAccession(accessionRequestList,accessionSummary,exchange);
 
     }

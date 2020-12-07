@@ -40,6 +40,9 @@ public class AccessionReconciliationProcessor {
     @Autowired
     CamelContext camelContext;
 
+    @Autowired
+    RestTemplate restTemplate;
+
     @Value("${scsb.solr.doc.url}")
     private String solrSolrClientUrl;
 
@@ -75,7 +78,6 @@ public class AccessionReconciliationProcessor {
         }
         Integer index = (Integer) exchange.getProperty(RecapConstants.CAMEL_SPLIT_INDEX);
         HttpEntity httpEntity = new HttpEntity(barcodesAndCustomerCodes);
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Map> responseEntity = restTemplate.exchange(solrSolrClientUrl+ RecapConstants.ACCESSION_RECONCILATION_SOLR_CLIENT_URL, HttpMethod.POST, httpEntity,Map.class);
         Map<String,String> body = responseEntity.getBody();
         String barcodesAndCustomerCodesForReportFile = body.entrySet().stream().map(Object::toString).collect(Collectors.joining("\n")).replaceAll("=","\t");
