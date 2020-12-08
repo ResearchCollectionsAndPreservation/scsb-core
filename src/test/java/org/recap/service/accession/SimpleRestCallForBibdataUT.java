@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+
 public class SimpleRestCallForBibdataUT extends BaseTestCaseUT {
 
     @Mock
@@ -44,7 +46,7 @@ public class SimpleRestCallForBibdataUT extends BaseTestCaseUT {
         Mockito.when(simpleRestCallForBibdata.getHttpHeaders()).thenCallRealMethod();
         Mockito.when(simpleRestCallForBibdata.getBibData("123456","PA","PUL","url")).thenCallRealMethod();
         String bibDataResponse=simpleRestCallForBibdata.getBibData("123456","PA","PUL","url");
-
+        assertEquals(RecapCommonConstants.SUCCESS,bibDataResponse);
     }
 
     public HttpHeaders getHttpHeaders() {
