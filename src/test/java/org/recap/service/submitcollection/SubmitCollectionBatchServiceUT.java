@@ -343,7 +343,7 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
 
     }
 
-    @Ignore
+    @Test
     public void processSCSBInvalid() throws JAXBException {
         Set<Integer> processedBibIds = new HashSet<>();
         Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();

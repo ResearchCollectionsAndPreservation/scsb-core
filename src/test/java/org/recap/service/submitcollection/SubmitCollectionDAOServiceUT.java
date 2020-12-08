@@ -165,18 +165,7 @@ public class SubmitCollectionDAOServiceUT extends BaseTestCaseUT {
         assertNotNull(bibliographicEntities);
     }
 
-    private Set<Integer> getIntegers() {
-        Set<Integer> processedBibIds = new HashSet<>();
-        processedBibIds.add(1);
-        return processedBibIds;
-    }
 
-    private Map getMap(String one,String two) {
-        Map institutionEntityMap = new HashMap();
-        institutionEntityMap.put(1,one);
-        institutionEntityMap.put(2,two);
-        return institutionEntityMap;
-    }
 
     @Test
     public void updateBibliographicEntityInBatchForNonBoundWithDummy() throws Exception{
@@ -192,6 +181,7 @@ public class SubmitCollectionDAOServiceUT extends BaseTestCaseUT {
         Mockito.when(setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId())).thenReturn(getMap("NYPL","Available"));
         Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
         Mockito.when(repositoryService.getItemDetailsRepository().findByBarcodeInAndOwningInstitutionId(Arrays.asList("123456"),1)).thenReturn(itemEntity);
+        Mockito.when(repositoryService.getItemChangeLogDetailsRepository()).thenReturn(itemChangeLogDetailsRepository);
         Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
         Mockito.when(submitCollectionValidationService.isExistingBoundWithItem(itemEntity.get(0))).thenReturn(false);
         Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
@@ -470,6 +460,26 @@ public class SubmitCollectionDAOServiceUT extends BaseTestCaseUT {
         Mockito.when(submitCollectionReportHelperService.isBarcodeAlreadyAdded(itemEntityList.get(0).getBarcode(),submitCollectionReportInfoMap)).thenReturn(false);
         submitCollectionDAOService.prepareExceptionReport(Arrays.asList("123456"),fetchedItemBarcodeList,incomingBarcodeItemEntityMapFromBibliographicEntityList,submitCollectionReportInfoMap);
     }
+
+    @Test
+    public  void updateDummyRecordEmpty(){
+        BibliographicEntity bibliographicEntity = getBibliographicEntity("1577261074");
+        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = getSubmitCollectionReportInfoMap();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        List< ItemChangeLogEntity > itemChangeLogEntityList = new ArrayList<>();
+        ItemChangeLogEntity itemChangeLogEntity = getItemChangeLogEntity();
+        itemChangeLogEntityList.add(itemChangeLogEntity);
+        Set<String> processedBarcodeSet = new HashSet<>();
+        processedBarcodeSet.add("23");
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity("1577261074");
+        BibliographicEntity fetchBibliographicEntity = getBibliographicEntity("1577261074");
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        itemEntities.add(new ItemEntity());
+        Mockito.when(submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(bibliographicEntity.getItemEntities())).thenReturn(itemEntities);
+        BibliographicEntity bibliographicEntity1 = submitCollectionDAOService.updateDummyRecord(bibliographicEntity,submitCollectionReportInfoMap,idMapToRemoveIndexList,processedBarcodeSet,savedBibliographicEntity,fetchBibliographicEntity);
+        assertNotNull(bibliographicEntity1);
+    }
+
     @Test
     public  void updateDummyRecord(){
         BibliographicEntity bibliographicEntity = getBibliographicEntity("1577261074");
@@ -804,6 +814,19 @@ public class SubmitCollectionDAOServiceUT extends BaseTestCaseUT {
         bibliographicEntity.setItemEntities(Arrays.asList(itemEntity));
 
         return bibliographicEntity;
+    }
+
+    private Set<Integer> getIntegers() {
+        Set<Integer> processedBibIds = new HashSet<>();
+        processedBibIds.add(1);
+        return processedBibIds;
+    }
+
+    private Map getMap(String one,String two) {
+        Map institutionEntityMap = new HashMap();
+        institutionEntityMap.put(1,one);
+        institutionEntityMap.put(2,two);
+        return institutionEntityMap;
     }
 
 }

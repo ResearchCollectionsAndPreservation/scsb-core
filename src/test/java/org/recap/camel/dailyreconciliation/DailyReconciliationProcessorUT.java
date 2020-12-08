@@ -20,6 +20,8 @@ import org.recap.model.jpa.RequestItemEntity;
 import org.recap.model.jpa.RequestTypeEntity;
 import org.recap.repository.jpa.ItemDetailsRepository;
 import org.recap.repository.jpa.RequestItemDetailsRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +62,9 @@ public class DailyReconciliationProcessorUT extends BaseTestCaseUT {
     @Mock
     AmazonS3 awsS3Client;
 
+    @Value("${daily.reconciliation.file}")
+    private String filePath;
+
     @Test
     public void processInput() throws Exception {
         Mockito.when(exchange.getIn()).thenReturn(message);
@@ -72,7 +77,7 @@ public class DailyReconciliationProcessorUT extends BaseTestCaseUT {
         Mockito.when(requestItemDetailsRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(saveRequestItemEntity(1, getItemEntity())));
         Mockito.when(awsS3Client.doesObjectExist(Mockito.anyString(),Mockito.anyString())).thenReturn(true);
         Mockito.when(awsS3Client.doesBucketExistV2(Mockito.anyString())).thenReturn(true);
-
+        ReflectionTestUtils.setField(dailyReconciliationProcessor,"filePath",filePath);
         dailyReconciliationProcessor.processInput(exchange);
     }
 
@@ -84,7 +89,7 @@ public class DailyReconciliationProcessorUT extends BaseTestCaseUT {
         dailyReconcilationRecords.add(getDailyReconcilationRecord("23451",null,RecapConstants.GFA_STATUS_SCH_ON_REFILE_WORK_ORDER));
         Mockito.when(message.getBody()).thenReturn(dailyReconcilationRecords);
         Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
-       Mockito.when(itemDetailsRepository.findByBarcode(Mockito.anyString())).thenReturn(Arrays.asList(getItemEntity()));
+        Mockito.when(itemDetailsRepository.findByBarcode(Mockito.anyString())).thenReturn(Arrays.asList(getItemEntity()));
         dailyReconciliationProcessor.processInput(exchange);
     }
 

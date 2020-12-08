@@ -2,11 +2,10 @@ package org.recap.service.submitcollection;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.recap.BaseTestCaseUT;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.jpa.HoldingsEntity;
 import org.recap.model.jpa.InstitutionEntity;
@@ -19,12 +18,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SubmitCollectionValidationServiceUT{
+
+public class SubmitCollectionValidationServiceUT extends BaseTestCaseUT {
     private static final Logger logger = LoggerFactory.getLogger(SubmitCollectionValidationService.class);
     @InjectMocks
     SubmitCollectionValidationService submitCollectionValidationService;
@@ -255,6 +264,26 @@ public class SubmitCollectionValidationServiceUT{
         existingBibliographicEntityList.add(bibliographicEntity);
         boolean result = submitCollectionValidationService.validateIncomingItemHavingBibCountGreaterThanExistingItem(submitCollectionReportInfoMap,incomingBibliographicEntityList,existingBibliographicEntityList);
         assertFalse(result);
+    }
+
+    @Test
+    public void validateIncomingItemHavingBibCountGreaterThanExistingItemDummy(){
+        Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap = new HashMap<>();
+        List<SubmitCollectionReportInfo> submitCollectionReportInfos = new ArrayList<>();
+        submitCollectionReportInfos.add(getSubmitCollectionReportInfo());
+        submitCollectionReportInfoMap.put("submitCollectionSuccessList",Arrays.asList(getSubmitCollectionReportInfo()));
+        submitCollectionReportInfoMap.put("submitCollectionRejectionList",Arrays.asList(getSubmitCollectionReportInfo()));
+        submitCollectionReportInfoMap.put("submitCollectionFailureList",Arrays.asList(getSubmitCollectionReportInfo()));
+        List<BibliographicEntity> incomingBibliographicEntityList = new ArrayList<>();
+        BibliographicEntity bibliographicEntity=getBibliographicEntity();
+        bibliographicEntity.setOwningInstitutionBibId("9");
+        incomingBibliographicEntityList.add(bibliographicEntity);
+        List<BibliographicEntity> existingBibliographicEntityList = new ArrayList<>();
+        BibliographicEntity bibliographicEntity1=getBibliographicEntity();
+        bibliographicEntity1.setOwningInstitutionBibId("d");
+        existingBibliographicEntityList.add(bibliographicEntity1);
+        boolean result = submitCollectionValidationService.validateIncomingItemHavingBibCountGreaterThanExistingItem(submitCollectionReportInfoMap,incomingBibliographicEntityList,existingBibliographicEntityList);
+        assertTrue(result);
     }
     @Test
     public void validateIncomingItemHavingBibCountLesserThanExistingItem(){
