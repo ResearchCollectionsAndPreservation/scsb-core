@@ -92,7 +92,6 @@ public class SubmitCollectionProcessor {
         try {
             logger.info("Submit Collection : Route started and started processing the records from s3 for submitcollection");
             String inputXml = exchange.getIn().getBody(String.class);
-            //  logger.info("Processing xml String----->{}",inputXml);
             xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
             bucketName = exchange.getIn().getHeader("CamelAwsS3BucketName").toString();
             logger.info("Processing xmlFileName----->{}", xmlFileName);
