@@ -51,9 +51,9 @@ public class BarcodeReconciliationRouteBuilder extends RouteBuilder {
                 .when(body().isNull())
                 .log("No File To Process For " + institution + " Accession Reconciliation")
                 .process(new StopRouteProcessor(institution + "accessionReconcilationS3Route"))
-                .otherwise()
-                .process(new StartRouteProcessor(institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE))
-                .to(RecapConstants.DIRECT + institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE)
+              //  .otherwise()
+              //  .process(new StartRouteProcessor(institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE))
+               // .to(RecapConstants.DIRECT + institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE)
                 .endChoice();
 
         from(RecapConstants.DIRECT + institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE)
