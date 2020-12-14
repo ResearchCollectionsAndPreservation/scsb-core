@@ -75,9 +75,9 @@ public class DailyReconciliationProcessor {
      * @param exchange the exchange
      */
     public void processInput(Exchange exchange) {
-        String fileName = (String) exchange.getIn().getHeaders().get(Exchange.FILE_NAME);
-        logger.info("fileProcessing:{}",fileName);
         try {
+            String xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+            logger.info("fileProcessing:{}",xmlFileName);
             List<DailyReconcilationRecord> dailyReconcilationRecordList = (List<DailyReconcilationRecord>)exchange.getIn().getBody();
             try (XSSFWorkbook xssfWorkbook = new XSSFWorkbook()) {
                 XSSFSheet lasSheet = xssfWorkbook.createSheet(RecapConstants.DAILY_RR_LAS);
@@ -114,18 +114,21 @@ public class DailyReconciliationProcessor {
                 logger.info("total number of sheets created {}",xssfWorkbook.getNumberOfSheets());
                 camelContext.getRouteController().startRoute(RecapConstants.DAILY_RR_FS_ROUTE_ID);
                 logger.info("started "+ RecapConstants.DAILY_RR_FS_ROUTE_ID);
-                String xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
                 String bucketName = exchange.getIn().getHeader("CamelAwsS3BucketName").toString();
-                if(awsS3Client.doesObjectExist(bucketName,xmlFileName) && awsS3Client.doesBucketExistV2(bucketName)) {
-                    awsS3Client.copyObject(bucketName, xmlFileName, bucketName, "done/"+xmlFileName);
+                if (awsS3Client.doesObjectExist(bucketName, xmlFileName)) {
+                    String basepath = xmlFileName.substring(0, xmlFileName.lastIndexOf('/'));
+                    basepath = basepath.substring(0, basepath.lastIndexOf('/'));
+                    String fileName = xmlFileName.substring(xmlFileName.lastIndexOf('/'));
+                    awsS3Client.copyObject(bucketName, xmlFileName, bucketName, basepath + "/.done" + fileName);
                     awsS3Client.deleteObject(bucketName, xmlFileName);
                 }
             }
+            logger.info("fileProcessed:{}",xmlFileName);
         }
         catch (Exception e){
             logger.error(RecapCommonConstants.LOG_ERROR, e);
         }
-        logger.info("fileProcessed:{}",fileName);
+
     }
 
     private void readValuesFromLasSheet(XSSFWorkbook xssfWorkbook, Sheet readLasSheet, XSSFSheet scsbSheet, XSSFCellStyle dateCellStyle, int j) {

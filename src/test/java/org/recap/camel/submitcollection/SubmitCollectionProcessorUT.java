@@ -178,7 +178,7 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
 
     @Test
     public void testSubmitCollectionProcessor() {
-        SubmitCollectionProcessor submitCollectionProcessor = new SubmitCollectionProcessor("NYPL", false);
+        SubmitCollectionProcessor submitCollectionProcessor = new SubmitCollectionProcessor("NYPL", false, "cgd_no_protection");
         ReflectionTestUtils.setField(submitCollectionProcessor,"propertyUtil",propertyUtil);
         ReflectionTestUtils.setField(submitCollectionProcessor,"setupDataService",setupDataService);
         ReflectionTestUtils.setField(submitCollectionProcessor,"submitCollectionBatchService",submitCollectionBatchService);

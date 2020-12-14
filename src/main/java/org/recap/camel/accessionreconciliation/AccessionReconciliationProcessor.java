@@ -113,8 +113,11 @@ public class AccessionReconciliationProcessor {
         startFileSystemRoutesForAccessionReconciliation(exchange,index);
         String xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
         String bucketName = exchange.getIn().getHeader("CamelAwsS3BucketName").toString();
-        if(awsS3Client.doesObjectExist(bucketName,xmlFileName) && awsS3Client.doesBucketExistV2(bucketName)) {
-            awsS3Client.copyObject(bucketName, xmlFileName, bucketName, "done/"+xmlFileName);
+        if (awsS3Client.doesObjectExist(bucketName, xmlFileName)) {
+            String basepath = xmlFileName.substring(0, xmlFileName.lastIndexOf('/'));
+            basepath = basepath.substring(0, basepath.lastIndexOf('/'));
+            String fileName = xmlFileName.substring(xmlFileName.lastIndexOf('/'));
+            awsS3Client.copyObject(bucketName, xmlFileName, bucketName, basepath + "/.done-" + institutionCode + fileName);
             awsS3Client.deleteObject(bucketName, xmlFileName);
         }
     }

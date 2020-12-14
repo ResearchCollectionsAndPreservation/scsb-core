@@ -145,13 +145,13 @@ public class SubmitCollectionPollingS3RouteBuilder {
                             .unmarshal()
                             .gzipDeflater()
                             .log(currentInstitution + "Submit Collection S3 Route Unzip Complete")
-                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class, RecapCommonConstants.PRINCETON, true), RecapConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class, RecapCommonConstants.PRINCETON, true, cgdType), RecapConstants.PROCESS_INPUT)
                             .log("Successfully pulled from S3 {{scsbBucketName}} bucket. " + "File detected: ${header.CamelAwsS3Key}")
                             .when(body().isNull())//This condition is satisfied when there are no files in the directory(parameter-sendEmptyMessageWhenIdle=true)
                             .log(currentInstitution + "-" + cgdType + " Directory is empty")
                             .otherwise()
                             .log("submit collection for " + currentInstitution + "-" + cgdType + " started")
-                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class, RecapCommonConstants.PRINCETON, true), RecapConstants.PROCESS_INPUT)
+                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class, RecapCommonConstants.PRINCETON, true, cgdType), RecapConstants.PROCESS_INPUT)
                             .log(currentInstitution + " Submit Collection " + cgdType + " S3 Route Record Processing completed")
                             .end();
                 }
