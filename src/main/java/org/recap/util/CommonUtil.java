@@ -289,13 +289,13 @@ public class CommonUtil {
         return bibRecords;
     }
 
-    public String getUpdatedDataResponse(Set<AccessionResponse> accessionResponsesList, List<Map<String, String>> responseMapList, String owningInstitution, List<ReportDataEntity> reportDataEntityList, AccessionRequest accessionRequest, boolean isValidBoundWithRecord, int count, Object record) {
+    public String getUpdatedDataResponse(Set<AccessionResponse> accessionResponsesList, List<Map<String, String>> responseMapList, String owningInstitution, List<ReportDataEntity> reportDataEntityList, AccessionRequest accessionRequest, boolean isValidBoundWithRecord, int count, Object record, ImsLocationEntity imsLocationEntity) {
         String response;
         boolean isFirstRecord = false;
         if (count == 1) {
             isFirstRecord = true;
         }
-        response = accessionUtil.updateData(record, owningInstitution, responseMapList, accessionRequest, isValidBoundWithRecord, isFirstRecord);
+        response = accessionUtil.updateData(record, owningInstitution, responseMapList, accessionRequest, isValidBoundWithRecord, isFirstRecord,imsLocationEntity);
         accessionUtil.setAccessionResponse(accessionResponsesList, accessionRequest.getItemBarcode(), response);
         reportDataEntityList.addAll(accessionUtil.createReportDataEntityList(accessionRequest, response));
         return response;

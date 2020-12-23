@@ -19,7 +19,7 @@ public interface CustomerCodeDetailsRepository extends BaseRepository<CustomerCo
      * @param customerCode the customer code
      * @return the customer code entity
      */
-    CustomerCodeEntity findByCustomerCode(@Param("customerCode") String customerCode);
+    CustomerCodeEntity findByCustomerCode(String customerCode);
 
     /**
      * Find by customer code in list.

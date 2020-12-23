@@ -61,7 +61,7 @@ public class DummyDataService {
      * @param customerCode        the customer code
      * @return the bibliographic entity
      */
-    public BibliographicEntity createDummyDataAsIncomplete(Integer owningInstitutionId, String itemBarcode, String customerCode) {
+    public BibliographicEntity createDummyDataAsIncomplete(Integer owningInstitutionId, String itemBarcode, String customerCode,ImsLocationEntity imsLocationEntity) {
         Random random = new Random();
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
         Date currentDate = new Date();
@@ -86,6 +86,8 @@ public class DummyDataService {
             itemEntity.setDeleted(false);
             itemEntity.setHoldingsEntities(Collections.singletonList(holdingsEntity));
             itemEntity.setCatalogingStatus(RecapCommonConstants.INCOMPLETE_STATUS);
+            itemEntity.setImsLocationId(imsLocationEntity.getImsLocationId());
+            itemEntity.setImsLocationEntity(imsLocationEntity);
             List<ItemEntity> itemEntityList = new ArrayList<>();
             itemEntityList.add(itemEntity);
             holdingsEntity.setItemEntities(itemEntityList);

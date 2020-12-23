@@ -5,6 +5,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
+import org.recap.model.accession.AccessionModelRequest;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
 import org.recap.model.accession.AccessionSummary;
@@ -40,14 +41,14 @@ public class AccessionService {
     private AccessionValidationService accessionValidationService;
 
 
-    public List<AccessionResponse> doAccession(List<AccessionRequest> accessionRequestList, AccessionSummary accessionSummary, Exchange exchange) {
+    public List<AccessionResponse> doAccession(AccessionModelRequest accessionModelRequest, AccessionSummary accessionSummary, Exchange exchange) {
 
         // Trim accession request
-        List<AccessionRequest> trimmedAccessionRequests = getTrimmedAccessionRequests(accessionRequestList);
+        List<AccessionRequest> trimmedAccessionRequests = getTrimmedAccessionRequests(accessionModelRequest.getAccessionRequests());
 
         // Remove duplicate barcodes
         trimmedAccessionRequests = accessionProcessService.removeDuplicateRecord(trimmedAccessionRequests);
-        int requestedCount = accessionRequestList.size();
+        int requestedCount = accessionModelRequest.getAccessionRequests().size();
         int duplicateCount = requestedCount - trimmedAccessionRequests.size();
 
         accessionSummary.setRequestedRecords(requestedCount);
@@ -55,26 +56,38 @@ public class AccessionService {
 
         Set<AccessionResponse> accessionResponses = new HashSet<>();
         List<Map<String, String>> responseMaps = new ArrayList<>();
+        List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        //validate ims_location
+        String imsLocationCode=accessionModelRequest.getImsLocationCode();// validateCode(code,codeType)
+        AccessionValidationService.AccessionValidationResponse imsValidation = accessionValidationService.validateImsLocationCode(imsLocationCode);
 
-        // iterate Request
-        for (AccessionRequest accessionRequest : trimmedAccessionRequests) {
-            List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        if(imsValidation.isValid()) {
+            // iterate Request
+            for (AccessionRequest accessionRequest : trimmedAccessionRequests) {
 
-            // validate empty barcode ,customer code and owning institution
-            String itemBarcode = accessionRequest.getItemBarcode();
-            String customerCode = accessionRequest.getCustomerCode();
-            AccessionValidationService.AccessionValidationResponse accessionValidationResponse = accessionValidationService.validateBarcodeOrCustomerCode(itemBarcode, customerCode);
+                // validate empty barcode ,customer code and owning institution
+                String itemBarcode = accessionRequest.getItemBarcode();
+                String customerCode = accessionRequest.getCustomerCode();
+                AccessionValidationService.AccessionValidationResponse accessionValidationResponse = accessionValidationService.validateBarcodeOrCustomerCode(itemBarcode, customerCode);
 
-            String owningInstitution = accessionValidationResponse.getOwningInstitution();
+                String owningInstitution = accessionValidationResponse.getOwningInstitution();
 
-            if (!accessionValidationResponse.isValid()) {
-                String message = accessionValidationResponse.getMessage();
-                accessionUtil.setAccessionResponse(accessionResponses, itemBarcode, message);
-                reportDataEntitys.addAll(accessionUtil.createReportDataEntityList(accessionRequest, message));
-                continue;
+                if (!accessionValidationResponse.isValid()) {
+                    String message = accessionValidationResponse.getMessage();
+                    accessionUtil.setAccessionResponse(accessionResponses, itemBarcode, message);
+                    reportDataEntitys.addAll(accessionUtil.createReportDataEntityList(accessionRequest, message));
+                    continue;
+                }
+                accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest,reportDataEntitys, owningInstitution, true,imsValidation.getImsLocationEntity());
+
             }
-            accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, owningInstitution, true);
-
+        }
+        else{
+            String message = imsValidation.getMessage();
+            trimmedAccessionRequests.forEach(accessionRequest -> {
+                accessionUtil.setAccessionResponse(accessionResponses,accessionRequest.getItemBarcode(),message);
+                reportDataEntitys.addAll(accessionUtil.createReportDataEntityList(accessionRequest, message));
+            });
         }
 
         prepareSummary(accessionSummary, accessionResponses);
@@ -123,7 +136,14 @@ public class AccessionService {
             accessionSummary.addEmptyCustomerCode(1);
         }  else if(StringUtils.equalsIgnoreCase(RecapCommonConstants.CUSTOMER_CODE_DOESNOT_EXIST, message)) {
             accessionSummary.addCustomerCodeDoesNotExist(1);
-        } else {
+        }
+        else if(StringUtils.equalsIgnoreCase(RecapConstants.INVALID_IMS_LOCACTION_CODE, message)){
+            accessionSummary.addInvalidImsLocation(1);
+        }
+        else if(StringUtils.equalsIgnoreCase(RecapConstants.IMS_LOCACTION_CODE_IS_BLANK, message)){
+            accessionSummary.addEmptyImsLocation(1);
+        }
+        else {
             accessionSummary.addFailure(1);
         }
     }
