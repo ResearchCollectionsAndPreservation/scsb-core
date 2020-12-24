@@ -72,7 +72,7 @@ public class DailyReconciliationProcessorUT extends BaseTestCaseUT {
         dailyReconcilationRecords.add(getDailyReconcilationRecord("12345","1",RecapConstants.GFA_STATUS_IN));
         dailyReconcilationRecords.add(getDailyReconcilationRecord("2345","1",RecapConstants.GFA_STATUS_IN ));
         Mockito.when(message.getBody()).thenReturn(dailyReconcilationRecords);
-        Mockito.when(message.getHeader(Mockito.anyString())).thenReturn("test");
+        Mockito.when(message.getHeader(Mockito.anyString())).thenReturn("CamelAwsS3Key/CamelAwsS3Key/CamelAwsS3Key");
         Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
         Mockito.when(requestItemDetailsRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(saveRequestItemEntity(1, getItemEntity())));
         Mockito.when(awsS3Client.doesObjectExist(Mockito.anyString(),Mockito.anyString())).thenReturn(true);
@@ -80,6 +80,25 @@ public class DailyReconciliationProcessorUT extends BaseTestCaseUT {
         ReflectionTestUtils.setField(dailyReconciliationProcessor,"filePath",filePath);
         dailyReconciliationProcessor.processInput(exchange);
     }
+    @Test
+    public void processInputRequestIdNull() throws Exception {
+        Mockito.when(exchange.getIn()).thenReturn(message);
+        List<DailyReconcilationRecord> dailyReconcilationRecords=new ArrayList<>();
+        dailyReconcilationRecords.add(getDailyReconcilationRecord("12345",null,RecapConstants.GFA_STATUS_IN));
+        dailyReconcilationRecords.add(getDailyReconcilationRecord("2345",null,RecapConstants.GFA_STATUS_IN ));
+        List<ItemEntity> itemEntityList=new ArrayList<>();
+        itemEntityList.add(getItemEntity());
+        Mockito.when(itemDetailsRepository.findByBarcode(Mockito.anyString())).thenReturn(itemEntityList);
+        Mockito.when(message.getBody()).thenReturn(dailyReconcilationRecords);
+        Mockito.when(message.getHeader(Mockito.anyString())).thenReturn("CamelAwsS3Key/CamelAwsS3Key/CamelAwsS3Key");
+        Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
+        Mockito.when(requestItemDetailsRepository.findById(Mockito.anyInt())).thenReturn(Optional.ofNullable(saveRequestItemEntity(1, getItemEntity())));
+        Mockito.when(awsS3Client.doesObjectExist(Mockito.anyString(),Mockito.anyString())).thenReturn(true);
+        Mockito.when(awsS3Client.doesBucketExistV2(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(dailyReconciliationProcessor,"filePath",filePath);
+        dailyReconciliationProcessor.processInput(exchange);
+    }
+
 
     @Test
     public void processInputRequestId() throws Exception {

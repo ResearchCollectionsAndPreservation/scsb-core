@@ -1,7 +1,11 @@
 package org.recap.controller;
 
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.recap.BaseTestCase;
+import org.recap.BaseTestCaseUT;
+import org.recap.service.purge.PurgeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
@@ -10,10 +14,13 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by hemalathas on 12/4/17.
  */
-public class PurgeControllerUT extends BaseTestCase {
+public class PurgeControllerUT extends BaseTestCaseUT {
 
-    @Autowired
+    @InjectMocks
     PurgeController purgeEmailAddressController;
+
+    @Mock
+    PurgeService purgeService;
 
     @Test
     public void testPurgeEmailAddress() {
