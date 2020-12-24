@@ -139,7 +139,7 @@ public class AccessionReconciliationProcessorUT extends BaseTestCaseUT {
         ex.setIn(in);
 
         ex.setProperty(RecapConstants.CAMEL_SPLIT_COMPLETE,true);
-        in.setHeader("CamelAwsS3Key", simple("CamelAwsS3Key"));
+        in.setHeader("CamelAwsS3Key", simple("CamelAwsS3Key/CamelAwsS3Key/CamelAwsS3Key"));
         in.setHeader("CamelAwsS3BucketName", simple("CamelAwsS3BucketName"));
         in.setBody(barcodeReconcilitaionReports);
         return ex;
