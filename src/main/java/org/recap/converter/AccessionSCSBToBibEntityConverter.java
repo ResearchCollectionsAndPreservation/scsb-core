@@ -67,7 +67,7 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
 
         try {
             BibRecord bibRecord = (BibRecord) scsbRecord;
-            Integer owningInstitutionId = (Integer) commonUtil.getInstitutionEntityMap().get(institutionName);
+            Integer owningInstitutionId = commonUtil.getInstitutionEntityMap().get(institutionName);
             Date currentDate = new Date();
 
             Map<String, Object> bibMap = processAndValidateBibliographicEntity(bibRecord, owningInstitutionId, currentDate,errorMessage);
@@ -85,7 +85,7 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
                     if (holdings.getHolding()!=null) {
                         holdingList = holdings.getHolding();
                     } else {
-                        logger.error("holding is empty---"+bibRecord.getBib().getOwningInstitutionBibId());
+                        logger.error(String.format("holding is empty---%s",bibRecord.getBib().getOwningInstitutionBibId()));
                     }
                     for(Holding holding:holdingList){
                         if (holding.getContent() != null) {
@@ -111,7 +111,9 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
 
                                 List<RecordType> itemRecordTypes = itemContentCollection.getRecord();
                                 for (RecordType itemRecordType : itemRecordTypes) {
+
                                     Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, owningInstitutionId, holdingsCallNumber, holdingsCallNumberType, itemRecordType,accessionRequest,currentDate,errorMessage,imsLocationEntity);
+
                                     if (itemMap != null) {
                                         if(itemMap.containsKey(RecapCommonConstants.FAILED_ITEM_COUNT)){
                                             failedItemCount = failedItemCount + (int) itemMap.get(RecapCommonConstants.FAILED_ITEM_COUNT);
@@ -227,7 +229,7 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
         LeaderFieldType leader = bibContentCollection.getRecord().get(0).getLeader();
         if(leader == null){
             errorMessage.append(" Leader field is missing").append(",");
-        } else if (!(leader != null && StringUtils.isNotBlank(leader.getValue()) && leader.getValue().length() == 24)) {
+        } else if (!(StringUtils.isNotBlank(leader.getValue()) && leader.getValue().length() == 24)) {
             errorMessage.append(" Leader field value should be 24 characters ").append(",");
         }
 
@@ -281,12 +283,14 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
     private Map<String, Object> processAndValidateItemEntity(BibliographicEntity bibliographicEntity, Integer owningInstitutionId,
                                                              String holdingsCallNumber, String holdingsCallNumberType, RecordType itemRecordType,AccessionRequest accessionRequest,
                                                              Date currentDate,StringBuilder errorMessage,ImsLocationEntity imsLocationEntity) {
+
         Map<String, Object> map = new HashMap<>();
         ItemEntity itemEntity = new ItemEntity();
         int failedItemCount = 0;
         int successItemCount = 0;
         boolean isComplete = true;
         String reasonForFailureItem = "";
+        Date currentDate = new Date();
         map.put(RecapCommonConstants.FAILED_ITEM_COUNT,failedItemCount);
         map.put(RecapCommonConstants.SUCCESS_ITEM_COUNT,successItemCount);
         map.put(RecapCommonConstants.REASON_FOR_ITEM_FAILURE,reasonForFailureItem);
@@ -313,9 +317,9 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
             }
             String collectionGroupCode = getMarcUtil().getDataFieldValueForRecordType(itemRecordType, "900", null, null, "a");
             if (StringUtils.isNotBlank(collectionGroupCode) && commonUtil.getCollectionGroupMap().containsKey(collectionGroupCode)) {
-                itemEntity.setCollectionGroupId((Integer) commonUtil.getCollectionGroupMap().get(collectionGroupCode));
+                itemEntity.setCollectionGroupId(commonUtil.getCollectionGroupMap().get(collectionGroupCode));
             } else {
-                itemEntity.setCollectionGroupId((Integer) commonUtil.getCollectionGroupMap().get("Open"));
+                itemEntity.setCollectionGroupId(commonUtil.getCollectionGroupMap().get("Open"));
             }
             itemEntity.setDeleted(false);
             itemEntity.setCreatedDate(currentDate);
@@ -342,11 +346,11 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
             }
 
             if(isComplete){
-                itemEntity.setItemAvailabilityStatusId((Integer) commonUtil.getItemStatusMap().get("Available"));
+                itemEntity.setItemAvailabilityStatusId(commonUtil.getItemStatusMap().get("Available"));
                 bibliographicEntity.setCatalogingStatus(RecapCommonConstants.COMPLETE_STATUS);
                 itemEntity.setCatalogingStatus(RecapCommonConstants.COMPLETE_STATUS);
             } else {
-                itemEntity.setItemAvailabilityStatusId((Integer) commonUtil.getItemStatusMap().get("Not Available"));
+                itemEntity.setItemAvailabilityStatusId(commonUtil.getItemStatusMap().get("Not Available"));
                 bibliographicEntity.setCatalogingStatus(RecapCommonConstants.INCOMPLETE_STATUS);
                 itemEntity.setCatalogingStatus(RecapCommonConstants.INCOMPLETE_STATUS);
             }

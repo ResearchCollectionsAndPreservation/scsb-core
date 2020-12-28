@@ -159,7 +159,7 @@ public class SharedCollectionRestController {
         ResponseEntity responseEntity;
         String inputRecords = (String) requestParameters.get(RecapCommonConstants.INPUT_RECORDS);
         String institution = (String) requestParameters.get(RecapCommonConstants.INSTITUTION);
-        Integer institutionId = (Integer) setupDataService.getInstitutionCodeIdMap().get(institution);
+        Integer institutionId = setupDataService.getInstitutionCodeIdMap().get(institution);
         Boolean isCGDProtection = Boolean.valueOf((String) requestParameters.get(RecapCommonConstants.IS_CGD_PROTECTED));
 
         List<Integer> reportRecordNumberList = new ArrayList<>();

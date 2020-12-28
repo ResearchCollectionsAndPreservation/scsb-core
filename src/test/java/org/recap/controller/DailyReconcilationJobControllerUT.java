@@ -19,7 +19,7 @@ public class DailyReconcilationJobControllerUT extends BaseTestCase{
     public void testDailyReconcilationJobController() throws Exception {
         String response = dailyReconcilationJobController.statCamel();
         assertNotNull(response);
-        assertEquals(response,"Success");
+        assertEquals("Success", response);
     }
 
 }

@@ -48,7 +48,7 @@ public class SubmitCollectionJobController {
         List<String> allInstitutionCodeExceptHTC = institutionDetailsRepository.findAllInstitutionCodeExceptHTC();
         Optional<String> institution = allInstitutionCodeExceptHTC.stream().findFirst();
         submitCollectionPollingFtpRouteBuilder.createRoutesForSubmitCollection();
-        camelContext.getRouteController().startRoute(institution.get()+RecapConstants.CGD_PROTECTED_ROUTE_ID);
+        camelContext.getRouteController().startRoute((institution.isPresent() ? institution.get() : "") + RecapConstants.CGD_PROTECTED_ROUTE_ID);
         Endpoint endpoint = camelContext.getEndpoint(RecapConstants.SUBMIT_COLLECTION_COMPLETION_QUEUE_TO);
         PollingConsumer consumer = null;
         try {

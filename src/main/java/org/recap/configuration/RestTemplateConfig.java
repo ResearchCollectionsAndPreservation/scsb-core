@@ -62,7 +62,6 @@ public class RestTemplateConfig {
 
             throw new RuntimeException(response);
         }
-        //return null;
     }
 
     public SimpleClientHttpRequestFactory getClientHttpRequestFactory()

@@ -79,9 +79,9 @@ public class SubmitCollectionValidationService {
         List<SubmitCollectionReportInfo> failureSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(RecapConstants.SUBMIT_COLLECTION_FAILURE_LIST);
         Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = submitCollectionHelperService.getHoldingItemIdMap(fetchedBibliographicEntity);
         Map<String,Map<String,ItemEntity>> incomingHoldingItemMap = submitCollectionHelperService.getHoldingItemIdMap(incomingBibliographicEntity);
-        String owningInstitution = (String) setupDataService.getInstitutionIdCodeMap().get(fetchedBibliographicEntity.getOwningInstitutionId());
+        String owningInstitution = setupDataService.getInstitutionIdCodeMap().get(fetchedBibliographicEntity.getOwningInstitutionId());
         String[] nonHoldingIdInstitutionArray = getNonHoldingIdInstitutionArray();
-        String institutionCode = (String) setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId());
+        String institutionCode = setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId());
 
         for (Map.Entry<String,Map<String,ItemEntity>> incomingHoldingItemMapEntry : incomingHoldingItemMap.entrySet()) {
             Map<String,ItemEntity> incomingOwningItemIdEntityMap = incomingHoldingItemMapEntry.getValue();
@@ -158,7 +158,7 @@ public class SubmitCollectionValidationService {
      * @return the boolean
      */
     public boolean isAvailableItem(Integer itemAvailabilityStatusId){
-        String itemStatusCode = (String) setupDataService.getItemStatusIdCodeMap().get(itemAvailabilityStatusId);
+        String itemStatusCode = setupDataService.getItemStatusIdCodeMap().get(itemAvailabilityStatusId);
         return (itemStatusCode.equalsIgnoreCase(RecapConstants.ITEM_STATUS_AVAILABLE));
     }
 
@@ -168,16 +168,6 @@ public class SubmitCollectionValidationService {
             itemEntityMap.put(itemEntity.getOwningInstitutionItemId(),itemEntity);
         }
         return itemEntityMap;
-    }
-
-    private ItemEntity getMismatchedItemEntity(ItemEntity incomingItemEntity, Map<String,ItemEntity> fetchedOwningItemIdBarcodeMap){
-        for(Map.Entry<String,ItemEntity> fetchedOwningItemIdBarcodeMapEntry:fetchedOwningItemIdBarcodeMap.entrySet()){
-            ItemEntity fetchedItemEntity = fetchedOwningItemIdBarcodeMapEntry.getValue();
-            if(incomingItemEntity.getBarcode().equals(fetchedItemEntity.getBarcode())){
-                return fetchedItemEntity;
-            }
-        }
-        return null;
     }
 
     public boolean validateIncomingItemHavingBibCountIsSameAsExistingItem(Map<String, List<SubmitCollectionReportInfo>> submitCollectionReportInfoMap, Map<String, ItemEntity> fetchedBarcodeItemEntityMap,

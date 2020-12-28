@@ -41,7 +41,7 @@ public class EmailService {
      * @return
      */
     private String emailIdTo(String institution) {
-        if(institution.equalsIgnoreCase(RecapConstants.DELETED_MAIl_TO)){
+        if(institution.equalsIgnoreCase(RecapConstants.DELETED_MAIL_TO)){
             return deletedRecordsMailTo;
         }
         return null;

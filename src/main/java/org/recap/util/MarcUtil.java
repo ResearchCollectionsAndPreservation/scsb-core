@@ -352,8 +352,7 @@ public class MarcUtil {
     public DataField getDataField(Record record, String field) {
         VariableField variableField = record.getVariableField(field);
         if (variableField != null) {
-            DataField dataField = (DataField) variableField;
-                return dataField;
+            return (DataField) variableField;
         }
         return null;
     }

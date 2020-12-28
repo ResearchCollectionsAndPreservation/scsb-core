@@ -711,7 +711,7 @@ public class SubmitCollectionDAOService {
         boolean isAnyValidHoldingToUpdate = false;
         boolean isAnyValidItemToUpdate = false;
         String[] nonHoldingIdInstitutionArray = nonHoldingIdInstitution.split(",");
-        String institutionCode = (String) setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId());
+        String institutionCode = setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId());
         boolean isNonHoldingIdInstitution = Arrays.asList(nonHoldingIdInstitutionArray).contains(institutionCode);
 
         Set<String> barcodeHavingMismatchHoldingsId = new HashSet<>();
@@ -801,7 +801,7 @@ public class SubmitCollectionDAOService {
         boolean isAnyValidHoldingToUpdate = false;
         boolean isAnyValidItemToUpdate = false;
         String[] nonHoldingIdInstitutionArray = nonHoldingIdInstitution.split(",");
-        String institutionCode = (String) setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId());
+        String institutionCode = setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId());
         boolean isNonHoldingIdInstitution = Arrays.asList(nonHoldingIdInstitutionArray).contains(institutionCode);
 
         Set<String> barcodeHavingMismatchHoldingsId = new HashSet<>();
@@ -1101,14 +1101,14 @@ public class SubmitCollectionDAOService {
             fetchItemEntity.setCatalogingStatus(RecapCommonConstants.INCOMPLETE_STATUS);
         } else{
             if (fetchItemEntity.getCatalogingStatus().equals(RecapCommonConstants.INCOMPLETE_STATUS)) {//To  update the item available status to available for existing incomplete record which is turning as complete record
-                fetchItemEntity.setItemAvailabilityStatusId((Integer) setupDataService.getItemStatusCodeIdMap().get("Available"));
+                fetchItemEntity.setItemAvailabilityStatusId(setupDataService.getItemStatusCodeIdMap().get("Available"));
             }
             fetchItemEntity.setCatalogingStatus(RecapCommonConstants.COMPLETE_STATUS);
         }
 
         if (isAvailableItem(fetchItemEntity.getItemAvailabilityStatusId())) {
             if (itemEntity.getCollectionGroupId() != null &&
-                    (!itemEntity.isCgdProtection() || fetchItemEntity.getCollectionGroupId()==setupDataService.getCollectionGroupMap().get(RecapCommonConstants.NOT_AVAILABLE_CGD))) {//Added condition to update CGD even if it is CGD protected when existing records cgd is NA
+                    (!itemEntity.isCgdProtection() || fetchItemEntity.getCollectionGroupId().equals(setupDataService.getCollectionGroupMap().get(RecapCommonConstants.NOT_AVAILABLE_CGD)))) {//Added condition to update CGD even if it is CGD protected when existing records cgd is NA
                 fetchItemEntity.setCollectionGroupId(itemEntity.getCollectionGroupId());
             }
             fetchItemEntity.setUseRestrictions(itemEntity.getUseRestrictions());
@@ -1129,14 +1129,14 @@ public class SubmitCollectionDAOService {
      * @return the boolean
      */
     public boolean isAvailableItem(Integer itemAvailabilityStatusId){
-        String itemStatusCode = (String) setupDataService.getItemStatusIdCodeMap().get(itemAvailabilityStatusId);
+        String itemStatusCode = (setupDataService.getItemStatusIdCodeMap().get(itemAvailabilityStatusId));
         return itemStatusCode.equalsIgnoreCase(RecapConstants.ITEM_STATUS_AVAILABLE);
     }
 
     private void setItemAvailabilityStatus(List<ItemEntity> itemEntityList){
         for (ItemEntity itemEntity:itemEntityList) {
             if(itemEntity.getItemAvailabilityStatusId()==null) {
-                itemEntity.setItemAvailabilityStatusId((Integer) setupDataService.getItemStatusCodeIdMap().get("Available"));
+                itemEntity.setItemAvailabilityStatusId(setupDataService.getItemStatusCodeIdMap().get("Available"));
             }
         }
     }

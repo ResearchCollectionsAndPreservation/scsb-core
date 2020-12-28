@@ -5,8 +5,6 @@ import org.recap.model.accession.AccessionResponse;
 import org.recap.model.jpa.ImsLocationEntity;
 import org.recap.model.jpa.ReportDataEntity;
 import org.recap.util.AccessionProcessService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -20,8 +18,7 @@ import java.util.concurrent.Callable;
 @Component
 @Scope("prototype")
 public class BibDataCallable implements Callable{
-    private static final Logger logger = LoggerFactory.getLogger(BibDataCallable.class);
-
+  
     @Autowired
     private AccessionProcessService accessionProcessService;
     private AccessionRequest accessionRequest;

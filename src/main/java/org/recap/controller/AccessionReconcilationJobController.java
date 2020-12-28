@@ -3,7 +3,6 @@ package org.recap.controller;
 import org.apache.camel.CamelContext;
 import org.recap.RecapCommonConstants;
 import org.recap.camel.accessionreconciliation.BarcodeReconciliationRouteBuilder;
-import org.recap.model.ILSConfigProperties;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
 import org.recap.util.PropertyUtil;
 import org.slf4j.Logger;
@@ -60,7 +59,6 @@ public class AccessionReconcilationJobController {
         logger.info("Starting Accession Reconcilation Routes");
         List<String> allInstitutionCodeExceptHTC = institutionDetailsRepository.findAllInstitutionCodeExceptHTC();
         for (String institution : allInstitutionCodeExceptHTC) {
-            ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(institution);
             camelContext.addRoutes(new BarcodeReconciliationRouteBuilder(applicationContext, camelContext,
                     institution, accessionReconciliationPath, accessionReconciliationFilePath, accessionReconciliationProcessedPath));
         }

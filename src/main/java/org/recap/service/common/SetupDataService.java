@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -39,9 +38,9 @@ public class SetupDataService {
      *
      * @return the item status id code map
      */
-    public Map getItemStatusIdCodeMap() {
+    public Map<Integer, String> getItemStatusIdCodeMap() {
         if (null == itemStatusIdCodeMap) {
-            itemStatusIdCodeMap = new HashMap();
+            itemStatusIdCodeMap = new HashMap<>();
             try {
                 Iterable<ItemStatusEntity> itemStatusEntities = repositoryService.getItemStatusDetailsRepository().findAll();
                 for (ItemStatusEntity itemStatusEntity : itemStatusEntities) {
@@ -59,9 +58,9 @@ public class SetupDataService {
      *
      * @return the item status code id map
      */
-    public Map getItemStatusCodeIdMap() {
+    public Map<String, Integer> getItemStatusCodeIdMap() {
         if (null == itemStatusCodeIdMap) {
-            itemStatusCodeIdMap = new HashMap();
+            itemStatusCodeIdMap = new HashMap<>();
             try {
                 Iterable<ItemStatusEntity> itemStatusEntities = repositoryService.getItemStatusDetailsRepository().findAll();
                 for (ItemStatusEntity itemStatusEntity : itemStatusEntities) {
@@ -79,9 +78,9 @@ public class SetupDataService {
      *
      * @return the institution entity map
      */
-    public Map getInstitutionIdCodeMap() {
+    public Map<Integer, String> getInstitutionIdCodeMap() {
         if (null == institutionEntityMap) {
-            institutionEntityMap = new HashMap();
+            institutionEntityMap = new HashMap<>();
             try {
                 Iterable<InstitutionEntity> institutionEntities = repositoryService.getInstitutionDetailsRepository().findAll();
                 for (InstitutionEntity institutionEntity : institutionEntities) {
@@ -94,9 +93,9 @@ public class SetupDataService {
         return institutionEntityMap;
     }
 
-    public Map getInstitutionCodeIdMap() {
+    public Map<String, Integer> getInstitutionCodeIdMap() {
         if (null == institutionCodeIdMap) {
-            institutionCodeIdMap = new HashMap();
+            institutionCodeIdMap = new HashMap<>();
             try {
                 Iterable<InstitutionEntity> institutionEntities = repositoryService.getInstitutionDetailsRepository().findAll();
                 for (InstitutionEntity institutionEntity : institutionEntities) {
@@ -109,9 +108,9 @@ public class SetupDataService {
         return institutionCodeIdMap;
     }
 
-    public Map getCollectionGroupMap() {
+    public Map<String, Integer> getCollectionGroupMap() {
         if (null == collectionGroupMap) {
-            collectionGroupMap = new HashMap();
+            collectionGroupMap = new HashMap<>();
             try {
                 Iterable<CollectionGroupEntity> collectionGroupEntities = repositoryService.getCollectionGroupDetailsRepository().findAll();
                 for (CollectionGroupEntity collectionGroupEntity : collectionGroupEntities) {

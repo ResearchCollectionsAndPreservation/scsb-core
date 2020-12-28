@@ -111,7 +111,7 @@ public class AccessionReconciliationProcessor {
             logger.error(RecapCommonConstants.LOG_ERROR ,e);
         }
         startFileSystemRoutesForAccessionReconciliation(exchange,index);
-        String xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+        String xmlFileName = exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY).toString();
         String bucketName = exchange.getIn().getHeader("CamelAwsS3BucketName").toString();
         if (awsS3Client.doesObjectExist(bucketName, xmlFileName)) {
             String basepath = xmlFileName.substring(0, xmlFileName.lastIndexOf('/'));

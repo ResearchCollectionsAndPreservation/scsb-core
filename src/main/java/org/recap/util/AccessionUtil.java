@@ -298,9 +298,9 @@ public class AccessionUtil {
         return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/indexByBibliographicId", bibliographicIdList, String.class);
     }
 
-    private synchronized Map getInstitutionEntityMap() {
+    private synchronized Map<String, Integer> getInstitutionEntityMap() {
         if (null == institutionEntityMap) {
-            institutionEntityMap = new HashMap();
+            institutionEntityMap = new HashMap<>();
             try {
                 Iterable<InstitutionEntity> institutionEntities = institutionDetailsRepository.findAll();
                 for (InstitutionEntity institutionEntity : institutionEntities) {
@@ -399,8 +399,8 @@ public class AccessionUtil {
             logger.info("Fetched Item Entities = {}",fetchHoldingsEntities.size());
             logger.info("Incoming Item Entities = {}",holdingsEntities.size());
 
-            for (Iterator iholdings = holdingsEntities.iterator(); iholdings.hasNext();) {
-                HoldingsEntity holdingsEntity =(HoldingsEntity) iholdings.next();
+            for (Iterator<HoldingsEntity> iholdings = holdingsEntities.iterator(); iholdings.hasNext();) {
+                HoldingsEntity holdingsEntity = iholdings.next();
                 for (HoldingsEntity fetchHolding : fetchHoldingsEntities) {
                     if (fetchHolding.getOwningInstitutionHoldingsId().equalsIgnoreCase(holdingsEntity.getOwningInstitutionHoldingsId()) && fetchHolding.getOwningInstitutionId().intValue() == holdingsEntity.getOwningInstitutionId().intValue()) {
                         copyHoldingsEntity(fetchHolding, holdingsEntity);
@@ -474,8 +474,8 @@ public class AccessionUtil {
     }
 
     private void processItems(List<ItemEntity> fetchItemsEntities, List<ItemEntity> itemsEntities) {
-        for (Iterator iItems = itemsEntities.iterator(); iItems.hasNext();) {
-            ItemEntity itemEntity =(ItemEntity) iItems.next();
+        for (Iterator<ItemEntity> iItems = itemsEntities.iterator(); iItems.hasNext();) {
+            ItemEntity itemEntity = iItems.next();
             for (ItemEntity fetchItem : fetchItemsEntities) {
                 if (fetchItem.getOwningInstitutionItemId().equalsIgnoreCase(itemEntity.getOwningInstitutionItemId()) && fetchItem.getOwningInstitutionId().intValue() == itemEntity.getOwningInstitutionId().intValue()) {
                     copyItemEntity(fetchItem, itemEntity);

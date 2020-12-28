@@ -192,7 +192,9 @@ public class AccessionProcessService {
         boolean itemDeleted = false;
         if (itemEntityList != null && !itemEntityList.isEmpty()) {
             for (ItemEntity itemEntity : itemEntityList) {
-                return itemEntity.isDeleted();
+                if(itemEntity.isDeleted()) {
+                    return itemEntity.isDeleted();
+                }
             }
         }
         return itemDeleted;
@@ -215,27 +217,27 @@ public class AccessionProcessService {
         String reasonForFailureBib = "";
         String reasonForFailureItem = "";
 
-        for (Map responseMap : responseMapList) {
-            successBibCount = successBibCount + (responseMap.get(RecapCommonConstants.SUCCESS_BIB_COUNT) != null ? (Integer) responseMap.get(RecapCommonConstants.SUCCESS_BIB_COUNT) : 0);
-            failedBibCount = failedBibCount + (responseMap.get(RecapCommonConstants.FAILED_BIB_COUNT) != null ? (Integer) responseMap.get(RecapCommonConstants.FAILED_BIB_COUNT) : 0);
+        for (Map<String, String> responseMap : responseMapList) {
+            successBibCount = successBibCount + (responseMap.get(RecapCommonConstants.SUCCESS_BIB_COUNT) != null ? Integer.parseInt(responseMap.get(RecapCommonConstants.SUCCESS_BIB_COUNT)) : 0);
+            failedBibCount = failedBibCount + (responseMap.get(RecapCommonConstants.FAILED_BIB_COUNT) != null ? Integer.parseInt(responseMap.get(RecapCommonConstants.FAILED_BIB_COUNT)) : 0);
             if (failedBibCount == 0) {
-                if (StringUtils.isEmpty((String) responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) {
+                if (StringUtils.isEmpty(responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) {
                     successItemCount = 1;
                 } else {
                     failedItemCount = 1;
                 }
             }
-            exitsBibCount = exitsBibCount + (responseMap.get(RecapCommonConstants.EXIST_BIB_COUNT) != null ? (Integer) responseMap.get(RecapCommonConstants.EXIST_BIB_COUNT) : 0);
+            exitsBibCount = exitsBibCount + (responseMap.get(RecapCommonConstants.EXIST_BIB_COUNT) != null ? Integer.parseInt(responseMap.get(RecapCommonConstants.EXIST_BIB_COUNT)) : 0);
 
-            if (!StringUtils.isEmpty((String) responseMap.get(RecapCommonConstants.REASON_FOR_BIB_FAILURE)) && !reasonForFailureBib.contains(responseMap.get(RecapCommonConstants.REASON_FOR_BIB_FAILURE).toString())) {
+            if (!StringUtils.isEmpty(responseMap.get(RecapCommonConstants.REASON_FOR_BIB_FAILURE)) && !reasonForFailureBib.contains(responseMap.get(RecapCommonConstants.REASON_FOR_BIB_FAILURE))) {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append(responseMap.get(RecapCommonConstants.REASON_FOR_BIB_FAILURE));
                 stringBuilder.append(",");
                 stringBuilder.append(reasonForFailureBib);
                 reasonForFailureBib = stringBuilder.toString();
             }
-            if ((!StringUtils.isEmpty((String) responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) && StringUtils.isEmpty(reasonForFailureBib) &&
-                    !reasonForFailureItem.contains((String) responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) {
+            if ((!StringUtils.isEmpty(responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) && StringUtils.isEmpty(reasonForFailureBib) &&
+                    !reasonForFailureItem.contains(responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append(responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE));
                 stringBuilder.append(",");
@@ -337,7 +339,7 @@ public class AccessionProcessService {
             ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(owningInstitutionId);
             if ("REST".equalsIgnoreCase(ilsConfigProperties.getIlsRefileEndpointProtocol())) {
                 HttpEntity request = new HttpEntity<>(getHttpHeadersAuth());
-                UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(scsbUrl + RecapConstants.SERVICE_PATH.REFILE_ITEM_IN_ILS);
+                UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(scsbUrl + RecapConstants.SERVICEPATH.REFILE_ITEM_IN_ILS);
                 builder.queryParam(RecapCommonConstants.ITEMBARCODE, itemBarcode);
                 builder.queryParam(RecapConstants.OWNING_INST, owningInstitutionId);
                 StopWatch stopWatch = new StopWatch();
@@ -350,7 +352,7 @@ public class AccessionProcessService {
                 HttpEntity request = new HttpEntity<>(itemRequestInfo, getHttpHeadersAuth());
                 StopWatch stopWatch = new StopWatch();
                 stopWatch.start();
-                ResponseEntity<ItemCheckinResponse> responseEntity = restTemplate.exchange(scsbUrl + RecapConstants.SERVICE_PATH.CHECKIN_ITEM, HttpMethod.POST, request, ItemCheckinResponse.class);
+                ResponseEntity<ItemCheckinResponse> responseEntity = restTemplate.exchange(scsbUrl + RecapConstants.SERVICEPATH.CHECKIN_ITEM, HttpMethod.POST, request, ItemCheckinResponse.class);
                 stopWatch.stop();
                 logger.info("Time taken to checkin item barcode {} in {} : {}", itemBarcode, owningInstitutionId, stopWatch.getTotalTimeSeconds());
                 logger.info("Checkin response for item barcode {} : {}", itemBarcode, null != responseEntity.getBody() ? responseEntity.getBody().getScreenMessage() : null);
@@ -395,7 +397,7 @@ public class AccessionProcessService {
      */
     public synchronized Map<String,Integer> getInstitutionIdCodeMap() {
         if (null == institutionEntityMap) {
-            institutionEntityMap = new HashMap();
+            institutionEntityMap = new HashMap<>();
             try {
                 Iterable<InstitutionEntity> institutionEntities = institutionDetailsRepository.findAll();
                 for (InstitutionEntity institutionEntity : institutionEntities) {

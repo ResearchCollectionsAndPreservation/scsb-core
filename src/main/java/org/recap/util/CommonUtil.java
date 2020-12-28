@@ -30,9 +30,9 @@ public class CommonUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonUtil.class);
 
-    private Map itemStatusMap;
-    private Map collectionGroupMap;
-    private Map institutionEntityMap;
+    private Map<String, Integer> itemStatusMap;
+    private Map<String, Integer> collectionGroupMap;
+    private Map<String, Integer> institutionEntityMap;
 
     @Autowired
     private ItemStatusDetailsRepository itemStatusDetailsRepository;
@@ -144,13 +144,13 @@ public class CommonUtil {
      *
      * @return the item status map
      */
-    public Map getItemStatusMap() {
+    public Map<String, Integer> getItemStatusMap() {
         if (null == itemStatusMap) {
-            itemStatusMap = new HashMap();
+            itemStatusMap = new HashMap<>();
             try {
                 Iterable<ItemStatusEntity> itemStatusEntities = itemStatusDetailsRepository.findAll();
-                for (Iterator iterator = itemStatusEntities.iterator(); iterator.hasNext(); ) {
-                    ItemStatusEntity itemStatusEntity = (ItemStatusEntity) iterator.next();
+                for (Iterator<ItemStatusEntity> iterator = itemStatusEntities.iterator(); iterator.hasNext(); ) {
+                    ItemStatusEntity itemStatusEntity = iterator.next();
                     itemStatusMap.put(itemStatusEntity.getStatusCode(), itemStatusEntity.getId());
                 }
             } catch (Exception e) {
@@ -165,13 +165,13 @@ public class CommonUtil {
      *
      * @return the collection group map
      */
-    public Map getCollectionGroupMap() {
+    public Map<String, Integer> getCollectionGroupMap() {
         if (null == collectionGroupMap) {
-            collectionGroupMap = new HashMap();
+            collectionGroupMap = new HashMap<>();
             try {
                 Iterable<CollectionGroupEntity> collectionGroupEntities = collectionGroupDetailsRepository.findAll();
-                for (Iterator iterator = collectionGroupEntities.iterator(); iterator.hasNext(); ) {
-                    CollectionGroupEntity collectionGroupEntity = (CollectionGroupEntity) iterator.next();
+                for (Iterator<CollectionGroupEntity> iterator = collectionGroupEntities.iterator(); iterator.hasNext(); ) {
+                    CollectionGroupEntity collectionGroupEntity = iterator.next();
                     collectionGroupMap.put(collectionGroupEntity.getCollectionGroupCode(), collectionGroupEntity.getId());
                 }
             } catch (Exception e) {
@@ -186,13 +186,13 @@ public class CommonUtil {
      *
      * @return the institution entity map
      */
-    public Map getInstitutionEntityMap() {
+    public Map<String, Integer> getInstitutionEntityMap() {
         if (null == institutionEntityMap) {
-            institutionEntityMap = new HashMap();
+            institutionEntityMap = new HashMap<>();
             try {
                 Iterable<InstitutionEntity> institutionEntities = institutionDetailsRepository.findAll();
-                for (Iterator iterator = institutionEntities.iterator(); iterator.hasNext(); ) {
-                    InstitutionEntity institutionEntity = (InstitutionEntity) iterator.next();
+                for (Iterator<InstitutionEntity> iterator = institutionEntities.iterator(); iterator.hasNext(); ) {
+                    InstitutionEntity institutionEntity = iterator.next();
                     institutionEntityMap.put(institutionEntity.getInstitutionCode(), institutionEntity.getId());
                 }
             } catch (Exception e) {
@@ -281,7 +281,7 @@ public class CommonUtil {
         try {
             xsr = xif.createXMLStreamReader(stream);
         } catch (XMLStreamException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         Unmarshaller um = context.createUnmarshaller();
         bibRecords = (BibRecords) um.unmarshal(xsr);

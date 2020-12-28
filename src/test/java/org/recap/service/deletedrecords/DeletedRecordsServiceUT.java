@@ -30,7 +30,7 @@ public class DeletedRecordsServiceUT extends BaseTestCaseUT {
         Long lCountDeleted = 12345678910L;
         Mockito.when(deletedRecordsRepository.countByDeletedReportedStatus(RecapConstants.DELETED_STATUS_NOT_REPORTED)).thenReturn(lCountDeleted);
         Mockito.when(deletedRecordsRepository.updateDeletedReportedStatus(RecapConstants.DELETED_STATUS_REPORTED, RecapConstants.DELETED_STATUS_NOT_REPORTED)).thenReturn(1);
-        Mockito.doNothing().when(emailService).sendEmail(RecapConstants.EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE + lCountDeleted, "", RecapConstants.DELETED_MAIl_TO, RecapConstants.EMAIL_SUBJECT_DELETED_RECORDS);
+        Mockito.doNothing().when(emailService).sendEmail(RecapConstants.EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE + lCountDeleted, "", RecapConstants.DELETED_MAIL_TO, RecapConstants.EMAIL_SUBJECT_DELETED_RECORDS);
         boolean bflag = deletedRecordsService.deletedRecords();
         assertTrue(bflag);
     }

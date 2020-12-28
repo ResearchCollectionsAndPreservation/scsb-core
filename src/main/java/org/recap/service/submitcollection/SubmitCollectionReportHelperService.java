@@ -88,7 +88,7 @@ public class SubmitCollectionReportHelperService {
         Map<String,ItemEntity> fetchedBarcodeItemEntityMap = getBarcodeItemEntityMap(fetchedBibliographicEntity.getItemEntities());
         List<SubmitCollectionReportInfo> submitCollectionFailureReportInfos = submitCollectionReportInfoMap.get(RecapConstants.SUBMIT_COLLECTION_FAILURE_LIST);
 
-        String owningInstitution = (String) setupDataService.getInstitutionIdCodeMap().get(fetchedBibliographicEntity.getOwningInstitutionId());
+        String owningInstitution = setupDataService.getInstitutionIdCodeMap().get(fetchedBibliographicEntity.getOwningInstitutionId());
         for(Map.Entry<String,String> incomingOwningInstitutionBibIdBarcodeMapEntry : incomingBarcodeOwningInstitutionBibIdMap.entrySet()){
             String existingOwningInstitutionBibId = fetchedBarcodeOwningInstitutionBibIdMap.get(incomingOwningInstitutionBibIdBarcodeMapEntry.getKey());
             boolean isBarcodeAlreadyAdded = isBarcodeAlreadyAdded(incomingOwningInstitutionBibIdBarcodeMapEntry.getKey(),submitCollectionReportInfoMap);
@@ -111,7 +111,7 @@ public class SubmitCollectionReportHelperService {
 
     public void setSubmitCollectionReportInfoForOwningInstitutionBibIdMismatchForBoundWith(List<String> notMatchedIncomingOwnInstBibId,List<String> notMatchedFetchedOwnInstBibId,ItemEntity incomingItemEntity,ItemEntity fetchedItemEntity,
                                                                                            List<SubmitCollectionReportInfo> submitCollectionExceptionInfos){
-        String owningInstitution = (String) setupDataService.getInstitutionIdCodeMap().get(fetchedItemEntity.getOwningInstitutionId());
+        String owningInstitution = setupDataService.getInstitutionIdCodeMap().get(fetchedItemEntity.getOwningInstitutionId());
 
         SubmitCollectionReportInfo submitCollectionReportInfo = new SubmitCollectionReportInfo();
         submitCollectionReportInfo.setOwningInstitution(owningInstitution);
@@ -145,12 +145,12 @@ public class SubmitCollectionReportHelperService {
     public void setSubmitCollectionReportInfoForInvalidDummyRecordBasedOnOwnInstItemId(BibliographicEntity incomingBibliographicEntity, List<SubmitCollectionReportInfo> submitCollectionReportInfoList, List<ItemEntity> fetchedCompleteItem){
         Map<String,ItemEntity> incomingOwningInstitutionItemIdItemEntityMap = getOwningInstitutionItemIdItemEntityMap(incomingBibliographicEntity.getItemEntities());
         Map<String,ItemEntity> fetchedOwningInstitutionItemIdItemEntityMap = getOwningInstitutionItemIdItemEntityMap(fetchedCompleteItem);
-        for(String owningInstitutionItemId:incomingOwningInstitutionItemIdItemEntityMap.keySet()){
-            ItemEntity incomingEntity = incomingOwningInstitutionItemIdItemEntityMap.get(owningInstitutionItemId);
-            ItemEntity fetchedItemEntity = fetchedOwningInstitutionItemIdItemEntityMap.get(owningInstitutionItemId);
+        for(Map.Entry<String,ItemEntity> entry : incomingOwningInstitutionItemIdItemEntityMap.entrySet()) {
+            ItemEntity incomingEntity = incomingOwningInstitutionItemIdItemEntityMap.get(entry.getKey());
+            ItemEntity fetchedItemEntity = fetchedOwningInstitutionItemIdItemEntityMap.get(entry.getKey());
             String message;
             if(fetchedItemEntity!=null){
-                message = RecapConstants.SUBMIT_COLLECTION_FAILED_RECORD+" - Issue while updating dummy record, incoming owning institution item id "+owningInstitutionItemId
+                message = RecapConstants.SUBMIT_COLLECTION_FAILED_RECORD+" - Issue while updating dummy record, incoming owning institution item id "+entry.getKey()
                         +", is already attached with existing barcode "+fetchedItemEntity.getBarcode()+", existing owning institution item id "+incomingEntity.getOwningInstitutionItemId()+existingBibid+fetchedItemEntity.getBibliographicEntities().get(0).getOwningInstitutionBibId()
                         +existingHoldingid+fetchedItemEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId();
             } else {
@@ -166,7 +166,7 @@ public class SubmitCollectionReportHelperService {
         if (incomingItemEntity != null) {
             submitCollectionReportInfo.setItemBarcode(incomingItemEntity.getBarcode());
             submitCollectionReportInfo.setCustomerCode(incomingItemEntity.getCustomerCode());
-            submitCollectionReportInfo.setOwningInstitution((String) setupDataService.getInstitutionIdCodeMap().get(incomingItemEntity.getOwningInstitutionId()));
+            submitCollectionReportInfo.setOwningInstitution(setupDataService.getInstitutionIdCodeMap().get(incomingItemEntity.getOwningInstitutionId()));
         } else {
             submitCollectionReportInfo.setItemBarcode("");
             submitCollectionReportInfo.setCustomerCode("");
@@ -253,9 +253,9 @@ public class SubmitCollectionReportHelperService {
         List<SubmitCollectionReportInfo> failureSubmitCollectionReportInfoList = submitCollectionReportInfoMap.get(RecapConstants.SUBMIT_COLLECTION_FAILURE_LIST);
         Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = submitCollectionHelperService.getHoldingItemIdMap(fetchedBibliographicEntity);
         Map<String,Map<String,ItemEntity>> incomingHoldingItemMap = submitCollectionHelperService.getHoldingItemIdMap(incomingBibliographicEntity);
-        String owningInstitution = (String) setupDataService.getInstitutionIdCodeMap().get(fetchedBibliographicEntity.getOwningInstitutionId());
+        String owningInstitution = setupDataService.getInstitutionIdCodeMap().get(fetchedBibliographicEntity.getOwningInstitutionId());
         String[] nonHoldingIdInstitutionArray = nonHoldingIdInstitution.split(",");
-        String institutionCode = (String) setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId());
+        String institutionCode = setupDataService.getInstitutionIdCodeMap().get(incomingBibliographicEntity.getOwningInstitutionId());
 
         for (Map.Entry<String,Map<String,ItemEntity>> incomingHoldingItemMapEntry : incomingHoldingItemMap.entrySet()) {
             Map<String,ItemEntity> incomingOwningItemIdEntityMap = incomingHoldingItemMapEntry.getValue();
@@ -425,7 +425,7 @@ public class SubmitCollectionReportHelperService {
     }
 
     public boolean isAvailableItem(Integer itemAvailabilityStatusId){
-        String itemStatusCode = (String) setupDataService.getItemStatusIdCodeMap().get(itemAvailabilityStatusId);
+        String itemStatusCode = setupDataService.getItemStatusIdCodeMap().get(itemAvailabilityStatusId);
         return (itemStatusCode.equalsIgnoreCase(RecapConstants.ITEM_STATUS_AVAILABLE));
     }
 

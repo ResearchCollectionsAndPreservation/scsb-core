@@ -30,7 +30,7 @@ public class ReportDeletedRecordsControllerUT extends BaseTestCase{
         Mockito.when(reportDeletedRecordsController.deletedRecords()).thenCallRealMethod();
         ResponseEntity responseEntity = reportDeletedRecordsController.deletedRecords();
         assertNotNull(responseEntity);
-        assertEquals(responseEntity.getBody(), RecapConstants.DELETED_RECORDS_SUCCESS_MSG);
+        assertEquals(RecapConstants.DELETED_RECORDS_SUCCESS_MSG, responseEntity.getBody());
         Mockito.when(reportDeletedRecordsController.getDeletedRecordsService()).thenCallRealMethod();
         assertNotEquals(reportDeletedRecordsController.getDeletedRecordsService(),deletedRecordsService);
     }

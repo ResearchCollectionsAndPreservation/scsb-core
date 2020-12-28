@@ -3,15 +3,11 @@ package org.recap.camel.submitcollection.processor;
 import org.apache.camel.ProducerTemplate;
 import org.recap.RecapConstants;
 import org.recap.camel.EmailPayLoad;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Created by premkb on 20/3/17.
  */
 public class SubmitCollectionNotificationProcessor {
-
-    private static final Logger logger = LoggerFactory.getLogger(SubmitCollectionNotificationProcessor.class);
 
     private ProducerTemplate producer;
 

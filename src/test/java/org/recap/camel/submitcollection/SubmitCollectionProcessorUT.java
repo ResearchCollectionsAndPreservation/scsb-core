@@ -14,6 +14,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.recap.BaseTestCaseUT;
 import org.recap.RecapCommonConstants;
+import org.recap.RecapConstants;
 import org.recap.camel.submitcollection.processor.SubmitCollectionProcessor;
 import org.recap.converter.MarcToBibEntityConverter;
 import org.recap.model.jpa.BibliographicEntity;
@@ -187,7 +188,7 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         ReflectionTestUtils.setField(submitCollectionProcessor,"awsS3Client",awsS3Client);
         CamelContext ctx = new DefaultCamelContext();
         Exchange ex = new DefaultExchange(ctx);
-        ex.getIn().setHeader("CamelAwsS3Key", simple("CamelAwsS3Key"));
+        ex.getIn().setHeader(RecapConstants.CAMEL_AWS_KEY, simple(RecapConstants.CAMEL_AWS_KEY));
         ex.getIn().setHeader("CamelAwsS3BucketName", simple("CamelAwsS3BucketName"));
         ex.getIn().setHeader("CamelFileName", "CUL");
         ex.getIn().setHeader("CamelFileParent", "CUL");
