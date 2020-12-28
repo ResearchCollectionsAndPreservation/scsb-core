@@ -9,9 +9,16 @@ import org.recap.model.jaxb.Bib;
 import org.recap.model.jaxb.BibRecord;
 import org.recap.model.jaxb.Holding;
 import org.recap.model.jaxb.Holdings;
-import org.recap.model.jpa.*;
+
+import org.recap.model.jpa.BibliographicEntity;
+import org.recap.model.jpa.CustomerCodeEntity;
+import org.recap.model.jpa.HoldingsEntity;
+import org.recap.model.jpa.ImsLocationEntity;
+import org.recap.model.jpa.InstitutionEntity;
+import org.recap.model.jpa.ItemEntity;
 import org.recap.repository.jpa.CustomerCodeDetailsRepository;
 import org.recap.repository.jpa.HoldingsDetailsRepository;
+import org.recap.repository.jpa.ImsLocationDetailsRepository;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
 import org.recap.repository.jpa.ItemDetailsRepository;
 import org.recap.util.AccessionUtil;
@@ -45,6 +52,10 @@ public class AccessionValidationService {
 
     @Autowired
     private AccessionUtil accessionUtil;
+
+    @Autowired
+    private ImsLocationDetailsRepository imsLocationDetailsRepository;
+
 
     public boolean validateBoundWithMarcRecordFromIls(List<Record> records, AccessionRequest accessionRequest){
         List<String> holdingIdList = new ArrayList<>();
@@ -189,10 +200,26 @@ public class AccessionValidationService {
         return accessionValidationResponse;
     }
 
+    public AccessionValidationResponse validateImsLocationCode(String imsLocationCode) {
+        ImsLocationEntity imsLocationEntity=null;
+        if(StringUtils.isBlank(imsLocationCode)) {
+            return getAccessionValidationResponse(false, RecapConstants.IMS_LOCACTION_CODE_IS_BLANK);
+        } else {
+             imsLocationEntity = imsLocationDetailsRepository.findByImsLocationCode(imsLocationCode);
+            if(imsLocationEntity==null) {
+                return getAccessionValidationResponse(false, RecapConstants.INVALID_IMS_LOCACTION_CODE);
+            }
+            AccessionValidationResponse accessionValidationResponse = getAccessionValidationResponse(true, "");
+            accessionValidationResponse.setImsLocationEntity(imsLocationEntity);
+            return accessionValidationResponse;
+        }
+    }
+
     class AccessionValidationResponse {
         private boolean valid;
         private String owningInstitution;
         private String message;
+        private ImsLocationEntity imsLocationEntity;
 
         public boolean isValid() {
             return valid;
@@ -216,6 +243,14 @@ public class AccessionValidationService {
 
         public void setMessage(String message) {
             this.message = message;
+        }
+
+        public ImsLocationEntity getImsLocationEntity() {
+            return imsLocationEntity;
+        }
+
+        public void setImsLocationEntity(ImsLocationEntity imsLocationEntity) {
+            this.imsLocationEntity = imsLocationEntity;
         }
     }
 

@@ -7,6 +7,7 @@ import org.recap.RecapConstants;
 import org.recap.model.ILSConfigProperties;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
+import org.recap.model.jpa.ImsLocationEntity;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.model.jpa.ReportDataEntity;
 import org.slf4j.Logger;
@@ -41,7 +42,7 @@ public class MarcFormatResolver extends AccessionResolverAbstract {
     }
 
     @Override
-    public String processXml(Set<AccessionResponse> accessionResponses, Object object, List<Map<String, String>> responseMapList, String owningInstitution, List<ReportDataEntity> reportDataEntityList, AccessionRequest accessionRequest) throws Exception {
+    public String processXml(Set<AccessionResponse> accessionResponses, Object object, List<Map<String, String>> responseMapList, String owningInstitution, List<ReportDataEntity> reportDataEntityList, AccessionRequest accessionRequest, ImsLocationEntity imsLocationEntity) throws Exception {
         StopWatch stopWatch;
         String response = null;
         stopWatch = new StopWatch();
@@ -56,7 +57,7 @@ public class MarcFormatResolver extends AccessionResolverAbstract {
             if (CollectionUtils.isNotEmpty(records)) {
                 int count = 1;
                 for (Record record : records) {
-                    response = commonUtil.getUpdatedDataResponse(accessionResponses, responseMapList, owningInstitution, reportDataEntityList, accessionRequest, isValidBoundWithRecord, count, record);
+                    response = commonUtil.getUpdatedDataResponse(accessionResponses, responseMapList, owningInstitution, reportDataEntityList, accessionRequest, isValidBoundWithRecord, count, record,imsLocationEntity);
                     count++;
                 }
             }

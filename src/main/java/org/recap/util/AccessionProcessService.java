@@ -66,7 +66,7 @@ public class AccessionProcessService {
 
     public Object processRecords(Set<AccessionResponse> accessionResponses, List<Map<String, String>> responseMaps,
                                  AccessionRequest accessionRequest, List<ReportDataEntity> reportDataEntitys,
-                                 String owningInstitution, boolean writeToReport) {
+                                 String owningInstitution, boolean writeToReport,ImsLocationEntity imsLocationEntity) {
         String customerCode = accessionRequest.getCustomerCode();
         String itemBarcode = accessionRequest.getItemBarcode();
         // Check item availability
@@ -103,7 +103,7 @@ public class AccessionProcessService {
             AccessionInterface formatResolver = accessionResolverFactory.getFormatResolver(ilsConfigProperties.getBibDataFormat());
 
             // Call ILS - Bib Data API
-            String bibData = getBibData(accessionResponses, accessionRequest, reportDataEntitys, owningInstitution, customerCode, itemBarcode, formatResolver);
+            String bibData = getBibData(accessionResponses, accessionRequest, reportDataEntitys, owningInstitution, customerCode, itemBarcode, formatResolver,imsLocationEntity);
             if (bibData != null) {
                 try { // Check whether owningInsitutionItemId attached with another barcode.
                     Object unmarshalObject = formatResolver.unmarshal(bibData);
@@ -112,12 +112,12 @@ public class AccessionProcessService {
                     boolean accessionProcess = formatResolver.isAccessionProcess(itemEntity, owningInstitution);
                     // Process XML Record
                     if (accessionProcess) { // Accession process
-                        formatResolver.processXml(accessionResponses, unmarshalObject, responseMaps, owningInstitution, reportDataEntitys, accessionRequest);
+                        formatResolver.processXml(accessionResponses, unmarshalObject, responseMaps, owningInstitution, reportDataEntitys, accessionRequest,imsLocationEntity);
                         callCheckin(accessionRequest.getItemBarcode(), owningInstitution);
                     } else {  // If attached
                         String oldBarcode = itemEntity.getBarcode();
                         // update item record with new barcode. Accession Process
-                        formatResolver.processXml(accessionResponses, unmarshalObject, responseMaps, owningInstitution, reportDataEntitys, accessionRequest);
+                        formatResolver.processXml(accessionResponses, unmarshalObject, responseMaps, owningInstitution, reportDataEntitys, accessionRequest,imsLocationEntity);
                         callCheckin(accessionRequest.getItemBarcode(), owningInstitution);
                         // Move item record information to history table
                         ItemBarcodeHistoryEntity itemBarcodeHistoryEntity = prepareBarcodeHistoryEntity(itemEntity, itemBarcode, oldBarcode);
@@ -125,7 +125,7 @@ public class AccessionProcessService {
                     }
                 } catch (Exception e) {
                     if (writeToReport) {
-                        processException(accessionResponses, accessionRequest, reportDataEntitys, owningInstitution, e);
+                        processException(accessionResponses, accessionRequest, reportDataEntitys, owningInstitution,imsLocationEntity ,e);
                     } else {
                         return accessionRequest;
                     }
@@ -140,7 +140,7 @@ public class AccessionProcessService {
         return accessionResponses;
     }
 
-    public String getBibData(Set<AccessionResponse> accessionResponses, AccessionRequest accessionRequest, List<ReportDataEntity> reportDataEntitys, String owningInstitution, String customerCode, String itemBarcode, AccessionInterface formatResolver) {
+    public String getBibData(Set<AccessionResponse> accessionResponses, AccessionRequest accessionRequest, List<ReportDataEntity> reportDataEntitys, String owningInstitution, String customerCode, String itemBarcode, AccessionInterface formatResolver,ImsLocationEntity imsLocationEntity) {
         String bibData = null;
         StopWatch individualStopWatch = new StopWatch();
         individualStopWatch.start();
@@ -148,7 +148,7 @@ public class AccessionProcessService {
             // Calling ILS - Bib Data API
             bibData = formatResolver.getBibData(itemBarcode, customerCode, owningInstitution);
         } catch (Exception e) { // Process dummy record if record not found in ILS
-            processException(accessionResponses, accessionRequest, reportDataEntitys, owningInstitution, e);
+            processException(accessionResponses, accessionRequest, reportDataEntitys, owningInstitution,imsLocationEntity, e);
         } finally {
             individualStopWatch.stop();
             logger.info("Time taken to get bib data from {} ILS : {}", owningInstitution, individualStopWatch.getTotalTimeSeconds());
@@ -303,7 +303,7 @@ public class AccessionProcessService {
     }
 
     public void processException(Set<AccessionResponse> accessionResponsesList, AccessionRequest accessionRequest,
-                                 List<ReportDataEntity> reportDataEntityList, String owningInstitution, Exception ex) {
+                                 List<ReportDataEntity> reportDataEntityList, String owningInstitution,ImsLocationEntity imsLocationEntity ,Exception ex) {
         String response = ex.getMessage();
         if (StringUtils.contains(response, RecapConstants.ITEM_BARCODE_NOT_FOUND)) {
             logger.error(RecapCommonConstants.LOG_ERROR, response);
@@ -316,7 +316,7 @@ public class AccessionProcessService {
             logger.error(RecapConstants.EXCEPTION, ex);
         }
         //Create dummy record
-        response = accessionUtil.createDummyRecordIfAny(response, owningInstitution, reportDataEntityList, accessionRequest);
+        response = accessionUtil.createDummyRecordIfAny(response, owningInstitution, reportDataEntityList, accessionRequest,imsLocationEntity);
         accessionUtil.setAccessionResponse(accessionResponsesList, accessionRequest.getItemBarcode(), response);
         reportDataEntityList.addAll(accessionUtil.createReportDataEntityList(accessionRequest, response));
     }

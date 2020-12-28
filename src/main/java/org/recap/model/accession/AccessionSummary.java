@@ -22,7 +22,11 @@ public class AccessionSummary {
     private int exception;
     private int failure;
     private int invalidLenghBarcode;
+    private int invalidImsLocation;
+    private int emptyImsLocation;
     private String timeElapsed;
+    private String imsLocation;
+
 
     public void addDummyRecords(int dummyRecords) {
         this.dummyRecords += dummyRecords;
@@ -62,4 +66,15 @@ public class AccessionSummary {
 
     public void addCustomerCodeDoesNotExist(int customerCodeDoesNotExist) { this.customerCodeDoesNotExist += customerCodeDoesNotExist; }
 
+    public void addInvalidImsLocation(int invalidImsLocation) {
+        this.invalidImsLocation += invalidImsLocation;
+    }
+
+    public void addEmptyImsLocation(int emptyImsLocation) {
+        this.emptyImsLocation += emptyImsLocation;
+    }
+
+    public void addRequestedRecords(int requestedRecords) {
+        this.requestedRecords += requestedRecords;
+    }
 }

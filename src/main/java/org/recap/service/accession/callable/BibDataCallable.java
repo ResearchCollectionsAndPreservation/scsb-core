@@ -2,6 +2,7 @@ package org.recap.service.accession.callable;
 
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
+import org.recap.model.jpa.ImsLocationEntity;
 import org.recap.model.jpa.ReportDataEntity;
 import org.recap.util.AccessionProcessService;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ public class BibDataCallable implements Callable{
     private AccessionRequest accessionRequest;
     private String owningInstitution;
     private boolean writeToReport;
+    private ImsLocationEntity imsLocationEntity;
 
     @Override
     public Object call() throws Exception {
@@ -34,7 +36,8 @@ public class BibDataCallable implements Callable{
         List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
         Set<AccessionResponse> accessionResponses = new HashSet<>();
 
-        return accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, owningInstitution, writeToReport);
+
+        return accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, owningInstitution, writeToReport,imsLocationEntity);
 
     }
     public void setAccessionRequest(AccessionRequest accessionRequest) {
@@ -48,5 +51,9 @@ public class BibDataCallable implements Callable{
 
     public void setOwningInstitution(String owningInstitution) {
         this.owningInstitution = owningInstitution;
+    }
+
+    public void setImsLocationEntity(ImsLocationEntity imsLocationEntity) {
+        this.imsLocationEntity = imsLocationEntity;
     }
 }
