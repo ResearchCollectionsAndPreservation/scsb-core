@@ -1,6 +1,7 @@
 package org.recap.converter;
 
 import org.recap.model.accession.AccessionRequest;
+import org.recap.model.jpa.ImsLocationEntity;
 
 import java.util.Map;
 
@@ -15,5 +16,5 @@ public interface AccessionXmlToBibEntityConverterInterface {
      * @param accessionRequest    the accessionRequest
      * @return the map
      */
-    public Map convert(Object record, String institutionName, AccessionRequest accessionRequest);
+    public Map convert(Object record, String institutionName, AccessionRequest accessionRequest, ImsLocationEntity imsLocationEntity);
 }

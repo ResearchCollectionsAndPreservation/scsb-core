@@ -15,6 +15,7 @@ import org.recap.model.jaxb.marc.LeaderFieldType;
 import org.recap.model.jaxb.marc.RecordType;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.jpa.HoldingsEntity;
+import org.recap.model.jpa.ImsLocationEntity;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.repository.jpa.BibliographicDetailsRepository;
 import org.recap.util.CommonUtil;
@@ -51,7 +52,7 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
      * @return
      */
     @Override
-    public Map convert(Object scsbRecord, String institutionName, AccessionRequest accessionRequest){
+    public Map convert(Object scsbRecord, String institutionName, AccessionRequest accessionRequest, ImsLocationEntity imsLocationEntity){
         int failedItemCount = 0;
         int successItemCount = 0;
         String reasonForFailureItem = "";
@@ -110,7 +111,9 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
 
                                 List<RecordType> itemRecordTypes = itemContentCollection.getRecord();
                                 for (RecordType itemRecordType : itemRecordTypes) {
-                                    Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, owningInstitutionId, holdingsCallNumber, holdingsCallNumberType, itemRecordType,accessionRequest,errorMessage);
+
+                                    Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, owningInstitutionId, holdingsCallNumber, holdingsCallNumberType, itemRecordType,accessionRequest,currentDate,errorMessage,imsLocationEntity);
+
                                     if (itemMap != null) {
                                         if(itemMap.containsKey(RecapCommonConstants.FAILED_ITEM_COUNT)){
                                             failedItemCount = failedItemCount + (int) itemMap.get(RecapCommonConstants.FAILED_ITEM_COUNT);
@@ -279,7 +282,8 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
      */
     private Map<String, Object> processAndValidateItemEntity(BibliographicEntity bibliographicEntity, Integer owningInstitutionId,
                                                              String holdingsCallNumber, String holdingsCallNumberType, RecordType itemRecordType,AccessionRequest accessionRequest,
-                                                             StringBuilder errorMessage) {
+                                                             Date currentDate,StringBuilder errorMessage,ImsLocationEntity imsLocationEntity) {
+
         Map<String, Object> map = new HashMap<>();
         ItemEntity itemEntity = new ItemEntity();
         int failedItemCount = 0;
@@ -322,6 +326,9 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
             itemEntity.setCreatedBy(RecapCommonConstants.ACCESSION);
             itemEntity.setLastUpdatedDate(currentDate);
             itemEntity.setLastUpdatedBy(RecapCommonConstants.ACCESSION);
+
+            itemEntity.setImsLocationEntity(imsLocationEntity);
+            itemEntity.setImsLocationId(imsLocationEntity.getImsLocationId());
 
             String useRestrictions = getMarcUtil().getDataFieldValueForRecordType(itemRecordType, "876", null, null, "h");
             if (StringUtils.isNotBlank(useRestrictions) && ("In Library Use".equalsIgnoreCase(useRestrictions) || "Supervised Use".equalsIgnoreCase(useRestrictions))) {

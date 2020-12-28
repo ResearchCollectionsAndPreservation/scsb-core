@@ -67,6 +67,9 @@ public class AccessionUtil {
     @Autowired
     ProducerTemplate producerTemplate;
 
+    @Autowired
+    ImsLocationDetailsRepository imsLocationDetailsRepository;
+
     @Value("${scsb.solr.doc.url}")
     private String scsbSolrClientUrl;
 
@@ -238,13 +241,13 @@ public class AccessionUtil {
      * @param reportDataEntityList
      * @param accessionRequest
      */
-    public String createDummyRecordIfAny(String response, String owningInstitution, List<ReportDataEntity> reportDataEntityList, AccessionRequest accessionRequest) {
+    public String createDummyRecordIfAny(String response, String owningInstitution, List<ReportDataEntity> reportDataEntityList, AccessionRequest accessionRequest,ImsLocationEntity imsLocationEntity) {
         String message = response;
         if (response != null && (response.contains(RecapConstants.ITEM_BARCODE_NOT_FOUND) ||
                 response.contains(RecapConstants.INVALID_MARC_XML_ERROR_MSG)) ) {
             BibliographicEntity fetchBibliographicEntity = getBibEntityUsingBarcodeForIncompleteRecord(accessionRequest.getItemBarcode());
             if (fetchBibliographicEntity == null) {
-                String dummyRecordResponse = createDummyRecord(accessionRequest, owningInstitution);
+                String dummyRecordResponse = createDummyRecord(accessionRequest, owningInstitution,imsLocationEntity);
                 message = response+", "+dummyRecordResponse;
             } else {
                 message = RecapConstants.ITEM_BARCODE_ALREADY_ACCESSIONED_MSG;
@@ -276,10 +279,10 @@ public class AccessionUtil {
      * @param owningInstitution
      * @return
      */
-    public String createDummyRecord(AccessionRequest accessionRequest, String owningInstitution) {
+    public String createDummyRecord(AccessionRequest accessionRequest, String owningInstitution,ImsLocationEntity imsLocationEntity) {
         String response;
-        Integer owningInstitutionId = getInstitutionEntityMap().get(owningInstitution);
-        BibliographicEntity dummyBibliographicEntity = dummyDataService.createDummyDataAsIncomplete(owningInstitutionId,accessionRequest.getItemBarcode(),accessionRequest.getCustomerCode());
+        Integer owningInstitutionId = (Integer) getInstitutionEntityMap().get(owningInstitution);
+        BibliographicEntity dummyBibliographicEntity = dummyDataService.createDummyDataAsIncomplete(owningInstitutionId,accessionRequest.getItemBarcode(),accessionRequest.getCustomerCode(),imsLocationEntity);
         indexData(Set.of(dummyBibliographicEntity.getBibliographicId()));
         response = RecapConstants.ACCESSION_DUMMY_RECORD;
         return response;
@@ -319,11 +322,11 @@ public class AccessionUtil {
      * @param accessionRequest
      * @return
      */
-    public synchronized String updateData(Object record, String owningInstitution, List<Map<String, String>> responseMapList, AccessionRequest accessionRequest, boolean isValidBoundWithRecord, boolean isFirstRecord){
+    public synchronized String updateData(Object record, String owningInstitution, List<Map<String, String>> responseMapList, AccessionRequest accessionRequest, boolean isValidBoundWithRecord, boolean isFirstRecord,ImsLocationEntity imsLocationEntity){
         String response = null;
         AccessionXmlToBibEntityConverterInterface converter = xmlToBibEntityConverterFactory.getConverter(owningInstitution);
         if (null != converter) {
-            Map responseMap = converter.convert(record, owningInstitution, accessionRequest);
+            Map responseMap = converter.convert(record, owningInstitution, accessionRequest,imsLocationEntity);
             responseMapList.add(responseMap);
             StringBuilder errorMessage = (StringBuilder)responseMap.get("errorMessage");
             BibliographicEntity bibliographicEntity = (BibliographicEntity) responseMap.get(RecapCommonConstants.BIBLIOGRAPHICENTITY);
@@ -588,5 +591,4 @@ public class AccessionUtil {
         reportEntity.setCreatedDate(new Date());
         return reportEntity;
     }
-
 }

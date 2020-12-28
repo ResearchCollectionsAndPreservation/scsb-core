@@ -1,7 +1,6 @@
 package org.recap.service.accession;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import org.apache.camel.Exchange;
@@ -27,7 +26,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StopWatch;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -94,18 +97,14 @@ public class BulkAccessionService extends AccessionService{
     /**
      * This method is used to get the accession request for the given accession list.
      *
-     * @param accessionEntityList
+     * @param accessionModelRequestList
      * @return
      */
-    public List<AccessionRequest> getAccessionRequest(List<AccessionEntity> accessionEntityList) {
+    public List<AccessionRequest> getAccessionRequest( List<AccessionModelRequest> accessionModelRequestList) {
         List<AccessionRequest> accessionRequestList = new ArrayList<>();
-        if(CollectionUtils.isNotEmpty(accessionEntityList)) {
+        if(CollectionUtils.isNotEmpty(accessionModelRequestList)) {
             try {
-                for(AccessionEntity accessionEntity : accessionEntityList) {
-                    TypeReference<List<AccessionRequest>> typeReference = new TypeReference<>() {
-                    };
-                    accessionRequestList.addAll(new ObjectMapper().readValue(accessionEntity.getAccessionRequest(), typeReference));
-                }
+                accessionModelRequestList.forEach(accessionModelRequest -> accessionRequestList.addAll(accessionModelRequest.getAccessionRequests()));
             } catch(Exception e) {
                 logger.error(RecapCommonConstants.LOG_ERROR, e);
             }
@@ -115,29 +114,26 @@ public class BulkAccessionService extends AccessionService{
 
 
     public void updateStatusForAccessionEntities(List<AccessionEntity> accessionEntities, String status) {
-        for(AccessionEntity accessionEntity : accessionEntities) {
-            accessionEntity.setAccessionStatus(status);
-        }
+        accessionEntities.forEach(accessionEntity -> accessionEntity.setAccessionStatus(status));
         accessionDetailsRepository.saveAll(accessionEntities);
     }
 
     @Override
-    public List<AccessionResponse> doAccession(List<AccessionRequest> accessionRequestList, AccessionSummary accessionSummary, Exchange exhange) {
+    public List<AccessionResponse> doAccession(AccessionModelRequest accessionModelRequest, AccessionSummary accessionSummary, Exchange exhange) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        int requestedCount = accessionRequestList.size();
-        List<AccessionRequest> trimmedAccessionRequests = getTrimmedAccessionRequests(accessionRequestList);
+        List<AccessionRequest> trimmedAccessionRequests = getTrimmedAccessionRequests(accessionModelRequest.getAccessionRequests());
         trimmedAccessionRequests = accessionProcessService.removeDuplicateRecord(trimmedAccessionRequests);
-
+        int requestedCount = accessionModelRequest.getAccessionRequests().size();
         int duplicateCount = requestedCount - trimmedAccessionRequests.size();
-        accessionSummary.setRequestedRecords(requestedCount);
         accessionSummary.setDuplicateRecords(duplicateCount);
 
         ExecutorService executorService = Executors.newFixedThreadPool(batchAccessionThreadSize);
-
         List<List<AccessionRequest>> partitions = Lists.partition(trimmedAccessionRequests, batchAccessionThreadSize);
 
-
+        //validate ims_location
+        AccessionValidationService.AccessionValidationResponse imsValidation = accessionValidationService.validateImsLocationCode(accessionModelRequest.getImsLocationCode());
+        if(imsValidation.isValid()) {
             for (Iterator<List<AccessionRequest>> iterator = partitions.iterator(); iterator.hasNext(); ) {
                 List<AccessionRequest> accessionRequests = iterator.next();
                 List<Future> futures = new ArrayList<>();
@@ -163,6 +159,7 @@ public class BulkAccessionService extends AccessionService{
                     BibDataCallable bibDataCallable = applicationContext.getBean(BibDataCallable.class);
                     bibDataCallable.setAccessionRequest(accessionRequest);
                     bibDataCallable.setOwningInstitution(owningInstitution);
+                    bibDataCallable.setImsLocationEntity(imsValidation.getImsLocationEntity());
                     futures.add(executorService.submit(bibDataCallable));
 
                 }
@@ -201,9 +198,20 @@ public class BulkAccessionService extends AccessionService{
                     }
                 }
             }
-            executorService.shutdown();
-            stopWatch.stop();
-
+        }
+        else {
+            partitions.forEach(partitionList->{
+                partitionList.forEach(accessionRequest -> {
+                    String message = imsValidation.getMessage();
+                    List<ReportDataEntity> reportDataEntityList = new ArrayList<>(accessionUtil.createReportDataEntityList(accessionRequest, message));
+                    String owningInstitution = imsValidation.getOwningInstitution();
+                    accessionUtil.saveReportEntity(owningInstitution, reportDataEntityList);
+                    addCountToSummary(accessionSummary, message);
+                });
+            });
+        }
+        executorService.shutdown();
+        stopWatch.stop();
         logger.info("Total time taken to accession for all barcode -> {} sec",stopWatch.getTotalTimeSeconds());
         return null;
     }

@@ -272,6 +272,8 @@ public final class RecapConstants {
     public static final String ACCESSION_SAVE_FAILURE_STATUS = "Failed to process accession request.";
     public static final String ITEM_BARCODE_EMPTY = "Item Barcode is Blank.";
     public static final String CUSTOMER_CODE_EMPTY = "Customer Code is Blank.";
+    public static final String INVALID_IMS_LOCACTION_CODE = "Invalid ims location code";
+    public static final String IMS_LOCACTION_CODE_IS_BLANK = "Ims location code is blank";
     public static final String OWNING_INST_EMPTY = "Owning Institution is Blank.";
     public static final String INVALID_BARCODE_LENGTH="Barcode length should not exceed 45 characters";
     public static final String INVALID_BOUNDWITH_RECORD = "Bound-with item having invalid data";
