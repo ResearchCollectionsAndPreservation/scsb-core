@@ -20,10 +20,12 @@ import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -112,7 +114,7 @@ public class StatusReconciliationService {
     private GFAItemStatusCheckResponse getGFAItemStatusCheckResponse(List<ItemEntity> itemEntities) {
         ResponseEntity<GFAItemStatusCheckResponse> responseEntity = null;
         try {
-            HttpEntity httpEntity = new HttpEntity(commonUtil.getBarcodesList(itemEntities));
+            HttpEntity httpEntity = new HttpEntity<>(commonUtil.getBarcodesList(itemEntities));
             RestTemplate restTemplate = new RestTemplate();
             responseEntity = restTemplate.exchange(scsbCircUrl + RecapConstants.GFA_MULTIPLE_ITEM_STATUS_URL, HttpMethod.POST, httpEntity, GFAItemStatusCheckResponse.class);
         } catch (Exception e) {
@@ -177,8 +179,8 @@ public class StatusReconciliationService {
         try {
             itemRequestInfo.setItemBarcodes(itemBarcodes);
             itemRequestInfo.setRequestIds(requestIdList);
-            HttpEntity request = new HttpEntity(itemRequestInfo, getHttpHeadersAuth());
-            restTemplate.exchange(scsbUrl + RecapConstants.SERVICE_PATH.REFILE_ITEM, HttpMethod.POST, request, ItemRefileResponse.class);
+            HttpEntity request = new HttpEntity<>(itemRequestInfo, getHttpHeadersAuth());
+            restTemplate.exchange(scsbUrl + RecapConstants.SERVICEPATH.REFILE_ITEM, HttpMethod.POST, request, ItemRefileResponse.class);
         } catch (Exception ex) {
             log.error(RecapConstants.EXCEPTION, ex);
         }

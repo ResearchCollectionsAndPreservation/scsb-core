@@ -2,7 +2,12 @@ package org.recap.service.accession;
 
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
-import org.recap.model.jpa.*;
+import org.recap.model.jpa.BibliographicEntity;
+import org.recap.model.jpa.CollectionGroupEntity;
+import org.recap.model.jpa.HoldingsEntity;
+import org.recap.model.jpa.ItemEntity;
+import org.recap.model.jpa.ItemStatusEntity;
+import org.recap.model.jpa.OwningInstitutionIDSequence;
 import org.recap.repository.jpa.BibliographicDetailsRepository;
 import org.recap.repository.jpa.CollectionGroupDetailsRepository;
 import org.recap.repository.jpa.ItemStatusDetailsRepository;
@@ -15,11 +20,13 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by premkb on 27/4/17.
@@ -62,7 +69,6 @@ public class DummyDataService {
      * @return the bibliographic entity
      */
     public BibliographicEntity createDummyDataAsIncomplete(Integer owningInstitutionId, String itemBarcode, String customerCode) {
-        Random random = new Random();
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
         Date currentDate = new Date();
         try {
@@ -80,9 +86,9 @@ public class DummyDataService {
             itemEntity.setBarcode(itemBarcode);
             itemEntity.setOwningInstitutionItemId(getDummyOwningInstId());
             itemEntity.setOwningInstitutionId(owningInstitutionId);
-            itemEntity.setCollectionGroupId((Integer) getCollectionGroupMap().get(RecapCommonConstants.NOT_AVAILABLE_CGD));
+            itemEntity.setCollectionGroupId(getCollectionGroupMap().get(RecapCommonConstants.NOT_AVAILABLE_CGD));
             itemEntity.setCustomerCode(customerCode);
-            itemEntity.setItemAvailabilityStatusId((Integer) getItemStatusMap().get(RecapCommonConstants.NOT_AVAILABLE));
+            itemEntity.setItemAvailabilityStatusId(getItemStatusMap().get(RecapCommonConstants.NOT_AVAILABLE));
             itemEntity.setDeleted(false);
             itemEntity.setHoldingsEntities(Collections.singletonList(holdingsEntity));
             itemEntity.setCatalogingStatus(RecapCommonConstants.INCOMPLETE_STATUS);
@@ -123,13 +129,13 @@ public class DummyDataService {
         bibliographicEntity.setCatalogingStatus(RecapCommonConstants.INCOMPLETE_STATUS);
     }
 
-    private synchronized Map getCollectionGroupMap() {
+    private synchronized Map<String, Integer> getCollectionGroupMap() {
         if (null == collectionGroupMap) {
-            collectionGroupMap = new HashMap();
+            collectionGroupMap = new HashMap<>();
             try {
                 Iterable<CollectionGroupEntity> collectionGroupEntities = collectionGroupDetailsRepository.findAll();
-                for (Iterator iterator = collectionGroupEntities.iterator(); iterator.hasNext(); ) {
-                    CollectionGroupEntity collectionGroupEntity = (CollectionGroupEntity) iterator.next();
+                for (Iterator<CollectionGroupEntity> iterator = collectionGroupEntities.iterator(); iterator.hasNext(); ) {
+                    CollectionGroupEntity collectionGroupEntity =  iterator.next();
                     collectionGroupMap.put(collectionGroupEntity.getCollectionGroupCode(), collectionGroupEntity.getId());
                 }
             } catch (Exception e) {
@@ -139,9 +145,9 @@ public class DummyDataService {
         return collectionGroupMap;
     }
 
-    private synchronized Map getItemStatusMap() {
+    private synchronized Map<String, Integer> getItemStatusMap() {
         if (null == itemStatusMap) {
-            itemStatusMap = new HashMap();
+            itemStatusMap = new HashMap<>();
             try {
                 Iterable<ItemStatusEntity> itemStatusEntities = itemStatusDetailsRepository.findAll();
                 for (ItemStatusEntity itemStatusEntity : itemStatusEntities) {

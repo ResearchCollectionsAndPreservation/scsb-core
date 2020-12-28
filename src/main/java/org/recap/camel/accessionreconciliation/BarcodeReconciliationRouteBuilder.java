@@ -33,8 +33,8 @@ public class BarcodeReconciliationRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         Predicate gzipFile = exchange -> {
-            if (exchange.getIn().getHeader("CamelAwsS3Key") != null) {
-                String fileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+            if (exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY) != null) {
+                String fileName = exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY).toString();
                 return StringUtils.equalsIgnoreCase("gz", FilenameUtils.getExtension(fileName));
             } else
                 return false;

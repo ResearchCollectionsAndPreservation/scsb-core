@@ -22,8 +22,7 @@ public class SubmitCollectionHelperService {
     private RepositoryService repositoryService;
 
     public BibliographicEntity getBibliographicEntityIfExist(String owningInstitutionBibId,Integer owningInstitutionId){
-        BibliographicEntity bibliographicEntityList = getRepositoryService().getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(owningInstitutionId,owningInstitutionBibId);
-        return bibliographicEntityList;
+        return getRepositoryService().getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(owningInstitutionId,owningInstitutionBibId);
     }
 
     public void attachItemToExistingBib(BibliographicEntity existingBibliographicEntity, BibliographicEntity incomingBibliographicEntity){

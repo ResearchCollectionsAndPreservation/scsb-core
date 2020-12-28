@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
 import org.recap.camel.submitcollection.processor.SubmitCollectionProcessor;
-import org.recap.model.ILSConfigProperties;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
 import org.recap.util.PropertyUtil;
 import org.slf4j.Logger;
@@ -54,8 +53,8 @@ public class SubmitCollectionPollingS3RouteBuilder {
      * Predicate to identify is the input file is gz
      */
     Predicate gzipFile = exchange -> {
-        if (exchange.getIn().getHeader("CamelAwsS3Key") != null) {
-            String fileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+        if (exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY) != null) {
+            String fileName = exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY).toString();
             return StringUtils.equalsIgnoreCase("gz", FilenameUtils.getExtension(fileName));
         } else {
             return false;
@@ -82,7 +81,7 @@ public class SubmitCollectionPollingS3RouteBuilder {
                 public void configure() throws Exception {
                     from(RecapCommonConstants.DIRECT_ROUTE_FOR_EXCEPTION)
                             .log("Calling direct route for exception")
-                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class), RecapConstants.SUBMIT_COLLECTION__CAUGHT_EXCEPTION_METHOD);
+                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class), RecapConstants.SUBMIT_COLLECTION_CAUGHT_EXCEPTION_METHOD);
 
                 }
             });
@@ -98,7 +97,6 @@ public class SubmitCollectionPollingS3RouteBuilder {
         for (int i = 0; i < allInstitutionCodeExceptHTC.size(); i++) {
             String currentInstitution = allInstitutionCodeExceptHTC.get(i);
             nextInstitution = (i < allInstitutionCodeExceptHTC.size() - 1) ? allInstitutionCodeExceptHTC.get(i + 1) : null;
-            ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(currentInstitution);
             for (String cdgType : protectedAndNotProtected) {
                 String nextRouteId = getNextRouteId(currentInstitution, nextInstitution, cdgType);
                 if (RecapConstants.PROTECTED.equalsIgnoreCase(cdgType))

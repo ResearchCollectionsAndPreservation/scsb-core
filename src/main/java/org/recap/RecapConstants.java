@@ -209,7 +209,7 @@ public final class RecapConstants {
     public static final String GFA_STATUS_VER_ON_RET_WORK_ORDER = "VER ON RET WO:";
     public static final String GFA_STATUS_VER_ON_WORK_ORDER = "VER ON WO:";
     public static final String CANNOT_REFILE_FIRST_SCAN_REQUEST ="Cannot place recall for requests placed on first scan LAS status";
-    public static final String REQUESTS_STUCK_IN__PENDING = "Requests stuck in pending";
+    public static final String REQUESTS_STUCK_IN_PENDING = "Requests stuck in pending";
     public static final String NO_PENDING_REQUESTS_FOUND = "There are no pending requests or no new pending request";
     public static final String PROTECTED = "protection";
     public static final String NOT_PROTECTED = "no_protection";
@@ -245,7 +245,7 @@ public final class RecapConstants {
     public static final String REQUEST_REFILE_BODY = "The following item has been requested and was found to be under Refile in LAS.";
     public static final String REQUEST_REFILE_SUBJECT = "Request for Item on Refile WO - ";
 
-    public static class SERVICE_PATH {
+    public static class SERVICEPATH {
         public static final String CHECKIN_ITEM = "requestItem/checkinItem";
         public static final String REFILE_ITEM_IN_ILS = "requestItem/refileItemInILS";
         public static final String REPLACE_REQUEST = "requestItem/replaceRequest";
@@ -347,7 +347,7 @@ public final class RecapConstants {
 
     public static final String DELETED_STATUS_NOT_REPORTED = "Not Reported";
     public static final String DELETED_STATUS_REPORTED = "Reported";
-    public static final String DELETED_MAIl_TO = "DELETED_MAIl_TO";
+    public static final String DELETED_MAIL_TO = "DELETED_MAIl_TO";
     public static final String EMAIL_SUBJECT_DELETED_RECORDS = "List of Deleted Records";
     public static final String EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE = "Total No. of Records Deleted : ";
     public static final String DAILY_RECONCILIATION = "DailyReconciliation";
@@ -407,7 +407,7 @@ public final class RecapConstants {
     public static final String SUBMIT_COLLECTION_FTP_CGD_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdProtectedRoute";
     public static final String SUBMIT_COLLECTION_FTP_CGD_NOT_PROTECTED_NYPL_ROUTE = "nyplSubmitCollectionFTPCgdNotProtectedRoute";
     public static final String SUBMIT_COLLECTION_COMPLETED_ROUTE = "submitCollectionCompletedRoute";
-    public static final String SUBMIT_COLLECTION__CAUGHT_EXCEPTION_METHOD = "caughtException";
+    public static final String SUBMIT_COLLECTION_CAUGHT_EXCEPTION_METHOD = "caughtException";
     public static final String SUBMIT_COLLECTION_EXCEPTION_BODY_VM = "submit_collection_exception_body.vm";
 
     public static final String DELETED_MAIL_QUEUE = "deletedRecordsMailSendQueue";
@@ -519,7 +519,7 @@ public final class RecapConstants {
     private RecapConstants() {
     }
 
-    public static List getGFAStatusAvailableList() {
+    public static List<String> getGFAStatusAvailableList() {
         return GFA_STATUS_AVAILABLE_LIST;
     }
 
@@ -527,7 +527,7 @@ public final class RecapConstants {
         return GFA_STATUS_NOT_AVAILABLE_LIST;
     }
 
-    public static List getRequestTypeList() {
+    public static List<String> getRequestTypeList() {
         return REQUEST_TYPE_LIST;
     }
 
@@ -538,5 +538,6 @@ public final class RecapConstants {
 
     public static final String EXCEPTION = "exception->";
     public static final String SCSB_CAMEL_S3_TO_ENDPOINT = "aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})";
+    public static final String CAMEL_AWS_KEY = "CamelAwsS3Key";
 
 }

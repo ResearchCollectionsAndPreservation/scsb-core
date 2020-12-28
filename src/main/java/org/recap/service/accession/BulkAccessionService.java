@@ -224,10 +224,4 @@ public class BulkAccessionService extends AccessionService{
         }
         return strJson;
     }
-
-    /*@Override
-    public BibliographicEntity saveBibRecord(BibliographicEntity fetchBibliographicEntity) {
-        return accessionDAO.saveBibRecord(fetchBibliographicEntity);
-    }*/
-
 }

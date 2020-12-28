@@ -10,9 +10,13 @@ import org.recap.converter.MarcToBibEntityConverter;
 import org.recap.converter.SCSBToBibEntityConverter;
 import org.recap.converter.XmlToBibEntityConverterInterface;
 import org.recap.model.jaxb.BibRecord;
-import org.recap.model.jaxb.JAXBHandler;
 import org.recap.model.jaxb.marc.BibRecords;
-import org.recap.model.jpa.*;
+import org.recap.model.jpa.BibliographicEntity;
+import org.recap.model.jpa.HoldingsEntity;
+import org.recap.model.jpa.InstitutionEntity;
+import org.recap.model.jpa.ItemEntity;
+import org.recap.model.jpa.ReportDataEntity;
+import org.recap.model.jpa.ReportEntity;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.model.submitcollection.SubmitCollectionResponse;
 import org.recap.service.common.RepositoryService;
@@ -30,16 +34,14 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.transaction.Transactional;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by premkb on 20/12/16.
@@ -290,7 +292,7 @@ public class SubmitCollectionService {
 
     }
 
-    public LinkedMultiValueMap getLinkedMultiValueMap(){
+    public LinkedMultiValueMap<String,Object> getLinkedMultiValueMap(){
         return new LinkedMultiValueMap<>();
     }
 
@@ -436,7 +438,7 @@ public class SubmitCollectionService {
         this.restTemplate = restTemplate;
     }
 
-    private Map getSubmitCollectionReportMap(){
+    private Map<String,List<SubmitCollectionReportInfo>> getSubmitCollectionReportMap(){
         List<SubmitCollectionReportInfo> submitCollectionSuccessInfoList = new ArrayList<>();
         List<SubmitCollectionReportInfo> submitCollectionFailureInfoList = new ArrayList<>();
         List<SubmitCollectionReportInfo> submitCollectionRejectionInfoList = new ArrayList<>();

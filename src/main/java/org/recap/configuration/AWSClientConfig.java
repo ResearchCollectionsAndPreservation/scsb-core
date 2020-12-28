@@ -25,12 +25,11 @@ public class AWSClientConfig {
                 awsAccessKey, awsAccessSecretKey
         );
 
-        AmazonS3 awsS3Client = AmazonS3ClientBuilder
+        return AmazonS3ClientBuilder
                 .standard()
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion(Regions.US_EAST_2)
                 .build();
-        return awsS3Client;
     }
 
 }

@@ -22,7 +22,7 @@ public class EmailServiceUT extends BaseTestCaseUT {
 
     @Test
     public void sendEmail(){
-        emailService.sendEmail("","12345", RecapConstants.DELETED_MAIl_TO,"");
+        emailService.sendEmail("","12345", RecapConstants.DELETED_MAIL_TO,"");
         emailService.sendEmail("","12345", "","");
         assertNotNull(emailService);
     }

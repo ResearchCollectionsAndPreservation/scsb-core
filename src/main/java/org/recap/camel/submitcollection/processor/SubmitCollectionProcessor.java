@@ -20,7 +20,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -92,10 +91,10 @@ public class SubmitCollectionProcessor {
         try {
             logger.info("Submit Collection : Route started and started processing the records from s3 for submitcollection");
             String inputXml = exchange.getIn().getBody(String.class);
-            xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+            xmlFileName = exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY).toString();
             bucketName = exchange.getIn().getHeader("CamelAwsS3BucketName").toString();
             logger.info("Processing xmlFileName----->{}", xmlFileName);
-            Integer institutionId = (Integer) setupDataService.getInstitutionCodeIdMap().get(institutionCode);
+            Integer institutionId = setupDataService.getInstitutionCodeIdMap().get(institutionCode);
             submitCollectionBatchService.process(institutionCode, inputXml, processedBibIds, idMapToRemoveIndexList, bibIdMapToRemoveIndexList, xmlFileName, reportRecordNumList, false, isCGDProtection, updatedBoundWithDummyRecordOwnInstBibIdSet);
             logger.info("Submit Collection : Solr indexing started for {} records", processedBibIds.size());
             logger.info("idMapToRemoveIndex---> {}", idMapToRemoveIndexList.size());
@@ -187,15 +186,5 @@ public class SubmitCollectionProcessor {
         emailPayLoad.setLocation(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "s3.submit.collection.report.dir"));
         emailPayLoad.setInstitution(institutionCode.toUpperCase());
         return emailPayLoad;
-    }
-
-    private String getFtpLocation(String ftpLocation) {
-        if (ftpLocation.contains(File.separator)) {
-            String[] splittedFtpLocation = ftpLocation.split(File.separator, 2);
-            return splittedFtpLocation[1];
-        } else {
-            return ftpLocation;
-        }
-
     }
 }

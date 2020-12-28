@@ -76,7 +76,7 @@ public class DailyReconciliationProcessor {
      */
     public void processInput(Exchange exchange) {
         try {
-            String xmlFileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+            String xmlFileName = exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY).toString();
             logger.info("fileProcessing:{}",xmlFileName);
             List<DailyReconcilationRecord> dailyReconcilationRecordList = (List<DailyReconcilationRecord>)exchange.getIn().getBody();
             try (XSSFWorkbook xssfWorkbook = new XSSFWorkbook()) {

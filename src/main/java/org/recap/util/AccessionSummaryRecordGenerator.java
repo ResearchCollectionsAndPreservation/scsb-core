@@ -74,10 +74,10 @@ public class AccessionSummaryRecordGenerator {
                 count+=1;
             }
             if(itemFailureReasonCountMap.size() != 0){
-                for(String key : itemFailureReasonCountMap.keySet()){
+                for(Map.Entry<String,Integer> entry : itemFailureReasonCountMap.entrySet()) {
                     AccessionSummaryRecord accessionSummaryRec = new AccessionSummaryRecord();
-                    accessionSummaryRec.setReasonForFailureItem(key);
-                    accessionSummaryRec.setFailedItemCount(itemFailureReasonCountMap.get(key).toString());
+                    accessionSummaryRec.setReasonForFailureItem(entry.getKey());
+                    accessionSummaryRec.setFailedItemCount(itemFailureReasonCountMap.get(entry.getKey()).toString());
                     accessionSummaryRecordList.add(accessionSummaryRec);
                 }
             }
@@ -88,10 +88,10 @@ public class AccessionSummaryRecordGenerator {
                 count+=1;
             }
             if(bibFailureReasonCountMap.size() != 0){
-                for(String key : bibFailureReasonCountMap.keySet()){
+                for(Map.Entry<String,Integer> entry : bibFailureReasonCountMap.entrySet()) {
                     AccessionSummaryRecord accessionSummaryRec = new AccessionSummaryRecord();
-                    accessionSummaryRec.setReasonForFailureBib(key);
-                    accessionSummaryRec.setFailedBibCount(bibFailureReasonCountMap.get(key).toString());
+                    accessionSummaryRec.setReasonForFailureBib(entry.getKey());
+                    accessionSummaryRec.setFailedBibCount(bibFailureReasonCountMap.get(entry.getKey()).toString());
                     accessionSummaryRecordList.add(accessionSummaryRec);
                 }
             }

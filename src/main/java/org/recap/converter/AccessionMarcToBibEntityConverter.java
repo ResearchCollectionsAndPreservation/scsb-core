@@ -19,8 +19,6 @@ import org.recap.repository.jpa.BibliographicDetailsRepository;
 import org.recap.util.CommonUtil;
 import org.recap.util.DBReportUtil;
 import org.recap.util.MarcUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +26,6 @@ import java.util.*;
 
 @Service
 public class AccessionMarcToBibEntityConverter implements AccessionXmlToBibEntityConverterInterface {
-    private static final Logger logger = LoggerFactory.getLogger(AccessionMarcToBibEntityConverter.class);
-
     @Autowired
     private MarcUtil marcUtil;
 
@@ -68,7 +64,7 @@ public class AccessionMarcToBibEntityConverter implements AccessionXmlToBibEntit
 
         BibMarcRecord bibMarcRecord = marcUtil.buildBibMarcRecord(record);
         Record bibRecord = bibMarcRecord.getBibRecord();
-        Integer owningInstitutionId = (Integer) commonUtil.getInstitutionEntityMap().get(institutionName);
+        Integer owningInstitutionId = commonUtil.getInstitutionEntityMap().get(institutionName);
         Date currentDate = new Date();
         Map<String, Object> bibMap = processAndValidateBibliographicEntity(bibRecord, owningInstitutionId, currentDate,errorMessage);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) bibMap.get(RecapCommonConstants.BIBLIOGRAPHICENTITY);
@@ -98,7 +94,7 @@ public class AccessionMarcToBibEntityConverter implements AccessionXmlToBibEntit
                     if (CollectionUtils.isNotEmpty(itemMarcRecordList)) {
                         for (ItemMarcRecord itemMarcRecord : itemMarcRecordList) {
                             Record itemRecord = itemMarcRecord.getItemRecord();
-                            Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, owningInstitutionId,accessionRequest.getCustomerCode(), holdingsCallNumber, holdingsCallNumberType, itemRecord, institutionName, bibRecord, currentDate,errorMessage);
+                            Map<String, Object> itemMap = processAndValidateItemEntity(bibliographicEntity, owningInstitutionId,accessionRequest.getCustomerCode(), holdingsCallNumber, holdingsCallNumberType, itemRecord, errorMessage);
                             if(itemMap.containsKey(RecapCommonConstants.FAILED_ITEM_COUNT)){
                                 failedItemCount = failedItemCount + (int) itemMap.get(RecapCommonConstants.FAILED_ITEM_COUNT);
                             }
@@ -264,20 +260,18 @@ public class AccessionMarcToBibEntityConverter implements AccessionXmlToBibEntit
      * @param holdingsCallNumber
      * @param holdingsCallNumberType
      * @param itemRecord
-     * @param institutionName
-     * @param bibRecord
-     * @param currentDate
      * @param errorMessage
      * @return
      */
-    private Map<String, Object> processAndValidateItemEntity(BibliographicEntity bibliographicEntity, Integer owningInstitutionId,String customerCode, String holdingsCallNumber, Character holdingsCallNumberType, Record itemRecord, String institutionName, Record bibRecord,
-                                                             Date currentDate,StringBuilder errorMessage) {
+    private Map<String, Object> processAndValidateItemEntity(BibliographicEntity bibliographicEntity, Integer owningInstitutionId,String customerCode, String holdingsCallNumber, Character holdingsCallNumberType, Record itemRecord,
+                                                             StringBuilder errorMessage) {
         Map<String, Object> map = new HashMap<>();
         ItemEntity itemEntity = new ItemEntity();
         int failedItemCount = 0;
         int successItemCount = 0;
         boolean isComplete = true;
         String reasonForFailureItem = "";
+        Date currentDate = new Date();
         map.put(RecapCommonConstants.FAILED_ITEM_COUNT,failedItemCount);
         map.put(RecapCommonConstants.SUCCESS_ITEM_COUNT,successItemCount);
         map.put(RecapCommonConstants.REASON_FOR_ITEM_FAILURE,reasonForFailureItem);
@@ -303,10 +297,10 @@ public class AccessionMarcToBibEntityConverter implements AccessionXmlToBibEntit
         }
         String collectionGroupCode = marcUtil.getDataFieldValue(itemRecord, "876", 'x');
         if (StringUtils.isNotBlank(collectionGroupCode) && commonUtil.getCollectionGroupMap().containsKey(collectionGroupCode)) {
-            itemEntity.setCollectionGroupId((Integer) commonUtil.getCollectionGroupMap().get(collectionGroupCode));
+            itemEntity.setCollectionGroupId(commonUtil.getCollectionGroupMap().get(collectionGroupCode));
         } else {
             isComplete = false;
-            itemEntity.setCollectionGroupId((Integer) commonUtil.getCollectionGroupMap().get(RecapCommonConstants.NOT_AVAILABLE_CGD));
+            itemEntity.setCollectionGroupId(commonUtil.getCollectionGroupMap().get(RecapCommonConstants.NOT_AVAILABLE_CGD));
         }
         itemEntity.setDeleted(false);
         itemEntity.setCreatedDate(currentDate);
@@ -331,10 +325,10 @@ public class AccessionMarcToBibEntityConverter implements AccessionXmlToBibEntit
 
         if(isComplete){
             bibliographicEntity.setCatalogingStatus(RecapCommonConstants.COMPLETE_STATUS);
-            itemEntity.setItemAvailabilityStatusId((Integer) commonUtil.getItemStatusMap().get("Available"));
+            itemEntity.setItemAvailabilityStatusId(commonUtil.getItemStatusMap().get("Available"));
             itemEntity.setCatalogingStatus(RecapCommonConstants.COMPLETE_STATUS);
         } else {
-            itemEntity.setItemAvailabilityStatusId((Integer) commonUtil.getItemStatusMap().get("Not Available"));
+            itemEntity.setItemAvailabilityStatusId(commonUtil.getItemStatusMap().get("Not Available"));
             bibliographicEntity.setCatalogingStatus(RecapCommonConstants.INCOMPLETE_STATUS);
             itemEntity.setCatalogingStatus(RecapCommonConstants.INCOMPLETE_STATUS);
         }

@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by chenchulakshmig on 17/10/16.
@@ -196,7 +195,7 @@ public class MarcToBibEntityConverter implements XmlToBibEntityConverterInterfac
         }
         String collectionGroupCode = marcUtil.getDataFieldValue(itemRecord, "876", 'x');
         if (StringUtils.isNotBlank(collectionGroupCode) && commonUtil.getCollectionGroupMap().containsKey(collectionGroupCode)) {
-            itemEntity.setCollectionGroupId((Integer) commonUtil.getCollectionGroupMap().get(collectionGroupCode));
+            itemEntity.setCollectionGroupId(commonUtil.getCollectionGroupMap().get(collectionGroupCode));
         }
 
         String useRestrictions = marcUtil.getDataFieldValue(itemRecord, "876", 'h');

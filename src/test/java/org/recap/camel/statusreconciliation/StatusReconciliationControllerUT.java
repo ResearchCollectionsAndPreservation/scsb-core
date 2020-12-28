@@ -85,7 +85,7 @@ public class StatusReconciliationControllerUT extends BaseTestCaseUT {
         Mockito.when(itemDetailsRepository.getNotAvailableItemsCount(Mockito.anyInt(),Mockito.anyList(),Mockito.anyInt())).thenReturn(1l);
         Mockito.when(itemDetailsRepository.getNotAvailableItems(Mockito.anyInt(),Mockito.anyList(),Mockito.anyLong(),Mockito.anyInt(),Mockito.anyInt())).thenReturn(Arrays.asList(getItemEntity()));
         ResponseEntity responseEntity = statusReconciliationController.itemStatusReconciliation();
-        assertEquals(responseEntity.getBody().toString(),"Success");
+        assertEquals("Success", responseEntity.getBody().toString());
     }
 
     private RequestStatusEntity getRequestStatusEntity(int id,String status) {

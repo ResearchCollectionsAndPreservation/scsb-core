@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 public class DailyReconciliationRouteBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(DailyReconciliationRouteBuilder.class);
-
+    
     /**
      * Instantiates a new Daily reconcilation route builder.
      *
@@ -41,8 +41,8 @@ public class DailyReconciliationRouteBuilder {
      * Predicate to identify is the input file is gz
      */
     Predicate gzipFile = exchange -> {
-        if (exchange.getIn().getHeader("CamelAwsS3Key") != null) {
-            String fileName = exchange.getIn().getHeader("CamelAwsS3Key").toString();
+        if (exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY) != null) {
+            String fileName = exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY).toString();
             return StringUtils.equalsIgnoreCase("gz", FilenameUtils.getExtension(fileName));
         } else {
             return false;
@@ -68,7 +68,7 @@ public class DailyReconciliationRouteBuilder {
                             .process(new Processor() {
                                 @Override
                                 public void process(Exchange exchange) throws Exception {
-                                String fileName = (String)exchange.getIn().getHeader("CamelAwsS3Key");
+                                String fileName = (String)exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY);
                                 exchange.getIn().setHeader(Exchange.FILE_NAME, fileName.replaceFirst(".gz", ".csv"));
                                 }
                             })
