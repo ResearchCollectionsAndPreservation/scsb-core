@@ -276,7 +276,6 @@ public class AccessionMarcToBibEntityConverter implements AccessionXmlToBibEntit
         int successItemCount = 0;
         boolean isComplete = true;
         String reasonForFailureItem = "";
-        Date currentDate = new Date();
         map.put(RecapCommonConstants.FAILED_ITEM_COUNT,failedItemCount);
         map.put(RecapCommonConstants.SUCCESS_ITEM_COUNT,successItemCount);
         map.put(RecapCommonConstants.REASON_FOR_ITEM_FAILURE,reasonForFailureItem);
