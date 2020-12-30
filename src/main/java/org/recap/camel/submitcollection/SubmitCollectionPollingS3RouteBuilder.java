@@ -135,7 +135,7 @@ public class SubmitCollectionPollingS3RouteBuilder {
                             .handled(true)
                             .setHeader(RecapCommonConstants.INSTITUTION, constant(""))
                             .to(RecapCommonConstants.DIRECT_ROUTE_FOR_EXCEPTION);
-                    from("aws-s3://{{scsbBucketName}}?prefix="+submitCollectionS3BasePath+ currentInstitution + "/cgd_" + cgdType + "/&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                    from("aws-s3://{{scsbBucketName}}?prefix="+submitCollectionS3BasePath+ currentInstitution + "/cgd_" + cgdType + "/{{s3DataFeedFileNamePrefix}}&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
                             .routeId(currentInstitutionRouteId)
                             .noAutoStartup()
                             .choice()

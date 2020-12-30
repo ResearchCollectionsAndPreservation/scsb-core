@@ -54,7 +54,7 @@ public class AccessionReconciliationEmailService {
      */
     public EmailPayLoad getEmailPayLoad(Exchange exchange) {
         EmailPayLoad emailPayLoad = new EmailPayLoad();
-        String fileNameWithPath = (String) exchange.getIn().getHeader("CamelFileNameProduced");
+        String fileNameWithPath = (String) exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY);
         emailPayLoad.setTo(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.accession.reconciliation.to"));
         emailPayLoad.setCc(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.accession.reconciliation.cc"));
         logger.info("Accession Reconciliation email sent to : {} and cc : {} ", emailPayLoad.getTo(), emailPayLoad.getCc());
