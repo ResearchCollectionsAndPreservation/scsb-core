@@ -39,7 +39,7 @@ public class BarcodeReconciliationRouteBuilder extends RouteBuilder {
             } else
                 return false;
         };
-        from("aws-s3://{{scsbBucketName}}?prefix="+accessionReconciliationS3Dir + institution + "/&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+        from("aws-s3://{{scsbBucketName}}?prefix="+accessionReconciliationS3Dir + institution + "/{{s3DataFeedFileNamePrefix}}&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
                 .routeId(institution + "accessionReconcilationS3Route")
                 .noAutoStartup()
                 .choice()
@@ -51,9 +51,9 @@ public class BarcodeReconciliationRouteBuilder extends RouteBuilder {
                 .when(body().isNull())
                 .log("No File To Process For " + institution + " Accession Reconciliation")
                 .process(new StopRouteProcessor(institution + "accessionReconcilationS3Route"))
-              //  .otherwise()
-              //  .process(new StartRouteProcessor(institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE))
-               // .to(RecapConstants.DIRECT + institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE)
+                .otherwise()
+                .process(new StartRouteProcessor(institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE))
+                .to(RecapConstants.DIRECT + institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE)
                 .endChoice();
 
         from(RecapConstants.DIRECT + institution + RecapConstants.ACCESSION_RECONCILIATION_DIRECT_ROUTE)
