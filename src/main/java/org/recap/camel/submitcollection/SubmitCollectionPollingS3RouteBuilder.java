@@ -100,9 +100,9 @@ public class SubmitCollectionPollingS3RouteBuilder {
             for (String cdgType : protectedAndNotProtected) {
                 String nextRouteId = getNextRouteId(currentInstitution, nextInstitution, cdgType);
                 if (RecapConstants.PROTECTED.equalsIgnoreCase(cdgType))
-                    addRoutesToCamelContext(currentInstitution, cdgType, currentInstitution + RecapConstants.CGD_PROTECTED_ROUTE_ID, nextRouteId);
+                    addRoutesToCamelContext(currentInstitution, cdgType, currentInstitution + RecapConstants.CGD_PROTECTED_ROUTE_ID, nextRouteId,true);
                 else {
-                    addRoutesToCamelContext(currentInstitution, cdgType, currentInstitution + RecapConstants.CGD_NOT_PROTECTED_ROUTE_ID, nextRouteId);
+                    addRoutesToCamelContext(currentInstitution, cdgType, currentInstitution + RecapConstants.CGD_NOT_PROTECTED_ROUTE_ID, nextRouteId,false);
                 }
             }
         }
@@ -118,18 +118,18 @@ public class SubmitCollectionPollingS3RouteBuilder {
         }
     }
 
-    public void addRoutesToCamelContext(String currentInstitution, String cgdType, String currentInstitutionRouteId, String nextInstitutionRouteId) {
+    public void addRoutesToCamelContext(String currentInstitution, String cgdType, String currentInstitutionRouteId, String nextInstitutionRouteId,Boolean isCGDProtected) {
         try {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
                     onCompletion()
                             .choice()
-                            .when(exchangeProperty(RecapCommonConstants.CAMEL_BATCH_COMPLETE))
-                            .log("OnCompletion executing for :" + currentInstitution + cgdType)
-                            .to("controlbus:route?routeId=" + currentInstitutionRouteId + "&action=stop&async=true")
-                            .delay(10)
-                            .process(exchange -> startNextRouteInNewThread(exchange, nextInstitutionRouteId));
+                                .when(exchangeProperty(RecapCommonConstants.CAMEL_BATCH_COMPLETE))
+                                    .log("OnCompletion executing for :" + currentInstitution + cgdType)
+                                    .to("controlbus:route?routeId=" + currentInstitutionRouteId + "&action=stop&async=true")
+                                    .delay(10)
+                                    .process(exchange -> startNextRouteInNewThread(exchange, nextInstitutionRouteId));
                     onException(Exception.class)
                             .log("Exception caught during submit collection process - " + currentInstitution + cgdType)
                             .handled(true)
@@ -139,18 +139,19 @@ public class SubmitCollectionPollingS3RouteBuilder {
                             .routeId(currentInstitutionRouteId)
                             .noAutoStartup()
                             .choice()
-                            .when(gzipFile)
-                            .unmarshal()
-                            .gzipDeflater()
-                            .log(currentInstitution + "Submit Collection S3 Route Unzip Complete")
-                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class, RecapCommonConstants.PRINCETON, true, cgdType), RecapConstants.PROCESS_INPUT)
-                            .log("Successfully pulled from S3 {{scsbBucketName}} bucket. " + "File detected: ${header.CamelAwsS3Key}")
-                            .when(body().isNull())//This condition is satisfied when there are no files in the directory(parameter-sendEmptyMessageWhenIdle=true)
-                            .log(currentInstitution + "-" + cgdType + " Directory is empty")
-                            .otherwise()
-                            .log("submit collection for " + currentInstitution + "-" + cgdType + " started")
-                            .bean(applicationContext.getBean(SubmitCollectionProcessor.class, RecapCommonConstants.PRINCETON, true, cgdType), RecapConstants.PROCESS_INPUT)
-                            .log(currentInstitution + " Submit Collection " + cgdType + " S3 Route Record Processing completed")
+                                .when(gzipFile)
+                                    .unmarshal()
+                                    .gzipDeflater()
+                                    .log(currentInstitution + "Submit Collection S3 Route Unzip Complete")
+                                    .bean(applicationContext.getBean(SubmitCollectionProcessor.class, currentInstitution, isCGDProtected, cgdType), RecapConstants.PROCESS_INPUT)
+                                    .log("Successfully pulled from S3 {{scsbBucketName}} bucket. " + "File detected: ${header.CamelAwsS3Key}")
+                                .when(body().isNull())//This condition is satisfied when there are no files in the directory(parameter-sendEmptyMessageWhenIdle=true)
+                                    .bean(applicationContext.getBean(SubmitCollectionProcessor.class, currentInstitution,isCGDProtected,cgdType), RecapConstants.SEND_EMAIL_FOR_EMPTY_DIRECTORY)
+                                    .log(currentInstitution + "-" + cgdType + " Directory is empty")
+                                .otherwise()
+                                    .log("submit collection for " + currentInstitution + "-" + cgdType + " started")
+                                    .bean(applicationContext.getBean(SubmitCollectionProcessor.class, currentInstitution, isCGDProtected, cgdType), RecapConstants.PROCESS_INPUT)
+                                    .log(currentInstitution + " Submit Collection " + cgdType + " S3 Route Record Processing completed")
                             .end();
                 }
             });

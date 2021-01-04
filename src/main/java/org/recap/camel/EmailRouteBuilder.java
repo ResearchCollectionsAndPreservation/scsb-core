@@ -81,7 +81,7 @@ public class EmailRouteBuilder {
                                     .setBody(simple(emailBodyForSubmitCollectionEmptyDirectory))
                                     .setHeader("from", simple(from))
                                     .setHeader("to", simple(emailPayLoadTo))
-                                    .log("email body for submit collection")
+                                    .log("email sent for submit collection for no files")
                                     .to(smtps + smtpServer + userName + username + password + emailPassword)
                                 .when(header(RecapConstants.EMAIL_BODY_FOR).isEqualTo(RecapConstants.REQUEST_ACCESSION_RECONCILATION_MAIL_QUEUE))
                                     .log("email for accession Reconciliation")
