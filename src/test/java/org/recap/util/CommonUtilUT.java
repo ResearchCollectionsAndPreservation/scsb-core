@@ -13,14 +13,7 @@ import org.recap.RecapCommonConstants;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
 import org.recap.model.jaxb.marc.BibRecords;
-import org.recap.model.jpa.BibliographicEntity;
-import org.recap.model.jpa.CollectionGroupEntity;
-import org.recap.model.jpa.HoldingsEntity;
-import org.recap.model.jpa.InstitutionEntity;
-import org.recap.model.jpa.ItemEntity;
-import org.recap.model.jpa.ItemStatusEntity;
-import org.recap.model.jpa.ReportDataEntity;
-import org.recap.model.jpa.ReportEntity;
+import org.recap.model.jpa.*;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.repository.jpa.CollectionGroupDetailsRepository;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
@@ -296,8 +289,9 @@ public class CommonUtilUT extends BaseTestCaseUT {
         Set<AccessionResponse> accessionResponsesList=new HashSet<>();
         List<ReportDataEntity> reportDataEntityList=new ArrayList<>();
         AccessionRequest accessionRequest=new AccessionRequest();
-        Mockito.when(accessionUtil.updateData(Mockito.any(),Mockito.anyString(),Mockito.anyList(),Mockito.any(),Mockito.anyBoolean(),Mockito.anyBoolean())).thenReturn(RecapCommonConstants.SUCCESS);
-        String updatedDataResponse=commonUtil.getUpdatedDataResponse(accessionResponsesList,responseMapList,"",reportDataEntityList,accessionRequest,true,1,record);
+        Mockito.when(accessionUtil.updateData(Mockito.any(),Mockito.anyString(),Mockito.anyList(),Mockito.any(),Mockito.anyBoolean(),Mockito.anyBoolean(),Mockito.any())).thenReturn(RecapCommonConstants.SUCCESS);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        String updatedDataResponse=commonUtil.getUpdatedDataResponse(accessionResponsesList,responseMapList,"",reportDataEntityList,accessionRequest,true,1,record,imsLocationEntity);
         assertEquals(RecapCommonConstants.SUCCESS,updatedDataResponse);
     }
 

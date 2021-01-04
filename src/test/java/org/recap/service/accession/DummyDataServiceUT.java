@@ -8,11 +8,7 @@ import org.mockito.Mockito;
 import org.recap.BaseTestCaseUT;
 import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
-import org.recap.model.jpa.BibliographicEntity;
-import org.recap.model.jpa.CollectionGroupEntity;
-import org.recap.model.jpa.ItemEntity;
-import org.recap.model.jpa.ItemStatusEntity;
-import org.recap.model.jpa.OwningInstitutionIDSequence;
+import org.recap.model.jpa.*;
 import org.recap.repository.jpa.CollectionGroupDetailsRepository;
 import org.recap.repository.jpa.ItemStatusDetailsRepository;
 import org.recap.repository.jpa.OwningInstitutionIDSequenceRepository;
@@ -67,7 +63,8 @@ public class DummyDataServiceUT extends BaseTestCaseUT {
         StringBuilder file=new StringBuilder();
         file.append("test");
         Mockito.when(commonUtil.getContentByFileName(Mockito.anyString())).thenReturn(file);
-        BibliographicEntity bibliographicEntity = dummyDataService.createDummyDataAsIncomplete(1,"3245678232","PA");
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        BibliographicEntity bibliographicEntity = dummyDataService.createDummyDataAsIncomplete(1,"3245678232","PA",imsLocationEntity);
         assertNotNull(bibliographicEntity);
         assertEquals(RecapCommonConstants.INCOMPLETE_STATUS,bibliographicEntity.getCatalogingStatus());
         assertEquals(RecapConstants.DUMMY_CALL_NUMBER_TYPE,bibliographicEntity.getItemEntities().get(0).getCallNumberType());
@@ -84,7 +81,8 @@ public class DummyDataServiceUT extends BaseTestCaseUT {
         Mockito.when(commonUtil.getContentByFileName(Mockito.anyString())).thenReturn(file);
         Mockito.when(collectionGroupDetailsRepository.findAll()).thenThrow(NullPointerException.class);
         Mockito.when(itemStatusDetailsRepository.findAll()).thenThrow(NullPointerException.class);
-        BibliographicEntity bibliographicEntity = dummyDataService.createDummyDataAsIncomplete(1,"3245678232","PA");
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        BibliographicEntity bibliographicEntity = dummyDataService.createDummyDataAsIncomplete(1,"3245678232","PA",imsLocationEntity);
         assertNotNull(bibliographicEntity);
         assertEquals(RecapCommonConstants.INCOMPLETE_STATUS,bibliographicEntity.getCatalogingStatus());
         assertEquals(RecapConstants.DUMMY_CALL_NUMBER_TYPE,bibliographicEntity.getItemEntities().get(0).getCallNumberType());
@@ -105,7 +103,8 @@ public class DummyDataServiceUT extends BaseTestCaseUT {
         itemStatusMap.put(RecapCommonConstants.NOT_AVAILABLE_CGD,1);
         ReflectionTestUtils.setField(dummyDataService,"collectionGroupMap",collectionGroupMap);
         ReflectionTestUtils.setField(dummyDataService,"itemStatusMap",itemStatusMap);
-        BibliographicEntity bibliographicEntity = dummyDataService.createDummyDataAsIncomplete(1,"3245678232","PA");
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        BibliographicEntity bibliographicEntity = dummyDataService.createDummyDataAsIncomplete(1,"3245678232","PA",imsLocationEntity);
         assertNotNull(bibliographicEntity);
         assertEquals(RecapCommonConstants.INCOMPLETE_STATUS,bibliographicEntity.getCatalogingStatus());
         assertEquals(RecapConstants.DUMMY_CALL_NUMBER_TYPE,bibliographicEntity.getItemEntities().get(0).getCallNumberType());
@@ -117,7 +116,8 @@ public class DummyDataServiceUT extends BaseTestCaseUT {
     public void createDummyDataAsIncompleteException(){
         Mockito.when(owningInstitutionIDSequenceRepository.saveAndFlush(Mockito.any())).thenReturn(new OwningInstitutionIDSequence());
         Mockito.when(accessionDAO.saveBibRecord(Mockito.any())).thenReturn(getBibliographicEntity());
-        BibliographicEntity bibliographicEntity = dummyDataService.createDummyDataAsIncomplete(1,"3245678232","PA");
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        BibliographicEntity bibliographicEntity = dummyDataService.createDummyDataAsIncomplete(1,"3245678232","PA",imsLocationEntity);
         assertNotNull(bibliographicEntity);
     }
 

@@ -9,6 +9,7 @@ import org.recap.RecapConstants;
 import org.recap.repository.jpa.DeletedRecordsRepository;
 import org.recap.service.EmailService;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -33,5 +34,25 @@ public class DeletedRecordsServiceUT extends BaseTestCaseUT {
         Mockito.doNothing().when(emailService).sendEmail(RecapConstants.EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE + lCountDeleted, "", RecapConstants.DELETED_MAIL_TO, RecapConstants.EMAIL_SUBJECT_DELETED_RECORDS);
         boolean bflag = deletedRecordsService.deletedRecords();
         assertTrue(bflag);
+    }
+
+    @Test
+    public void testdeletedRecordsEmpty(){
+        Long lCountDeleted = 0l;
+        Mockito.when(deletedRecordsRepository.countByDeletedReportedStatus(RecapConstants.DELETED_STATUS_NOT_REPORTED)).thenReturn(lCountDeleted);
+        Mockito.when(deletedRecordsRepository.updateDeletedReportedStatus(RecapConstants.DELETED_STATUS_REPORTED, RecapConstants.DELETED_STATUS_NOT_REPORTED)).thenReturn(1);
+        Mockito.doNothing().when(emailService).sendEmail(RecapConstants.EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE + lCountDeleted, "", RecapConstants.DELETED_MAIL_TO, RecapConstants.EMAIL_SUBJECT_DELETED_RECORDS);
+        boolean bflag = deletedRecordsService.deletedRecords();
+        assertTrue(bflag);
+    }
+
+    @Test
+    public void testdeletedRecordsException(){
+        Long lCountDeleted = 0l;
+        Mockito.when(deletedRecordsRepository.countByDeletedReportedStatus(RecapConstants.DELETED_STATUS_NOT_REPORTED)).thenThrow(NullPointerException.class);
+        Mockito.when(deletedRecordsRepository.updateDeletedReportedStatus(RecapConstants.DELETED_STATUS_REPORTED, RecapConstants.DELETED_STATUS_NOT_REPORTED)).thenReturn(1);
+        Mockito.doNothing().when(emailService).sendEmail(RecapConstants.EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE + lCountDeleted, "", RecapConstants.DELETED_MAIL_TO, RecapConstants.EMAIL_SUBJECT_DELETED_RECORDS);
+        boolean bflag = deletedRecordsService.deletedRecords();
+        assertFalse(bflag);
     }
 }

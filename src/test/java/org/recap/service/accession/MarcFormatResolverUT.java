@@ -11,6 +11,7 @@ import org.recap.RecapConstants;
 import org.recap.model.ILSConfigProperties;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
+import org.recap.model.jpa.ImsLocationEntity;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.model.jpa.ReportDataEntity;
 import org.recap.repository.jpa.ItemDetailsRepository;
@@ -72,8 +73,9 @@ public class MarcFormatResolverUT extends BaseTestCaseUT {
         records.add(record);
         records.add(record);
         Mockito.when(accessionValidationService.validateBoundWithMarcRecordFromIls(Mockito.anyList(),Mockito.any())).thenReturn(true);
-        Mockito.when(commonUtil.getUpdatedDataResponse(Mockito.anySet(),Mockito.anyList(),Mockito.anyString(),Mockito.anyList(),Mockito.any(),Mockito.anyBoolean(),Mockito.anyInt(),Mockito.any())).thenReturn(RecapCommonConstants.SUCCESS);
-        String response=mockMarcFormatResolver.processXml(getAccessionResponses(),records,responseMapList,"PUL",reportDataEntityList,accessionRequest);
+        Mockito.when(commonUtil.getUpdatedDataResponse(Mockito.anySet(),Mockito.anyList(),Mockito.anyString(),Mockito.anyList(),Mockito.any(),Mockito.anyBoolean(),Mockito.anyInt(),Mockito.any(),Mockito.any())).thenReturn(RecapCommonConstants.SUCCESS);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        String response=mockMarcFormatResolver.processXml(getAccessionResponses(),records,responseMapList,"PUL",reportDataEntityList,accessionRequest,imsLocationEntity);
         assertEquals(RecapCommonConstants.SUCCESS,response);
     }
 
@@ -86,7 +88,8 @@ public class MarcFormatResolverUT extends BaseTestCaseUT {
         records.add(record);
         records.add(record);
         Mockito.when(accessionValidationService.validateBoundWithMarcRecordFromIls(Mockito.anyList(),Mockito.any())).thenReturn(false);
-        String response=mockMarcFormatResolver.processXml(getAccessionResponses(),records,responseMapList,"PUL",reportDataEntityList,accessionRequest);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        String response=mockMarcFormatResolver.processXml(getAccessionResponses(),records,responseMapList,"PUL",reportDataEntityList,accessionRequest,imsLocationEntity);
         assertEquals(RecapConstants.INVALID_BOUNDWITH_RECORD,response);
     }
 

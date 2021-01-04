@@ -75,8 +75,12 @@ public class BulkAccessionServiceUT extends BaseTestCaseUT {
         Mockito.when(accessionValidationResponse.isValid()).thenReturn(true);
         BibDataCallable bibDataCallable = Mockito.mock(BibDataCallable.class);
         Mockito.when(applicationContext.getBean(BibDataCallable.class)).thenReturn(bibDataCallable);
-        List<AccessionResponse> response=bulkAccessionService.doAccession(accessionRequestList,accessionSummary,exchange);
-
+        AccessionModelRequest accessionModelRequest=new AccessionModelRequest();
+        accessionModelRequest.setAccessionRequests(accessionRequestList);
+        accessionModelRequest.setImsLocationCode("test");
+        Mockito.when(accessionValidationService.validateImsLocationCode(Mockito.anyString())).thenReturn(accessionValidationResponse);
+        List<AccessionResponse> response=bulkAccessionService.doAccession(accessionModelRequest,accessionSummary,exchange);
+        assertNull(response);
     }
 
     @Test
@@ -88,7 +92,11 @@ public class BulkAccessionServiceUT extends BaseTestCaseUT {
         Mockito.when(accessionValidationService.validateBarcodeOrCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(accessionValidationResponse);
         Mockito.when(accessionValidationResponse.getOwningInstitution()).thenReturn("PUL");
         Mockito.when(accessionValidationResponse.getMessage()).thenReturn(RecapConstants.ITEM_ALREADY_ACCESSIONED);
-        List<AccessionResponse> response=bulkAccessionService.doAccession(accessionRequestList,accessionSummary,exchange);
+        AccessionModelRequest accessionModelRequest=new AccessionModelRequest();
+        accessionModelRequest.setAccessionRequests(accessionRequestList);
+        accessionModelRequest.setImsLocationCode("test");
+        Mockito.when(accessionValidationService.validateImsLocationCode(Mockito.anyString())).thenReturn(accessionValidationResponse);
+        List<AccessionResponse> response=bulkAccessionService.doAccession(accessionModelRequest,accessionSummary,exchange);
         assertNull(response);
     }
 
@@ -113,7 +121,8 @@ public class BulkAccessionServiceUT extends BaseTestCaseUT {
     public void getAccessionRequestException() {
         Mockito.when(accessionDetailsRepository.findByAccessionStatus(Mockito.anyString())).thenReturn(getAccessionEntities("pending"));
         List<AccessionEntity> accessionEntities=bulkAccessionService.getAccessionEntities(RecapConstants.PENDING);
-        List<AccessionRequest> accessionEntity1=bulkAccessionService.getAccessionRequest(accessionEntities);
+        List<AccessionModelRequest> accessionModelRequestList=new ArrayList<>();
+        List<AccessionRequest> accessionEntity1=bulkAccessionService.getAccessionRequest(accessionModelRequestList);
         assertNotNull(accessionEntity1);
         assertEquals(java.util.Optional.ofNullable(1), java.util.Optional.ofNullable(accessionEntities.get(0).getId()));
     }
@@ -122,7 +131,8 @@ public class BulkAccessionServiceUT extends BaseTestCaseUT {
     public void getAccessionRequest() {
         Mockito.when(accessionDetailsRepository.findByAccessionStatus(Mockito.anyString())).thenReturn(getAccessionEntities("pending"));
         bulkAccessionService.updateStatusForAccessionEntities(getAccessionEntities("[{\"customerCode\":\"PA\",\"itemBarcode\":\"123\"}]"),RecapConstants.PENDING);
-        List<AccessionRequest> accessionEntity1=bulkAccessionService.getAccessionRequest(getAccessionEntities("[{\"customerCode\":\"PA\",\"itemBarcode\":\"123\"}]"));
+        List<AccessionModelRequest> accessionModelRequestList=new ArrayList<>();
+        List<AccessionRequest> accessionEntity1=bulkAccessionService.getAccessionRequest(accessionModelRequestList);
         assertNotNull(accessionEntity1);
    }
 

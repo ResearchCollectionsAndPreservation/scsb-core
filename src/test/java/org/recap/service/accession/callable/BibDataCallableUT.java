@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import org.recap.BaseTestCaseUT;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
+import org.recap.model.jpa.ImsLocationEntity;
 import org.recap.util.AccessionProcessService;
 
 import java.util.HashSet;
@@ -31,12 +32,14 @@ public class BibDataCallableUT extends BaseTestCaseUT {
         bibDataCallable.setAccessionRequest(new AccessionRequest());
         bibDataCallable.setOwningInstitution("PUL");
         bibDataCallable.setWriteToReport(true);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        bibDataCallable.setImsLocationEntity(imsLocationEntity);
         Set<AccessionResponse> accessionResponses=new HashSet<>();
         AccessionResponse accessionResponse=new AccessionResponse();
         accessionResponse.setMessage("test");
         accessionResponse.setItemBarcode("123");
         accessionResponses.add(accessionResponse);
-        Mockito.when(accessionProcessService.processRecords(Mockito.anySet(),Mockito.anyList(),Mockito.any(),Mockito.anyList(),Mockito.anyString(),Mockito.anyBoolean())).thenReturn(accessionResponses);
+        Mockito.when(accessionProcessService.processRecords(Mockito.anySet(),Mockito.anyList(),Mockito.any(),Mockito.anyList(),Mockito.anyString(),Mockito.anyBoolean(),Mockito.any())).thenReturn(accessionResponses);
         Object object= bibDataCallable.call();
         assertEquals(accessionResponses,object);
     }
