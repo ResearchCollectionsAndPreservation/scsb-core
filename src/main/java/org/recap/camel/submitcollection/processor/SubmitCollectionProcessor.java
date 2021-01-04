@@ -3,8 +3,10 @@ package org.recap.camel.submitcollection.processor;
 import com.amazonaws.services.s3.AmazonS3;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
-import org.recap.RecapConstants;
+import org.apache.camel.component.aws.s3.S3Endpoint;
+import org.apache.camel.support.DefaultExchange;
 import org.recap.RecapCommonConstants;
+import org.recap.RecapConstants;
 import org.recap.camel.EmailPayLoad;
 import org.recap.model.reports.ReportDataRequest;
 import org.recap.service.common.SetupDataService;
@@ -52,6 +54,9 @@ public class SubmitCollectionProcessor {
 
     @Value("${email.submit.collection.subject}")
     private String submitCollectionEmailSubject;
+
+    @Value("${email.submit.collection.subject.for.empty.directory}")
+    private String subjectForEmptyDirectory;
 
     private String institutionCode;
     private boolean isCGDProtection;
@@ -186,5 +191,23 @@ public class SubmitCollectionProcessor {
         emailPayLoad.setLocation(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "s3.submit.collection.report.dir"));
         emailPayLoad.setInstitution(institutionCode.toUpperCase());
         return emailPayLoad;
+    }
+
+    /**
+     * This method is used to send email when there are no files in the respective directory
+     * @param exchange
+     * @throws Exception
+     */
+    public void sendEmailForEmptyDirectory(Exchange exchange) throws Exception {
+        String s3Path = ((S3Endpoint) ((DefaultExchange) exchange).getFromEndpoint()).getConfiguration().getPrefix();
+        producer.sendBodyAndHeader(RecapConstants.EMAIL_Q, getEmailPayLoadForNoFiles(institutionCode,s3Path), RecapConstants.EMAIL_BODY_FOR, RecapConstants.SUBMIT_COLLECTION_FOR_NO_FILES);
+    }
+
+    private EmailPayLoad getEmailPayLoadForNoFiles(String institutionCode, String ftpLocationPath) {
+        EmailPayLoad emailPayLoad = new EmailPayLoad();
+        emailPayLoad.setSubject(subjectForEmptyDirectory+" - "+institutionCode+" - "+cgdType);
+        emailPayLoad.setLocation(ftpLocationPath);
+        emailPayLoad.setTo(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.submit.collection.nofiles.to"));
+        return  emailPayLoad;
     }
 }
