@@ -13,24 +13,24 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.recap.BaseTestCaseUT;
-import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
 import org.recap.camel.submitcollection.processor.SubmitCollectionProcessor;
-import org.recap.converter.MarcToBibEntityConverter;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.jpa.HoldingsEntity;
 import org.recap.model.jpa.InstitutionEntity;
 import org.recap.model.jpa.ItemEntity;
-import org.recap.repository.jpa.InstitutionDetailsRepository;
-import org.recap.service.common.RepositoryService;
 import org.recap.service.common.SetupDataService;
-import org.recap.service.submitcollection.*;
-import org.recap.util.MarcUtil;
+import org.recap.service.submitcollection.SubmitCollectionBatchService;
+import org.recap.service.submitcollection.SubmitCollectionReportGenerator;
 import org.recap.util.PropertyUtil;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static org.apache.camel.builder.Builder.simple;
 import static org.junit.Assert.assertTrue;
@@ -188,7 +188,7 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         ReflectionTestUtils.setField(submitCollectionProcessor,"awsS3Client",awsS3Client);
         CamelContext ctx = new DefaultCamelContext();
         Exchange ex = new DefaultExchange(ctx);
-        ex.getIn().setHeader(RecapConstants.CAMEL_AWS_KEY, simple(RecapConstants.CAMEL_AWS_KEY));
+        ex.getIn().setHeader(RecapConstants.CAMEL_AWS_KEY, simple("CamelAwsS3Key/CamelAwsS3Key/CamelAwsS3Key"));
         ex.getIn().setHeader("CamelAwsS3BucketName", simple("CamelAwsS3BucketName"));
         ex.getIn().setHeader("CamelFileName", "CUL");
         ex.getIn().setHeader("CamelFileParent", "CUL");
@@ -221,11 +221,7 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         ex.getIn().setHeader("CamelFileParent", "CUL");
         ex.getIn().setHeader("institution", "CUL");
         ex.getIn().setBody("Test text for Example");
-        Map institutionCodeIdMap = new HashMap<>();
-        institutionCodeIdMap.put("CUL",2);
-        institutionCodeIdMap.put("PUL",1);
-        institutionCodeIdMap.put("NYPL",3);
-        Mockito.when(setupDataService.getInstitutionCodeIdMap().get("CUL")).thenReturn(institutionCodeIdMap);
+        Mockito.when(setupDataService.getInstitutionCodeIdMap()).thenReturn(getMap());
         submitCollectionProcessor.processInput(ex);
     }
     @Test
@@ -237,11 +233,8 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         ex.getIn().setHeader("CamelFileParent", "PUL");
         ex.getIn().setHeader("institution", "PUL");
         ex.getIn().setBody("Test text for Example");
-        Map institutionCodeIdMap = new HashMap<>();
-        institutionCodeIdMap.put("CUL",2);
-        institutionCodeIdMap.put("PUL",1);
-        institutionCodeIdMap.put("NYPL",3);
-        Mockito.when(setupDataService.getInstitutionCodeIdMap().get("PUL")).thenReturn(institutionCodeIdMap);
+        Map institutionCodeIdMap = getMap();
+        Mockito.when(setupDataService.getInstitutionCodeIdMap()).thenReturn(getMap());
         submitCollectionProcessor.processInput(ex);
     }
     @Test
@@ -253,12 +246,16 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         ex.getIn().setHeader("CamelFileParent", "NYPL");
         ex.getIn().setHeader("institution", "NYPL");
         ex.getIn().setBody("Test text for Example");
-        Map institutionCodeIdMap = new HashMap<>();
-        institutionCodeIdMap.put("CUL",2);
-        institutionCodeIdMap.put("PUL",1);
-        institutionCodeIdMap.put("NYPL",3);
-        Mockito.when(setupDataService.getInstitutionCodeIdMap().get("NYPL")).thenReturn(institutionCodeIdMap);
+        Mockito.when(setupDataService.getInstitutionCodeIdMap()).thenReturn(getMap());
         submitCollectionProcessor.processInput(ex);
+    }
+
+    private Map getMap() {
+        Map institutionCodeIdMap = new HashMap<>();
+        institutionCodeIdMap.put("CUL", 2);
+        institutionCodeIdMap.put("PUL", 1);
+        institutionCodeIdMap.put("NYPL", 3);
+        return institutionCodeIdMap;
     }
 
     private InstitutionEntity getInstitutionEntity() {

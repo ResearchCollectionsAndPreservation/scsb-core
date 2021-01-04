@@ -18,6 +18,7 @@ import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.jaxb.marc.CollectionType;
 import org.recap.model.jaxb.marc.ContentType;
 import org.recap.model.jaxb.marc.RecordType;
+import org.recap.model.jpa.ImsLocationEntity;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.model.jpa.ReportDataEntity;
 import org.recap.repository.jpa.ItemDetailsRepository;
@@ -100,8 +101,9 @@ public class SCSBFormatResolverUT extends BaseTestCaseUT{
         bibRecordList.add(bibRecord);
         Mockito.when(bibRecords.getBibRecordList()).thenReturn(bibRecordList);
         Mockito.when(accessionValidationService.validateBoundWithScsbRecordFromIls(Mockito.anyList())).thenReturn(true);
-        Mockito.when(commonUtil.getUpdatedDataResponse(Mockito.anySet(),Mockito.anyList(),Mockito.anyString(),Mockito.anyList(),Mockito.any(),Mockito.anyBoolean(),Mockito.anyInt(),Mockito.any())).thenReturn(RecapCommonConstants.SUCCESS);
-        String response=mockSCSBFormatResolver.processXml(getAccessionResponses(),bibRecords,responseMapList,"NYPL",reportDataEntityList,accessionRequest);
+        Mockito.when(commonUtil.getUpdatedDataResponse(Mockito.anySet(),Mockito.anyList(),Mockito.anyString(),Mockito.anyList(),Mockito.any(),Mockito.anyBoolean(),Mockito.anyInt(),Mockito.any(),Mockito.any())).thenReturn(RecapCommonConstants.SUCCESS);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        String response=mockSCSBFormatResolver.processXml(getAccessionResponses(),bibRecords,responseMapList,"NYPL",reportDataEntityList,accessionRequest,imsLocationEntity);
         assertEquals(RecapCommonConstants.SUCCESS,response);
     }
 
@@ -115,7 +117,8 @@ public class SCSBFormatResolverUT extends BaseTestCaseUT{
         bibRecordList.add(bibRecord);
         Mockito.when(bibRecords.getBibRecordList()).thenReturn(bibRecordList);
         Mockito.when(accessionValidationService.validateBoundWithScsbRecordFromIls(Mockito.anyList())).thenReturn(false);
-        String response=mockSCSBFormatResolver.processXml(getAccessionResponses(),bibRecords,responseMapList,"NYPL",reportDataEntityList,accessionRequest);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        String response=mockSCSBFormatResolver.processXml(getAccessionResponses(),bibRecords,responseMapList,"NYPL",reportDataEntityList,accessionRequest,imsLocationEntity);
         assertEquals(RecapConstants.INVALID_BOUNDWITH_RECORD,response);
     }
 

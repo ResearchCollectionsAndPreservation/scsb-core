@@ -12,6 +12,7 @@ import org.recap.RecapCommonConstants;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.jpa.HoldingsEntity;
+import org.recap.model.jpa.ImsLocationEntity;
 import org.recap.model.jpa.ItemEntity;
 import org.recap.model.marc.BibMarcRecord;
 import org.recap.model.marc.HoldingsMarcRecord;
@@ -111,7 +112,8 @@ public class AccessionMarcToBibEntityConverterUT extends BaseTestCaseUT {
         Map collectionGroupMap=new HashMap();
         collectionGroupMap.put("Shared",1);
         Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
-        Map map = marcToBibEntityConverter.convert(records.get(0), "PUL",accessionRequest);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Map map = marcToBibEntityConverter.convert(records.get(0), "PUL",accessionRequest,imsLocationEntity);
         assertNotNull(map);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) map.get("bibliographicEntity");
         assertNotNull(bibliographicEntity);
@@ -164,7 +166,8 @@ public class AccessionMarcToBibEntityConverterUT extends BaseTestCaseUT {
         collectionGroupMap.put(RecapCommonConstants.SHARED_CGD,1);
         collectionGroupMap.put(RecapCommonConstants.NOT_AVAILABLE_CGD,4);
         Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
-        Map map = marcToBibEntityConverter.convert(records.get(0), "PUL",accessionRequest);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Map map = marcToBibEntityConverter.convert(records.get(0), "PUL",accessionRequest,imsLocationEntity);
         assertNotNull(map);
     }
 
@@ -199,7 +202,8 @@ public class AccessionMarcToBibEntityConverterUT extends BaseTestCaseUT {
         collectionGroupMap.put(RecapCommonConstants.SHARED_CGD,1);
         collectionGroupMap.put(RecapCommonConstants.NOT_AVAILABLE_CGD,4);
         Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
-        Map map = marcToBibEntityConverter.convert(records.get(0), "PUL",accessionRequest);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Map map = marcToBibEntityConverter.convert(records.get(0), "PUL",accessionRequest,imsLocationEntity);
         assertNotNull(map);
     }
 

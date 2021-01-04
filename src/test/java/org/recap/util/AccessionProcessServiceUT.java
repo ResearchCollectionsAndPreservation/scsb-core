@@ -10,11 +10,7 @@ import org.recap.RecapConstants;
 import org.recap.model.ILSConfigProperties;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
-import org.recap.model.jpa.BibliographicEntity;
-import org.recap.model.jpa.HoldingsEntity;
-import org.recap.model.jpa.InstitutionEntity;
-import org.recap.model.jpa.ItemEntity;
-import org.recap.model.jpa.ReportDataEntity;
+import org.recap.model.jpa.*;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
 import org.recap.repository.jpa.ItemBarcodeHistoryDetailsRepository;
 import org.recap.repository.jpa.ItemChangeLogDetailsRepository;
@@ -92,7 +88,8 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         ReflectionTestUtils.setField(accessionUtil,"itemChangeLogDetailsRepository",itemChangeLogDetailsRepository);
         Mockito.doCallRealMethod().when(accessionUtil).saveItemChangeLogEntity(Mockito.anyString(),Mockito.anyString(),Mockito.anyList());
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenThrow(NullPointerException.class);
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
         assertEquals(accessionResponses,accessionResponse);
     }
 
@@ -119,7 +116,8 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         ReflectionTestUtils.setField(accessionUtil,"itemChangeLogDetailsRepository",itemChangeLogDetailsRepository);
         Mockito.doCallRealMethod().when(accessionUtil).saveItemChangeLogEntity(Mockito.anyString(),Mockito.anyString(),Mockito.anyList());
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenThrow(RestClientException.class);
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
         assertEquals(accessionResponses,accessionResponse);
     }
 
@@ -147,7 +145,8 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
         Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(RecapCommonConstants.SUCCESS);
         Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(RecapCommonConstants.SUCCESS);
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
         assertEquals(accessionResponses,accessionResponse);
     }
 
@@ -169,7 +168,8 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
         Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(RecapCommonConstants.SUCCESS);
         Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(RecapCommonConstants.SUCCESS);
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
         assertEquals(accessionResponses,accessionResponse);
     }
 
@@ -205,7 +205,8 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         Mockito.when(formatResolver.getItemEntityFromRecord(null,null)).thenReturn(itemEntity);
         List<InstitutionEntity> institutionEntities =new ArrayList<>();
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
         assertEquals(accessionResponses,accessionResponse);
     }
 
@@ -229,7 +230,8 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         Set<AccessionResponse> accessionResponses=new HashSet<>();
         List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
         Mockito.when(formatResolver.getBibData(Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenThrow(NullPointerException.class);
-        String bibData=accessionProcessService.getBibData(accessionResponses,accessionRequest,reportDataEntitys,"PUL","PA","123456",formatResolver);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        String bibData=accessionProcessService.getBibData(accessionResponses,accessionRequest,reportDataEntitys,"PUL","PA","123456",formatResolver,imsLocationEntity);
 
     }
 
@@ -266,7 +268,8 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         List<InstitutionEntity> institutionEntities =new ArrayList<>();
         institutionEntities.add(institutionEntity);
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
         assertEquals(accessionResponses,accessionResponse);
     }
 
@@ -296,9 +299,8 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         List<InstitutionEntity> institutionEntities =new ArrayList<>();
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
         Mockito.when(itemBarcodeHistoryDetailsRepository.save(Mockito.any())).thenThrow(NullPointerException.class);
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true);
-
-
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
         assertEquals(accessionResponses,accessionResponse);
     }
 
@@ -310,7 +312,8 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         accessionRequest.setItemBarcode("12345");
         accessionRequest.setCustomerCode("PA");
         Mockito.when(ex.getMessage()).thenReturn(error);
-        accessionProcessService.processException(new HashSet<>(),accessionRequest,new ArrayList<>(),"PUL",ex);
+            ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+            accessionProcessService.processException(new HashSet<>(),accessionRequest,new ArrayList<>(),"PUL",imsLocationEntity,ex);
         assertNotNull(accessionRequest);
         }
     }
@@ -341,7 +344,8 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
         Mockito.when(itemBarcodeHistoryDetailsRepository.save(Mockito.any())).thenThrow(NullPointerException.class);
         Mockito.when(formatResolver.isAccessionProcess(Mockito.any(),Mockito.anyString())).thenReturn(true);
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
         assertEquals(accessionResponses,accessionResponse);
     }
 
@@ -370,7 +374,8 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
         List<InstitutionEntity> institutionEntities =new ArrayList<>();
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
         Mockito.when(itemBarcodeHistoryDetailsRepository.save(Mockito.any())).thenThrow(NullPointerException.class);
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",false);
+        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",false,imsLocationEntity);
         assertNotNull(accessionResponse);
     }
 }
