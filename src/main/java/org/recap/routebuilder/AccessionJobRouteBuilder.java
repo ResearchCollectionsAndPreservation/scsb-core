@@ -37,7 +37,7 @@ public class AccessionJobRouteBuilder {
                     onException(Exception.class)
                             .log("Exception caught during ongoing Accession Job")
                             .handled(true)
-                            .to(RecapCommonConstants.DIRECT_ROUTE_FOR_EXCEPTION);
+                            .to(RecapConstants.ACCESSION_DIRECT_ROUTE_FOR_EXCEPTION);
                     from(RecapCommonConstants.ACCESSION_JOB_INITIATE_QUEUE)
                             .routeId(RecapConstants.ACCESSION_JOB_INITIATE_ROUTE_ID)
                             .process(new Processor() {
@@ -66,7 +66,7 @@ public class AccessionJobRouteBuilder {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    from(RecapCommonConstants.DIRECT_ROUTE_FOR_EXCEPTION)
+                    from(RecapConstants.ACCESSION_DIRECT_ROUTE_FOR_EXCEPTION)
                             .log("Calling direct route for exception")
                             .bean(applicationContext.getBean(AccessionJobProcessor.class), RecapConstants.ACCESSION_CAUGHT_EXCEPTION_METHOD)
                             .onCompletion()
