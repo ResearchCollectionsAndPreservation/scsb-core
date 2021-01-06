@@ -26,6 +26,7 @@ public class EmailPayLoad implements Serializable{
     private Exception exception;
     private String exceptionMessage;
     private String pendingRequestLimit;
+    private String message;
 
     private String bulkRequestId;
     private String bulkRequestName;
