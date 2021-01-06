@@ -483,6 +483,7 @@ public final class RecapConstants {
 
     public static final String BARCODE_RECONCILIATION_FILE_DATE_FORMAT = "yyyyMMdd";
 
+    public static final String ACCESSION_JOB_INITIATE_ROUTE_ID = "scsbactivemq:queue:accessionInitiateRoute";
     public static final String SUBMIT_COLLECTION_JOB_INITIATE_ROUTE_ID = "scsbactivemq:queue:submitCollectionInitiateRoute";
     public static final String BARCODE_NOT_FOUND_IN_LAS = "Barcode not found in LAS";
     public static final String CUSTOMER_CODE_HEADER = "Customer Code mentioned in LAS";
@@ -541,5 +542,8 @@ public final class RecapConstants {
     public static final String EXCEPTION = "exception->";
     public static final String SCSB_CAMEL_S3_TO_ENDPOINT = "aws-s3://{{scsbBucketName}}?autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})";
     public static final String CAMEL_AWS_KEY = "CamelAwsS3Key";
+
+    public static final String ACCESSION_CAUGHT_EXCEPTION_METHOD = "caughtException";
+    public static final String EMAIL_FOR = "emailFor";
 
 }
