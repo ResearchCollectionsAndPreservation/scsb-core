@@ -1361,7 +1361,7 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
     private BibliographicEntity getBibliographicEntity(Integer owningInstitutionId, String owningInstitutionBibId, String owningInstitutionHoldingsId,
                                                        String owningInstitutionItemId, Integer itemAvailabilityStatusId, String itemBarcode, String bibMarcContent , String holdingMarcContent, String catalogingStatus){
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(1);
+        bibliographicEntity.setId(1);
         bibliographicEntity.setContent(bibMarcContent.getBytes());
         bibliographicEntity.setCreatedDate(new Date());
         bibliographicEntity.setCreatedBy("etl");

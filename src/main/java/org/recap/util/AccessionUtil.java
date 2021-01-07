@@ -283,7 +283,7 @@ public class AccessionUtil {
         String response;
         Integer owningInstitutionId = (Integer) getInstitutionEntityMap().get(owningInstitution);
         BibliographicEntity dummyBibliographicEntity = dummyDataService.createDummyDataAsIncomplete(owningInstitutionId,accessionRequest.getItemBarcode(),accessionRequest.getCustomerCode(),imsLocationEntity);
-        indexData(Set.of(dummyBibliographicEntity.getBibliographicId()));
+        indexData(Set.of(dummyBibliographicEntity.getId()));
         response = RecapConstants.ACCESSION_DUMMY_RECORD;
         return response;
     }
@@ -337,7 +337,7 @@ public class AccessionUtil {
                     if (isValidItemAndHolding) {
                         BibliographicEntity savedBibliographicEntity = updateBibliographicEntity(bibliographicEntity);
                         if (null != savedBibliographicEntity) {
-                            response = indexBibliographicRecord(savedBibliographicEntity.getBibliographicId());
+                            response = indexBibliographicRecord(savedBibliographicEntity.getId());
                         }
                     } else {
                         response = errorMessage.toString();
@@ -546,7 +546,7 @@ public class AccessionUtil {
             for(ItemEntity itemEntity:itemEntityList){
                 List<BibliographicEntity>  bibliographicEntities = itemEntity.getBibliographicEntities();
                 for (BibliographicEntity bibliographicEntity:bibliographicEntities) {
-                    indexBibliographicRecord(bibliographicEntity.getBibliographicId());
+                    indexBibliographicRecord(bibliographicEntity.getId());
                 }
             }
         } catch (Exception e) {
@@ -563,7 +563,7 @@ public class AccessionUtil {
             itemChangeLogEntity.setOperationType(RecapCommonConstants.ACCESSION);
             itemChangeLogEntity.setUpdatedBy(operationType);
             itemChangeLogEntity.setUpdatedDate(new Date());
-            itemChangeLogEntity.setRecordId(itemEntity.getItemId());
+            itemChangeLogEntity.setRecordId(itemEntity.getId());
             itemChangeLogEntity.setNotes(message);
             itemChangeLogEntityList.add(itemChangeLogEntity);
         }

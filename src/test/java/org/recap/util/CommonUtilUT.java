@@ -210,12 +210,12 @@ public class CommonUtilUT extends BaseTestCaseUT {
     }
 
     @Test
-    public void rollbackUpdateItemAvailabilutyStatus(){
+    public void rollbackUpdateItemAvailabilityStatus(){
         ItemStatusEntity itemStatusEntity=new ItemStatusEntity();
         itemStatusEntity.setId(1);
         Mockito.when(itemStatusDetailsRepository.findByStatusCode(Mockito.anyString())).thenReturn(itemStatusEntity);
-        commonUtil.rollbackUpdateItemAvailabilutyStatus(getBibliographicEntity().getItemEntities().get(0),"test");
-        commonUtil.rollbackUpdateItemAvailabilutyStatus(getBibliographicEntity().getItemEntities().get(0),"");
+        commonUtil.rollbackUpdateItemAvailabilityStatus(getBibliographicEntity().getItemEntities().get(0),"test");
+        commonUtil.rollbackUpdateItemAvailabilityStatus(getBibliographicEntity().getItemEntities().get(0),"");
         assertNotNull(itemStatusEntity);
     }
 
@@ -389,7 +389,7 @@ public class CommonUtilUT extends BaseTestCaseUT {
     private BibliographicEntity getBibliographicEntity(){
 
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(123456);
+        bibliographicEntity.setId(123456);
         bibliographicEntity.setContent("Test".getBytes());
         bibliographicEntity.setCreatedDate(new Date());
         bibliographicEntity.setLastUpdatedDate(new Date());

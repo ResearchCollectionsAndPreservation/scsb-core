@@ -250,7 +250,7 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         responseMap.put(RecapCommonConstants.BIBLIOGRAPHICENTITY,getBibliographicEntityMultiVolume("456"));
         List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
         BibliographicEntity bibliographicEntity=getBibliographicEntities("456");
-        bibliographicEntity.setBibliographicId(null);
+        bibliographicEntity.setId(null);
         updatedBibliographicEntityList.add(bibliographicEntity);
         ReflectionTestUtils.setField(submitCollectionBatchService,"marcToBibEntityConverter",marcToBibEntityConverter);
         ReflectionTestUtils.setField(submitCollectionBatchService,"submitCollectionDAOService",submitCollectionDAOService);
@@ -383,7 +383,7 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
 
     private ItemEntity getItemEntity(String OwningInstitutionItemId) {
         ItemEntity itemEntity = new ItemEntity();
-        itemEntity.setItemId(1);
+        itemEntity.setId(1);
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setOwningInstitutionItemId("843617540");
         itemEntity.setOwningInstitutionId(1);
@@ -420,7 +420,7 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
 
     private BibliographicEntity getBibliographicEntity(int bibliographicId,String owningInstitutionBibId) {
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(bibliographicId);
+        bibliographicEntity.setId(bibliographicId);
         bibliographicEntity.setContent("Test".getBytes());
         bibliographicEntity.setCreatedDate(new Date());
         bibliographicEntity.setLastUpdatedDate(new Date());

@@ -144,7 +144,7 @@ public class DailyReconciliationProcessorUT extends BaseTestCaseUT {
 
     private ItemEntity getItemEntity() {
         ItemEntity itemEntity = new ItemEntity();
-        itemEntity.setItemId(new Random().nextInt());
+        itemEntity.setId(new Random().nextInt());
         itemEntity.setBarcode("b3");
         itemEntity.setCustomerCode("c1");
         itemEntity.setCallNumber("cn1");

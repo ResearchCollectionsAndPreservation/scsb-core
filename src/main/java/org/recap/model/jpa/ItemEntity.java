@@ -5,11 +5,11 @@ import lombok.Setter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.recap.RecapCommonConstants;
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
@@ -23,7 +23,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "item_t", schema = "recap", catalog = "")
-@IdClass(ItemPK.class)
+@AttributeOverride(name = "id", column = @Column(name = "ITEM_ID"))
 public class ItemEntity extends ItemAbstractEntity {
 
     @Column(name = "IS_CGD_PROTECTION")

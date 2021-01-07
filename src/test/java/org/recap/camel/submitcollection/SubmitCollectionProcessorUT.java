@@ -295,7 +295,7 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
 
     private ItemEntity getItemEntity(String OwningInstitutionItemId) {
         ItemEntity itemEntity = new ItemEntity();
-        itemEntity.setItemId(1);
+        itemEntity.setId(1);
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setOwningInstitutionItemId("843617540");
         itemEntity.setOwningInstitutionId(1);
@@ -315,7 +315,7 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
     }
     private BibliographicEntity getBibliographicEntity(int bibliographicId,String owningInstitutionBibId) {
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(bibliographicId);
+        bibliographicEntity.setId(bibliographicId);
         bibliographicEntity.setContent("Test".getBytes());
         bibliographicEntity.setCreatedDate(new Date());
         bibliographicEntity.setLastUpdatedDate(new Date());

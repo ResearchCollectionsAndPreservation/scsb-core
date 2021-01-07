@@ -234,7 +234,7 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
         responseMap.put(RecapCommonConstants.BIBLIOGRAPHICENTITY,getBibliographicEntityMultiVolume("456"));
         List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
         BibliographicEntity bibliographicEntity=getBibliographicEntities("456");
-        bibliographicEntity.setBibliographicId(null);
+        bibliographicEntity.setId(null);
         updatedBibliographicEntityList.add(bibliographicEntity);
         Mockito.when(marcToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
         Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anySet())).thenReturn(updatedBibliographicEntityList);
@@ -429,7 +429,7 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
 
     private BibliographicEntity getBibliographicEntity(int bibliographicId,String owningInstitutionBibId) {
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(bibliographicId);
+        bibliographicEntity.setId(bibliographicId);
         bibliographicEntity.setContent("Test".getBytes());
         bibliographicEntity.setCreatedDate(new Date());
         bibliographicEntity.setLastUpdatedDate(new Date());
@@ -455,7 +455,7 @@ public class SubmitCollectionBatchServiceUT extends BaseTestCaseUT {
 
     private ItemEntity getItemEntity(String OwningInstitutionItemId) {
         ItemEntity itemEntity = new ItemEntity();
-        itemEntity.setItemId(1);
+        itemEntity.setId(1);
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setOwningInstitutionItemId("843617540");
         itemEntity.setOwningInstitutionId(1);

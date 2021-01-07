@@ -296,7 +296,7 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
 
     private void setUpdatedDummyRecordOwningInstBibId(List<BibliographicEntity> bibliographicEntityList, Set<String> updatedDummyRecordOwnInstBibIdSet){
         for(BibliographicEntity bibliographicEntity:bibliographicEntityList){
-            if (bibliographicEntity.getBibliographicId()==null) {
+            if (bibliographicEntity.getId()==null) {
                 updatedDummyRecordOwnInstBibIdSet.add(bibliographicEntity.getOwningInstitutionBibId());
             }
         }
