@@ -115,7 +115,6 @@ public class AccessionReconciliationProcessor {
         String bucketName = exchange.getIn().getHeader("CamelAwsS3BucketName").toString();
         if (awsS3Client.doesObjectExist(bucketName, xmlFileName)) {
             String basepath = xmlFileName.substring(0, xmlFileName.lastIndexOf('/'));
-            basepath = basepath.substring(0, basepath.lastIndexOf('/'));
             String fileName = xmlFileName.substring(xmlFileName.lastIndexOf('/'));
             awsS3Client.copyObject(bucketName, xmlFileName, bucketName, basepath + "/.done-" + institutionCode + fileName);
             awsS3Client.deleteObject(bucketName, xmlFileName);
