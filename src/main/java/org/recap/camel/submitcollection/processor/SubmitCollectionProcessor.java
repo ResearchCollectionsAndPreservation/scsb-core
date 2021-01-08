@@ -132,9 +132,8 @@ public class SubmitCollectionProcessor {
             producer.sendBodyAndHeader(RecapConstants.EMAIL_Q, getEmailPayLoad(xmlFileName, generatedReportFileName), RecapConstants.EMAIL_BODY_FOR, RecapConstants.SUBMIT_COLLECTION);
             if (awsS3Client.doesObjectExist(bucketName, xmlFileName) && (inputXml != null && !inputXml.equals(""))) {
                 String basepath = xmlFileName.substring(0, xmlFileName.lastIndexOf('/'));
-                basepath = basepath.substring(0, basepath.lastIndexOf('/'));
                 String fileName = xmlFileName.substring(xmlFileName.lastIndexOf('/'));
-                awsS3Client.copyObject(bucketName, xmlFileName, bucketName, basepath + "/.done-" + institutionCode + "/cgd_" + cgdType + fileName);
+                awsS3Client.copyObject(bucketName, xmlFileName, bucketName, basepath + "/.done-" + institutionCode + "-cgd_" + cgdType + fileName);
                 awsS3Client.deleteObject(bucketName, xmlFileName);
             }
             stopWatch.stop();
