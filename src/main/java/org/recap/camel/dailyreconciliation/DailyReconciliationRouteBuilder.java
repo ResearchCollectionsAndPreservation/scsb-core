@@ -56,7 +56,7 @@ public class DailyReconciliationRouteBuilder {
             camelContext.addRoutes(new RouteBuilder() {
                 @Override
                 public void configure() throws Exception {
-                    from("aws-s3://{{scsbBucketName}}?prefix="+dailyReconciliationS3+"/{{s3DataFeedFileNamePrefix}}&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
+                    from("aws-s3://{{scsbBucketName}}?prefix="+dailyReconciliationS3+"{{s3DataFeedFileNamePrefix}}&deleteAfterRead=false&sendEmptyMessageWhenIdle=true&autocloseBody=false&region={{awsRegion}}&accessKey=RAW({{awsAccessKey}})&secretKey=RAW({{awsAccessSecretKey}})")
                             .routeId(RecapConstants.DAILY_RR_FTP_ROUTE_ID)
                             .noAutoStartup()
                             .log("daily reconciliation started")
