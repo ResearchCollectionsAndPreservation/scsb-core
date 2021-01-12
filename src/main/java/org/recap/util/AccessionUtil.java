@@ -11,8 +11,21 @@ import org.recap.converter.AccessionXmlToBibEntityConverterInterface;
 import org.recap.converter.XmlToBibEntityConverterFactory;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
-import org.recap.model.jpa.*;
-import org.recap.repository.jpa.*;
+import org.recap.model.jpa.BibliographicEntity;
+import org.recap.model.jpa.CustomerCodeEntity;
+import org.recap.model.jpa.HoldingsEntity;
+import org.recap.model.jpa.ImsLocationEntity;
+import org.recap.model.jpa.InstitutionEntity;
+import org.recap.model.jpa.ItemChangeLogEntity;
+import org.recap.model.jpa.ItemEntity;
+import org.recap.model.jpa.ReportDataEntity;
+import org.recap.model.jpa.ReportEntity;
+import org.recap.repository.jpa.BibliographicDetailsRepository;
+import org.recap.repository.jpa.CustomerCodeDetailsRepository;
+import org.recap.repository.jpa.ImsLocationDetailsRepository;
+import org.recap.repository.jpa.InstitutionDetailsRepository;
+import org.recap.repository.jpa.ItemChangeLogDetailsRepository;
+import org.recap.repository.jpa.ItemDetailsRepository;
 import org.recap.service.accession.AccessionDAO;
 import org.recap.service.accession.AccessionValidationService;
 import org.recap.service.accession.DummyDataService;
@@ -24,7 +37,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class AccessionUtil {

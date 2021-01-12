@@ -1,5 +1,7 @@
 package org.recap.service.accession.callable;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
 import org.recap.model.jpa.ImsLocationEntity;
@@ -17,6 +19,8 @@ import java.util.concurrent.Callable;
  */
 @Component
 @Scope("prototype")
+@Getter
+@Setter
 public class BibDataCallable implements Callable{
   
     @Autowired
@@ -32,25 +36,7 @@ public class BibDataCallable implements Callable{
         List<Map<String, String>> responseMaps = new ArrayList<>();
         List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
         Set<AccessionResponse> accessionResponses = new HashSet<>();
-
-
         return accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, owningInstitution, writeToReport,imsLocationEntity);
 
-    }
-    public void setAccessionRequest(AccessionRequest accessionRequest) {
-        this.accessionRequest = accessionRequest;
-    }
-
-
-    public void setWriteToReport(boolean writeToReport) {
-        this.writeToReport = writeToReport;
-    }
-
-    public void setOwningInstitution(String owningInstitution) {
-        this.owningInstitution = owningInstitution;
-    }
-
-    public void setImsLocationEntity(ImsLocationEntity imsLocationEntity) {
-        this.imsLocationEntity = imsLocationEntity;
     }
 }

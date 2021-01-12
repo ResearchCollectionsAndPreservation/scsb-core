@@ -29,7 +29,7 @@ public class ItemEntity extends ItemAbstractEntity {
     @Column(name = "IS_CGD_PROTECTION")
     private boolean isCgdProtection;
 
-    @ManyToMany(mappedBy = "itemEntities")
+    @ManyToMany(mappedBy = "itemEntities",cascade = CascadeType.ALL)
     private List<HoldingsEntity> holdingsEntities;
 
     @ManyToOne(cascade = CascadeType.PERSIST)
@@ -48,7 +48,7 @@ public class ItemEntity extends ItemAbstractEntity {
     @JoinColumn(name = "IMS_LOCATION_ID", insertable = false, updatable = false)
     private ImsLocationEntity imsLocationEntity;
 
-    @ManyToMany(mappedBy = "itemEntities",fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "itemEntities",fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     private List<BibliographicEntity> bibliographicEntities;
 
     /**
