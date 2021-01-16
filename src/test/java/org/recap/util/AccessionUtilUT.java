@@ -209,7 +209,7 @@ public class AccessionUtilUT extends BaseTestCaseUT{
         Mockito.when(itemDetailsRepository.findByBarcodeIn(Mockito.anyList())).thenReturn(itemEntityList);
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(getInstitutionEntities());
         BibliographicEntity bibliographicEntity=new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(1);
+        bibliographicEntity.setId(1);
         ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
         Mockito.when(dummyDataService.createDummyDataAsIncomplete(Mockito.anyInt(),Mockito.anyString(),Mockito.anyString(),Mockito.any())).thenReturn(bibliographicEntity);
 
@@ -229,7 +229,7 @@ public class AccessionUtilUT extends BaseTestCaseUT{
         Mockito.when(itemDetailsRepository.findByBarcodeIn(Mockito.anyList())).thenReturn(itemEntityList);
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(getInstitutionEntities());
         BibliographicEntity bibliographicEntity=new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(1);
+        bibliographicEntity.setId(1);
         ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
         Mockito.when(dummyDataService.createDummyDataAsIncomplete(null,null,null,imsLocationEntity)).thenReturn(bibliographicEntity);
         Mockito.when(restTemplate.postForEntity(Mockito.anyString(),Mockito.any(),Mockito.any())).thenReturn(new ResponseEntity<>(RecapCommonConstants.SUCCESS, HttpStatus.OK));
@@ -249,7 +249,7 @@ public class AccessionUtilUT extends BaseTestCaseUT{
         Mockito.when(itemDetailsRepository.findByBarcodeIn(Mockito.anyList())).thenReturn(itemEntityList);
         Mockito.when(institutionDetailsRepository.findAll()).thenThrow(NullPointerException.class);
         BibliographicEntity bibliographicEntity=new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(1);
+        bibliographicEntity.setId(1);
         ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
         Mockito.when(dummyDataService.createDummyDataAsIncomplete(null,null,null,imsLocationEntity)).thenReturn(bibliographicEntity);
         Mockito.when(restTemplate.postForEntity(Mockito.anyString(),Mockito.any(),Mockito.any())).thenReturn(new ResponseEntity<>(RecapCommonConstants.SUCCESS, HttpStatus.OK));
@@ -397,7 +397,7 @@ public class AccessionUtilUT extends BaseTestCaseUT{
     private BibliographicEntity getBibliographicEntity(){
 
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
-        bibliographicEntity.setBibliographicId(123456);
+        bibliographicEntity.setId(123456);
         bibliographicEntity.setContent("Test".getBytes());
         bibliographicEntity.setCreatedDate(new Date());
         bibliographicEntity.setLastUpdatedDate(new Date());
@@ -456,7 +456,7 @@ public class AccessionUtilUT extends BaseTestCaseUT{
         bibliographicEntity.setLastUpdatedBy("tst");
         bibliographicEntity.setOwningInstitutionId(1);
         bibliographicEntity.setOwningInstitutionBibId("1421");
-        bibliographicEntity.setBibliographicId(1);
+        bibliographicEntity.setId(1);
         bibliographicEntity.setCatalogingStatus(RecapCommonConstants.INCOMPLETE_STATUS);
         List<BibliographicEntity> bibliographicEntitylist = new LinkedList(Arrays.asList(bibliographicEntity));
 
@@ -469,7 +469,7 @@ public class AccessionUtilUT extends BaseTestCaseUT{
         holdingsEntity.setOwningInstitutionId(1);
         holdingsEntity.setLastUpdatedBy("tst");
         holdingsEntity.setOwningInstitutionHoldingsId("1621");
-        holdingsEntity.setHoldingsId(1);
+        holdingsEntity.setId(1);
         holdingsEntity.hashCode();
         holdingsEntity.equals(new HoldingsEntity());
         List<HoldingsEntity> holdingsEntitylist = new LinkedList(Arrays.asList(holdingsEntity));
@@ -488,7 +488,7 @@ public class AccessionUtilUT extends BaseTestCaseUT{
         itemEntity.setCreatedBy("tst");
         itemEntity.setLastUpdatedBy("tst");
         itemEntity.setItemAvailabilityStatusId(1);
-        itemEntity.setItemId(1);
+        itemEntity.setId(1);
         List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity));
 
         holdingsEntity.setBibliographicEntities(bibliographicEntitylist);

@@ -108,7 +108,7 @@ public class SubmitCollectionDAOService {
                                 updatedBibliographicEntity = updateDummyRecordForNonBoundWith(incomingBibliographicEntity, submitCollectionReportInfoMap, idMapToRemoveIndexList, processedBarcodeSetForDummyRecords, updatedBibliographicEntity, fetchedBibliographicEntity,itemChangeLogEntityList);
                                 if (updatedBibliographicEntity != null) {
                                     updatedBibliographicEntityList.add(updatedBibliographicEntity);
-                                    processedBibIds.add(updatedBibliographicEntity.getBibliographicId());
+                                    processedBibIds.add(updatedBibliographicEntity.getId());
                                 }
                             }
                             else if (!fetchedBibliographicEntity.getOwningInstitutionBibId().equals(incomingBibliographicEntity.getOwningInstitutionBibId()) && !fetchedBibliographicEntity.getOwningInstitutionBibId().substring(0, 1).equals("d")) {//Owning inst bib id mismatch for non dummy record
@@ -242,7 +242,7 @@ public class SubmitCollectionDAOService {
         boolean isIncomingDummyRecord = false;
         boolean isValidRecordToProcess = submitCollectionValidationService.validateIncomingItemHavingBibCountGreaterThanExistingItem(submitCollectionReportInfoMap,
                 boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList);
-        int itemId = existingItemEntity.getItemId();
+        int itemId = existingItemEntity.getId();
         boolean deleteDummyRecord=true;
         if (isValidRecordToProcess) {
             for (BibliographicEntity incomingBibliographicEntity : boundWithBibliographicEntityObject.getBibliographicEntityList()) {
@@ -266,7 +266,7 @@ public class SubmitCollectionDAOService {
                             BibliographicEntity updatedBibliographicEntity = updateExistingRecordToEntityObject(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap, processedBibIds,itemChangeLogEntityList);
                             if (updatedBibliographicEntity != null) {
                                 updatedBibliographicEntityList.add(updatedBibliographicEntity);
-                                processedBibIds.add(updatedBibliographicEntity.getBibliographicId());
+                                processedBibIds.add(updatedBibliographicEntity.getId());
                             }
                         } else {//check is bib already exist, if exist then attach item to the bib,if not add a new bib
                             BibliographicEntity existingBibliographicEntity = submitCollectionHelperService.getBibliographicEntityIfExist(incomingBibliographicEntity.getOwningInstitutionBibId()
@@ -284,13 +284,13 @@ public class SubmitCollectionDAOService {
                             if(existingBibliographicEntity != null) {
                                 submitCollectionHelperService.attachItemToExistingBib(existingBibliographicEntity,incomingBibliographicEntity);//here just only linking bib
                                 Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
-                                bibIdMapToRemoveIndex.put(RecapCommonConstants.BIB_ID, String.valueOf(existingBibliographicEntity.getBibliographicId()));
+                                bibIdMapToRemoveIndex.put(RecapCommonConstants.BIB_ID, String.valueOf(existingBibliographicEntity.getId()));
                                 bibIdMapToRemoveIndex.put(RecapCommonConstants.IS_DELETED_BIB, Boolean.toString(true));
                                 bibIdMapToRemoveIndexList.add(bibIdMapToRemoveIndex);
-                                logger.info("Added id to remove from solr - bib id - {}, is deleted bib - {}", existingBibliographicEntity.getBibliographicId(), true);
+                                logger.info("Added id to remove from solr - bib id - {}, is deleted bib - {}", existingBibliographicEntity.getId(), true);
                                 repositoryService.getBibliographicDetailsRepository().saveAndFlush(existingBibliographicEntity);
                                 entityManager.refresh(existingBibliographicEntity);
-                                processedBibIds.add(existingBibliographicEntity.getBibliographicId());
+                                processedBibIds.add(existingBibliographicEntity.getId());
                                 //here updating the bib after linking with the item
                                 fetchedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(existingBibliographicEntity.getOwningInstitutionId(),existingBibliographicEntity.getOwningInstitutionBibId());
                                 BibliographicEntity updatedBibliographicEntity = updateExistingRecordToEntityObject(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap, processedBibIds,itemChangeLogEntityList);
@@ -304,7 +304,7 @@ public class SubmitCollectionDAOService {
                                 incomingBibliographicEntity.getHoldingsEntities().get(0).setCreatedBy(existingItemEntity.getHoldingsEntities().get(0).getCreatedBy());
                                 BibliographicEntity savedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().saveAndFlush(incomingBibliographicEntity);//Saving here to get the bibliographic id
                                 entityManager.refresh(savedBibliographicEntity);
-                                processedBibIds.add(savedBibliographicEntity.getBibliographicId());
+                                processedBibIds.add(savedBibliographicEntity.getId());
                             }
                         }
                     }
@@ -326,7 +326,7 @@ public class SubmitCollectionDAOService {
         List<BibliographicEntity> existingBibliographicEntityList = existingItemEntity.getBibliographicEntities();
         List<String> incomingBibsNotInExistingBibs = new ArrayList<>();
         String barcode = boundWithBibliographicEntityObject.getBarcode();
-        int itemId = existingItemEntity.getItemId();
+        int itemId = existingItemEntity.getId();
         boolean isValidRecordToProcess = submitCollectionValidationService.validateIncomingItemHavingBibCountLesserThanExistingItem(submitCollectionReportInfoMap,
                 boundWithBibliographicEntityObject.getBibliographicEntityList(),existingBibliographicEntityList,incomingBibsNotInExistingBibs,existingItemEntity);
         if (isValidRecordToProcess) {
@@ -339,7 +339,7 @@ public class SubmitCollectionDAOService {
                     BibliographicEntity updatedBibliographicEntity = updateExistingRecordToEntityObject(fetchedBibliographicEntity, incomingBibliographicEntity, submitCollectionReportInfoMap, processedBibIds,itemChangeLogEntityList);
                     if (updatedBibliographicEntity != null) {
                         updatedBibliographicEntityList.add(updatedBibliographicEntity);
-                        processedBibIds.add(updatedBibliographicEntity.getBibliographicId());
+                        processedBibIds.add(updatedBibliographicEntity.getId());
                     }
                 } else {
                     if(fetchedItemEntity.getBarcode().equals(barcode)){
@@ -348,9 +348,9 @@ public class SubmitCollectionDAOService {
                             fetchedBibliographicEntity.setDeleted(true);
                         }
                         Set<String> owningInstHoldingIdSet = fetchedItemEntity.getHoldingsEntities().stream().map(HoldingsEntity::getOwningInstitutionHoldingsId).collect(Collectors.toSet());
-                        unlinkHoldingFromBib(fetchedBibliographicEntity, fetchedItemEntity.getItemId(), owningInstHoldingIdSet, idMapToRemoveIndexList);
-                        logger.info("Unlinked bib - owning institution bib id {} from item barcode {}",fetchedBibliographicEntity.getBibliographicId(),barcode);
-                        processedBibIds.add(fetchedBibliographicEntity.getBibliographicId());
+                        unlinkHoldingFromBib(fetchedBibliographicEntity, fetchedItemEntity.getId(), owningInstHoldingIdSet, idMapToRemoveIndexList);
+                        logger.info("Unlinked bib - owning institution bib id {} from item barcode {}",fetchedBibliographicEntity.getId(),barcode);
+                        processedBibIds.add(fetchedBibliographicEntity.getId());
                     }
                 }
             }
@@ -366,11 +366,11 @@ public class SubmitCollectionDAOService {
             HoldingsEntity holdingsEntity = holdingsEntityIterator.next();
             if (owningInstHoldingIdList.contains(holdingsEntity.getOwningInstitutionHoldingsId())) {
                 Map<String, String> idMapToRemoveIndex = new HashMap<>();
-                idMapToRemoveIndex.put(RecapCommonConstants.HOLDING_ID, String.valueOf(holdingsEntity.getHoldingsId()));
+                idMapToRemoveIndex.put(RecapCommonConstants.HOLDING_ID, String.valueOf(holdingsEntity.getId()));
                 idMapToRemoveIndex.put(RecapCommonConstants.ITEM_ID, String.valueOf(itemId));
                 idMapToRemoveIndex.put(RecapCommonConstants.ROOT, fetchedBibliographicEntity.getOwningInstitutionId() + fetchedBibliographicEntity.getOwningInstitutionBibId());
                 idMapToRemoveIndexList.add(idMapToRemoveIndex);
-                logger.info("Added id to remove from solr - holding id - {}, item id - {}, root - {}", holdingsEntity.getHoldingsId(), itemId, fetchedBibliographicEntity.getOwningInstitutionId() + fetchedBibliographicEntity.getOwningInstitutionBibId());
+                logger.info("Added id to remove from solr - holding id - {}, item id - {}, root - {}", holdingsEntity.getId(), itemId, fetchedBibliographicEntity.getOwningInstitutionId() + fetchedBibliographicEntity.getOwningInstitutionBibId());
                 holdingsEntityIterator.remove();
             }
         }
@@ -651,7 +651,7 @@ public class SubmitCollectionDAOService {
                 updateCatalogingStatusForBib(bibliographicEntityToSave);
                 if (fetchedBibliographicEntity != null) {//1Bib n holding n item
                     bibliographicEntityToSave = updateExistingRecordForDummy(fetchedBibliographicEntity, incomingBibliographicEntity);
-                    processedBibIds.add(fetchedBibliographicEntity.getBibliographicId());
+                    processedBibIds.add(fetchedBibliographicEntity.getId());
                 }
                 savedBibliographicEntity = bibliographicEntityToSave;
                 entityManager.merge(savedBibliographicEntity);
@@ -860,7 +860,7 @@ public class SubmitCollectionDAOService {
             updateCatalogingStatusForBib(fetchBibliographicEntity);
             if (isAnyValidHoldingToUpdate && isAnyValidItemToUpdate) {
                 bibliographicEntityToSave = fetchBibliographicEntity;
-                processedBibIds.add(bibliographicEntityToSave.getBibliographicId());
+                processedBibIds.add(bibliographicEntityToSave.getId());
                 List<ItemChangeLogEntity> preparedItemChangeLogEntityList = prepareItemChangeLogEntity(RecapConstants.SUBMIT_COLLECTION, RecapConstants.SUBMIT_COLLECTION_COMPLETE_RECORD_UPDATE,updatedItemEntityList);
                 itemChangeLogEntityList.addAll(preparedItemChangeLogEntityList);
             }
@@ -1023,7 +1023,7 @@ public class SubmitCollectionDAOService {
             itemChangeLogEntity.setOperationType(RecapConstants.SUBMIT_COLLECTION);
             itemChangeLogEntity.setUpdatedBy(operationType);
             itemChangeLogEntity.setUpdatedDate(new Date());
-            itemChangeLogEntity.setRecordId(itemEntity.getItemId());
+            itemChangeLogEntity.setRecordId(itemEntity.getId());
             itemChangeLogEntity.setNotes(message);
             itemChangeLogEntityList.add(itemChangeLogEntity);
         }
@@ -1062,12 +1062,12 @@ public class SubmitCollectionDAOService {
     private void removeDummyRecord(List<Map<String, String>> idMapToRemoveIndexList, BibliographicEntity fetchBibliographicEntity) {
         if (isNonCompleteBib(fetchBibliographicEntity)) {//This check is to not delete the existing bib which is complete for bound with (This happens when accession done for boundwith item which created as dummy and submit collection done for this boundwith item)
             Map<String,String> idMapToRemoveIndex = new HashedMap();
-            idMapToRemoveIndex.put(RecapCommonConstants.BIB_ID,String.valueOf(fetchBibliographicEntity.getBibliographicId()));
-            idMapToRemoveIndex.put(RecapCommonConstants.HOLDING_ID,String.valueOf(fetchBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId()));
-            idMapToRemoveIndex.put(RecapCommonConstants.ITEM_ID,String.valueOf(fetchBibliographicEntity.getItemEntities().get(0).getItemId()));
+            idMapToRemoveIndex.put(RecapCommonConstants.BIB_ID,String.valueOf(fetchBibliographicEntity.getId()));
+            idMapToRemoveIndex.put(RecapCommonConstants.HOLDING_ID,String.valueOf(fetchBibliographicEntity.getHoldingsEntities().get(0).getId()));
+            idMapToRemoveIndex.put(RecapCommonConstants.ITEM_ID,String.valueOf(fetchBibliographicEntity.getItemEntities().get(0).getId()));
             idMapToRemoveIndexList.add(idMapToRemoveIndex);
-            logger.info("Added id to remove from solr - bib id - {}, holding id - {}, item id - {}",fetchBibliographicEntity.getBibliographicId(),fetchBibliographicEntity.getHoldingsEntities().get(0).getHoldingsId(),
-                    fetchBibliographicEntity.getItemEntities().get(0).getItemId());
+            logger.info("Added id to remove from solr - bib id - {}, holding id - {}, item id - {}",fetchBibliographicEntity.getId(),fetchBibliographicEntity.getHoldingsEntities().get(0).getId(),
+                    fetchBibliographicEntity.getItemEntities().get(0).getId());
             logger.info("Delete dummy record - barcode - {}",fetchBibliographicEntity.getItemEntities().get(0).getBarcode());
             repositoryService.getBibliographicDetailsRepository().delete(fetchBibliographicEntity);
             repositoryService.getBibliographicDetailsRepository().flush();

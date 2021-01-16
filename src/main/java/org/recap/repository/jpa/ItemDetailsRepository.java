@@ -1,10 +1,8 @@
 package org.recap.repository.jpa;
 
 import org.recap.model.jpa.ItemEntity;
-import org.recap.model.jpa.ItemPK;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +14,7 @@ import java.util.List;
 /**
  * Created by chenchulakshmig on 21/6/16.
  */
-public interface ItemDetailsRepository extends JpaRepository<ItemEntity, ItemPK> {
+public interface ItemDetailsRepository extends BaseRepository<ItemEntity> {
 
     /**
      * Count by is deleted false long.
@@ -32,14 +30,6 @@ public interface ItemDetailsRepository extends JpaRepository<ItemEntity, ItemPK>
      * @return the page
      */
     Page<ItemEntity> findAllByIsDeletedFalse(Pageable pageable);
-
-    /**
-     * Find by item id item entity.
-     *
-     * @param itemId the item id
-     * @return the item entity
-     */
-    ItemEntity findByItemId(Integer itemId);
 
     /**
      * Count by owning institution id and is deleted false long.
@@ -127,7 +117,7 @@ public interface ItemDetailsRepository extends JpaRepository<ItemEntity, ItemPK>
      */
     @Modifying(clearAutomatically = true)
     @Transactional
-    @Query("UPDATE ItemEntity item SET item.isDeleted = true, item.lastUpdatedBy = :lastUpdatedBy, item.lastUpdatedDate = :lastUpdatedDate WHERE item.itemId = :itemId")
+    @Query("UPDATE ItemEntity item SET item.isDeleted = true, item.lastUpdatedBy = :lastUpdatedBy, item.lastUpdatedDate = :lastUpdatedDate WHERE item.id = :itemId")
     int markItemAsDeleted(@Param("itemId") Integer itemId, @Param("lastUpdatedBy") String lastUpdatedBy, @Param("lastUpdatedDate") Date lastUpdatedDate);
 
     /**
@@ -140,7 +130,7 @@ public interface ItemDetailsRepository extends JpaRepository<ItemEntity, ItemPK>
      */
     @Modifying(clearAutomatically = true)
     @Transactional
-    @Query("UPDATE ItemEntity item SET item.isDeleted = false, item.lastUpdatedBy = :lastUpdatedBy, item.lastUpdatedDate = :lastUpdatedDate WHERE item.itemId IN :itemIds")
+    @Query("UPDATE ItemEntity item SET item.isDeleted = false, item.lastUpdatedBy = :lastUpdatedBy, item.lastUpdatedDate = :lastUpdatedDate WHERE item.id IN :itemIds")
     int markItemsAsNotDeleted(@Param("itemIds") List<Integer> itemIds, @Param("lastUpdatedBy") String lastUpdatedBy, @Param("lastUpdatedDate") Date lastUpdatedDate);
 
     /**

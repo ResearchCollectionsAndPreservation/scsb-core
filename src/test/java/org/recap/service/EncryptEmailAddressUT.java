@@ -103,7 +103,7 @@ public class EncryptEmailAddressUT {
         //RequestStatusEntity requestStatusEntity = requestItemStatusDetailsRepository.findById(3).orElse(null);
 
         RequestItemEntity requestItemEntity = new RequestItemEntity();
-        requestItemEntity.setItemId(bibliographicEntity.getItemEntities().get(0).getItemId());
+        requestItemEntity.setItemId(bibliographicEntity.getItemEntities().get(0).getId());
         requestItemEntity.setRequestTypeId(requestTypeEntity.getId());
        // requestItemEntity.setRequestStatusEntity(requestStatusEntity);
         requestItemEntity.setRequestingInstitutionId(2);

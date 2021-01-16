@@ -14,15 +14,7 @@ import java.util.List;
 /**
  * Created by chenchulakshmig on 6/13/16.
  */
-public interface HoldingsDetailsRepository extends JpaRepository<HoldingsEntity, String> {
-
-    /**
-     * Find by holdings id holdings entity.
-     *
-     * @param holdingsId the holdings id
-     * @return the holdings entity
-     */
-    HoldingsEntity findByHoldingsId(Integer holdingsId);
+public interface HoldingsDetailsRepository extends BaseRepository<HoldingsEntity> {
 
     /**
      * Count by owning institution id long.
@@ -39,9 +31,10 @@ public interface HoldingsDetailsRepository extends JpaRepository<HoldingsEntity,
      * @param owningInstitutionHoldingsId the owning institution holdings id
      * @return the non deleted items count
      */
-    @Query(value = "SELECT COUNT(*) FROM ITEM_T, ITEM_HOLDINGS_T WHERE ITEM_HOLDINGS_T.ITEM_INST_ID = ITEM_T.OWNING_INST_ID AND " +
-            "ITEM_HOLDINGS_T.OWNING_INST_ITEM_ID = ITEM_T.OWNING_INST_ITEM_ID AND ITEM_T.IS_DELETED = 0 AND " +
-            "ITEM_HOLDINGS_T.OWNING_INST_HOLDINGS_ID = :owningInstitutionHoldingsId AND ITEM_HOLDINGS_T.HOLDINGS_INST_ID = :owningInstitutionId", nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM ITEM_T, ITEM_HOLDINGS_T, HOLDINGS_T WHERE " +
+            "HOLDINGS_T.HOLDINGS_ID = ITEM_HOLDINGS_T.HOLDINGS_ID AND ITEM_T.ITEM_ID = ITEM_HOLDINGS_T.ITEM_ID " +
+            "AND ITEM_T.IS_DELETED = 0 AND " +
+            "HOLDINGS_T.OWNING_INST_HOLDINGS_ID = :owningInstitutionHoldingsId AND HOLDINGS_T.OWNING_INST_ID = :owningInstitutionId", nativeQuery = true)
     Long getNonDeletedItemsCount(@Param("owningInstitutionId") Integer owningInstitutionId, @Param("owningInstitutionHoldingsId") String owningInstitutionHoldingsId);
 
     /**
@@ -54,7 +47,7 @@ public interface HoldingsDetailsRepository extends JpaRepository<HoldingsEntity,
      */
     @Modifying(clearAutomatically = true)
     @Transactional
-    @Query("UPDATE HoldingsEntity holdings SET holdings.isDeleted = true, holdings.lastUpdatedBy = :lastUpdatedBy, holdings.lastUpdatedDate = :lastUpdatedDate WHERE holdings.holdingsId IN :holdingIds")
+    @Query("UPDATE HoldingsEntity holdings SET holdings.isDeleted = true, holdings.lastUpdatedBy = :lastUpdatedBy, holdings.lastUpdatedDate = :lastUpdatedDate WHERE holdings.id IN :holdingIds")
     int markHoldingsAsDeleted(@Param("holdingIds") List<Integer> holdingIds, @Param("lastUpdatedBy") String lastUpdatedBy, @Param("lastUpdatedDate") Date lastUpdatedDate);
 
     /**
@@ -67,7 +60,7 @@ public interface HoldingsDetailsRepository extends JpaRepository<HoldingsEntity,
      */
     @Modifying(clearAutomatically = true)
     @Transactional
-    @Query("UPDATE HoldingsEntity holdings SET holdings.isDeleted = false, holdings.lastUpdatedBy = :lastUpdatedBy, holdings.lastUpdatedDate = :lastUpdatedDate WHERE holdings.holdingsId IN :holdingIds")
+    @Query("UPDATE HoldingsEntity holdings SET holdings.isDeleted = false, holdings.lastUpdatedBy = :lastUpdatedBy, holdings.lastUpdatedDate = :lastUpdatedDate WHERE holdings.id IN :holdingIds")
     int markHoldingsAsNotDeleted(@Param("holdingIds") List<Integer> holdingIds, @Param("lastUpdatedBy") String lastUpdatedBy, @Param("lastUpdatedDate") Date lastUpdatedDate);
 
     HoldingsEntity findByOwningInstitutionHoldingsIdAndOwningInstitutionId(String owningInstitutionHoldingsId, Integer owningInstitutionId);

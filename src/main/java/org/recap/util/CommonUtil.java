@@ -208,12 +208,12 @@ public class CommonUtil {
      * @param itemEntity the item entity
      * @param userName   the user name
      */
-    public void rollbackUpdateItemAvailabilutyStatus(ItemEntity itemEntity, String userName) {
+    public void rollbackUpdateItemAvailabilityStatus(ItemEntity itemEntity, String userName) {
         ItemStatusEntity itemStatusEntity = itemStatusDetailsRepository.findByStatusCode(RecapCommonConstants.AVAILABLE);
         itemEntity.setItemAvailabilityStatusId(itemStatusEntity.getId()); // Available
         itemEntity.setLastUpdatedBy(getUser(userName));
         itemDetailsRepository.save(itemEntity);
-        saveItemChangeLogEntity(itemEntity.getItemId(), getUser(userName), RecapConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, RecapConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK);
+        saveItemChangeLogEntity(itemEntity.getId(), getUser(userName), RecapConstants.REQUEST_ITEM_AVAILABILITY_STATUS_UPDATE, RecapConstants.REQUEST_ITEM_AVAILABILITY_STATUS_DATA_ROLLBACK);
     }
 
     /**
