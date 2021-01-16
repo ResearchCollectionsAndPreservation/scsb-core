@@ -173,8 +173,8 @@ public class SubmitCollectionService {
                 for (Record record : records) {
                     logger.info("Processing record no: {}", count);
                     BibliographicEntity bibliographicEntity = loadData(record, format, submitCollectionReportInfoMap, idMapToRemoveIndexList, isCGDProtection, institutionEntity, processedBarcodeSetForDummyRecords);
-                    if (null != bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
-                        processedBibIds.add(bibliographicEntity.getBibliographicId());
+                    if (null != bibliographicEntity && null != bibliographicEntity.getId()) {
+                        processedBibIds.add(bibliographicEntity.getId());
                     }
                     logger.info("Processing completed for record no: {}", count);
                     count++;
@@ -211,8 +211,8 @@ public class SubmitCollectionService {
             logger.info("Processing Bib record no: {}",count);
             try {
                 BibliographicEntity bibliographicEntity = loadData(bibRecord, format, submitCollectionReportInfoMap, idMapToRemoveIndexList,isCGDProtected,institutionEntity,processedBarcodeSetForDummyRecords);
-                if (null!=bibliographicEntity && null != bibliographicEntity.getBibliographicId()) {
-                    processedBibIds.add(bibliographicEntity.getBibliographicId());
+                if (null!=bibliographicEntity && null != bibliographicEntity.getId()) {
+                    processedBibIds.add(bibliographicEntity.getId());
                 }
             } catch (MarcException me) {
                 logger.error(RecapCommonConstants.LOG_ERROR,me);

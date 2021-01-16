@@ -128,7 +128,7 @@ public class StatusReconciliationService {
         List<String> requestStatusCodes = Arrays.asList(RecapCommonConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, RecapCommonConstants.REQUEST_STATUS_EDD, RecapCommonConstants.REQUEST_STATUS_CANCELED, RecapCommonConstants.REQUEST_STATUS_INITIAL_LOAD);
         List<RequestStatusEntity> requestStatusEntityList = requestItemStatusDetailsRepository.findByRequestStatusCodeIn(requestStatusCodes);
         List<Integer> requestStatusIds = requestStatusEntityList.stream().map(RequestStatusEntity::getId).collect(Collectors.toList());
-        List<Integer> requestid = requestItemDetailsRepository.getRequestItemEntitiesBasedOnDayLimit(itemEntity.getItemId(), requestStatusIds, statusReconciliationDayLimit);
+        List<Integer> requestid = requestItemDetailsRepository.getRequestItemEntitiesBasedOnDayLimit(itemEntity.getId(), requestStatusIds, statusReconciliationDayLimit);
         List<RequestItemEntity> requestItemEntityList = requestItemDetailsRepository.findByIdIn(requestid);
         List<String> barcodeList = new ArrayList<>();
         List<Integer> requestIdList = new ArrayList<>();
@@ -153,7 +153,7 @@ public class StatusReconciliationService {
         } else {
             statusReconciliationCSVRecord = getStatusReconciliationCSVRecord(itemEntity.getBarcode(), "No", null, lasStatus, simpleDateFormat.format(new Date()), itemStatusEntity);
             itemDetailsRepository.updateAvailabilityStatus(1, RecapConstants.GUEST_USER, itemEntity.getBarcode());
-            ItemChangeLogEntity itemChangeLogEntity = saveItemChangeLogEntity(itemEntity.getItemId(), itemEntity.getBarcode());
+            ItemChangeLogEntity itemChangeLogEntity = saveItemChangeLogEntity(itemEntity.getId(), itemEntity.getBarcode());
             itemChangeLogEntityList.add(itemChangeLogEntity);
             solrDocIndexService.updateSolrIndex(itemEntity);
             log.info("found mismatch in item status and updated availability status for the item barcode: {}", itemEntity.getBarcode());
