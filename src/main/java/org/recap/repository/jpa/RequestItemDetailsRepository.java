@@ -5,7 +5,6 @@ import org.recap.model.jpa.RequestItemEntity;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,7 +16,7 @@ import java.util.List;
 /**
  * Created by rajeshbabuk on 26/10/16.
  */
-public interface RequestItemDetailsRepository extends BaseRepository<RequestItemEntity>, JpaSpecificationExecutor {
+public interface RequestItemDetailsRepository extends BaseRepository<RequestItemEntity> {
 
     @Query(value = "select requestItemEntity from RequestItemEntity requestItemEntity inner join requestItemEntity.requestStatusEntity as rse where requestItemEntity.id =?1")
     RequestItemEntity findRequestItemById(@Param("requestId") Integer requestId);
