@@ -29,20 +29,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntityConverterInterface {
+public class AccessionSCSBToBibEntityConverter extends AccessionXmlConverterAbstract {
     private static final Logger logger = LoggerFactory.getLogger(AccessionSCSBToBibEntityConverter.class);
-
-    @Autowired
-    private DBReportUtil dbReportUtil;
-
-    @Autowired
-    private MarcUtil marcUtil;
-
-    @Autowired
-    private CommonUtil commonUtil;
-
-    @Autowired
-    private BibliographicDetailsRepository bibliographicDetailsRepository;
 
     /**
      * This method is used to convert scsb record into bib entity
@@ -177,6 +165,7 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
         map.put("errorMessage",errorMessage);
         return map;
     }
+
 
     /**
      * This method is used to validate all necessary bib record fields
@@ -402,5 +391,10 @@ public class AccessionSCSBToBibEntityConverter implements AccessionXmlToBibEntit
             marcUtil = new MarcUtil();
         }
         return marcUtil;
+    }
+
+    @Override
+    public boolean isFormat(String format) {
+        return "SCSB".equalsIgnoreCase(format);
     }
 }

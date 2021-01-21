@@ -57,7 +57,7 @@ public class SubmitCollectionJobControllerUT extends BaseTestCaseUT {
         message.setBody("SUBMIT COLLECTION");
         exchange.setIn(message);
         Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
-        Mockito.doNothing().when(routeController).startRoute(RecapConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE);
+        Mockito.doNothing().when(routeController).startRoute("PUL"+RecapConstants.CGD_PROTECTED_ROUTE_ID);
         Mockito.when(camelContext.getEndpoint(RecapConstants.SUBMIT_COLLECTION_COMPLETION_QUEUE_TO)).thenReturn(endpoint);
         Mockito.when(endpoint.createPollingConsumer()).thenReturn(pollingConsumer);
         Mockito.when(pollingConsumer.receive()).thenReturn(exchange);
@@ -73,7 +73,7 @@ public class SubmitCollectionJobControllerUT extends BaseTestCaseUT {
         message.setBody("SUBMIT COLLECTION");
         exchange.setIn(message);
         Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
-        Mockito.doNothing().when(routeController).startRoute(RecapConstants.SUBMIT_COLLECTION_FTP_CGD_PROTECTED_PUL_ROUTE);
+        Mockito.doNothing().when(routeController).startRoute("PUL"+RecapConstants.CGD_PROTECTED_ROUTE_ID);
         Mockito.when(camelContext.getEndpoint(RecapConstants.SUBMIT_COLLECTION_COMPLETION_QUEUE_TO)).thenReturn(endpoint);
         Mockito.when(endpoint.createPollingConsumer()).thenThrow(NullPointerException.class);
         Mockito.when(pollingConsumer.receive()).thenReturn(exchange);

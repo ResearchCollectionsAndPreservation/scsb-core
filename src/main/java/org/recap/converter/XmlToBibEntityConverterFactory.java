@@ -1,25 +1,25 @@
 package org.recap.converter;
 
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class XmlToBibEntityConverterFactory {
 
-    private final BeanFactory beanFactory;
+    private final List<AccessionXmlConverterAbstract> accessionXmlConverterAbstractList;
 
     @Autowired
-    public XmlToBibEntityConverterFactory(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
+    public XmlToBibEntityConverterFactory(List<AccessionXmlConverterAbstract> accessionXmlConverterAbstractList) {
+        this.accessionXmlConverterAbstractList = accessionXmlConverterAbstractList;
     }
 
-    public AccessionXmlToBibEntityConverterInterface getConverter(String instituion){
-        if(instituion.equalsIgnoreCase("PUL") || instituion.equalsIgnoreCase("CUL")){
-            return beanFactory.getBean(AccessionMarcToBibEntityConverter.class);
-        }
-        else {
-            return beanFactory.getBean(AccessionSCSBToBibEntityConverter.class);
-        }
+    public AccessionXmlToBibEntityConverterInterface getConverter(String format){
+        return accessionXmlConverterAbstractList
+                .stream()
+                .filter(accessionConvertor -> accessionConvertor.isFormat(format))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
     }
 }
