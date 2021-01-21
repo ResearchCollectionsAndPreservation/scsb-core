@@ -217,27 +217,27 @@ public class AccessionProcessService {
         String reasonForFailureBib = "";
         String reasonForFailureItem = "";
 
-        for (Map<String, String> responseMap : responseMapList) {
-            successBibCount = successBibCount + (responseMap.get(RecapCommonConstants.SUCCESS_BIB_COUNT) != null ? Integer.parseInt(responseMap.get(RecapCommonConstants.SUCCESS_BIB_COUNT)) : 0);
-            failedBibCount = failedBibCount + (responseMap.get(RecapCommonConstants.FAILED_BIB_COUNT) != null ? Integer.parseInt(responseMap.get(RecapCommonConstants.FAILED_BIB_COUNT)) : 0);
+        for (Map responseMap : responseMapList) {
+            successBibCount = successBibCount + (responseMap.get(RecapCommonConstants.SUCCESS_BIB_COUNT) != null ? (Integer) responseMap.get(RecapCommonConstants.SUCCESS_BIB_COUNT) : 0);
+            failedBibCount = failedBibCount + (responseMap.get(RecapCommonConstants.FAILED_BIB_COUNT) != null ? (Integer) responseMap.get(RecapCommonConstants.FAILED_BIB_COUNT) : 0);
             if (failedBibCount == 0) {
-                if (StringUtils.isEmpty(responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) {
+                if (StringUtils.isEmpty((String) responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) {
                     successItemCount = 1;
                 } else {
                     failedItemCount = 1;
                 }
             }
-            exitsBibCount = exitsBibCount + (responseMap.get(RecapCommonConstants.EXIST_BIB_COUNT) != null ? Integer.parseInt(responseMap.get(RecapCommonConstants.EXIST_BIB_COUNT)) : 0);
+            exitsBibCount = exitsBibCount + (responseMap.get(RecapCommonConstants.EXIST_BIB_COUNT) != null ? (Integer) responseMap.get(RecapCommonConstants.EXIST_BIB_COUNT) : 0);
 
-            if (!StringUtils.isEmpty(responseMap.get(RecapCommonConstants.REASON_FOR_BIB_FAILURE)) && !reasonForFailureBib.contains(responseMap.get(RecapCommonConstants.REASON_FOR_BIB_FAILURE))) {
+            if (!StringUtils.isEmpty((String) responseMap.get(RecapCommonConstants.REASON_FOR_BIB_FAILURE)) && !reasonForFailureBib.contains(responseMap.get(RecapCommonConstants.REASON_FOR_BIB_FAILURE).toString())) {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append(responseMap.get(RecapCommonConstants.REASON_FOR_BIB_FAILURE));
                 stringBuilder.append(",");
                 stringBuilder.append(reasonForFailureBib);
                 reasonForFailureBib = stringBuilder.toString();
             }
-            if ((!StringUtils.isEmpty(responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) && StringUtils.isEmpty(reasonForFailureBib) &&
-                    !reasonForFailureItem.contains(responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) {
+            if ((!StringUtils.isEmpty((String) responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) && StringUtils.isEmpty(reasonForFailureBib) &&
+                    !reasonForFailureItem.contains((String) responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE))) {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append(responseMap.get(RecapCommonConstants.REASON_FOR_ITEM_FAILURE));
                 stringBuilder.append(",");
