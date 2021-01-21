@@ -17,7 +17,7 @@ import org.springframework.web.client.RestTemplate;
 public class OauthTokenApiService {
 
     /**
-     * This method is used to generate token to access the NYPL SIERRA api using the NYPL operator credentials if they are authorized.
+     * This method is used to generate token to access the Institution's API using the operator credentials if they are authorized.
      *
      * @return the string
      * @throws Exception the exception

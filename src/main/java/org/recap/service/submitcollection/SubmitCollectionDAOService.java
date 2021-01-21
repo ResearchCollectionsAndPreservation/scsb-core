@@ -271,7 +271,7 @@ public class SubmitCollectionDAOService {
                         } else {//check is bib already exist, if exist then attach item to the bib,if not add a new bib
                             BibliographicEntity existingBibliographicEntity = submitCollectionHelperService.getBibliographicEntityIfExist(incomingBibliographicEntity.getOwningInstitutionBibId()
                                     ,incomingBibliographicEntity.getOwningInstitutionId());
-                            incomingBibliographicEntity.getItemEntities().get(0).setCustomerCode(fetchedItemEntity.getCustomerCode());//Since CUL data may not have CC in the xml, so pulling CC from the existing data in SCSB
+                            incomingBibliographicEntity.getItemEntities().get(0).setCustomerCode(fetchedItemEntity.getCustomerCode());//If institution data may not have CC in the xml, so pulling CC from the existing data in SCSB
                             incomingBibliographicEntity.getItemEntities().get(0).setItemAvailabilityStatusId(fetchedItemEntity.getItemAvailabilityStatusId());
                             incomingBibliographicEntity.getItemEntities().get(0).setCatalogingStatus(fetchedItemEntity.getCatalogingStatus());
                             incomingBibliographicEntity.getItemEntities().get(0).setCreatedBy(fetchedItemEntity.getCreatedBy());
@@ -571,7 +571,7 @@ public class SubmitCollectionDAOService {
 
     private BibliographicEntity saveBibliographicEntity(BibliographicEntity bibliographicEntity, List<Map<String, String>> idMapToRemoveIndexList, BibliographicEntity fetchBibliographicEntity) {
         BibliographicEntity savedBibliographicEntity;
-        updateCustomerCode(fetchBibliographicEntity, bibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it, this happens mostly for CUL
+        updateCustomerCode(fetchBibliographicEntity, bibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it
         removeDummyRecord(idMapToRemoveIndexList, fetchBibliographicEntity);
         BibliographicEntity fetchedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionId(), bibliographicEntity.getOwningInstitutionBibId());
         setItemAvailabilityStatus(bibliographicEntity.getItemEntities());
@@ -640,7 +640,7 @@ public class SubmitCollectionDAOService {
         if (fetchedItemBasedOnOwningInstitutionItemId.isEmpty() || boundWith) {//To check there should not be existing item record with same own item id and for bound with own item id can be different
             boolean isCheckCGDNotNull = checkIsCGDNotNull(incomingBibliographicEntity);
             if (isCheckCGDNotNull) {
-                updateCustomerCode(fetchBibliographicEntity, incomingBibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it, this happens mostly for CUL
+                updateCustomerCode(fetchBibliographicEntity, incomingBibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it
                 if(deleteDummyRecord) {
                     removeDummyRecord(idMapToRemoveIndexList, fetchBibliographicEntity);
                 }

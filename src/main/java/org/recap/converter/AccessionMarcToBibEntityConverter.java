@@ -16,28 +16,17 @@ import org.recap.model.jpa.ReportDataEntity;
 import org.recap.model.marc.BibMarcRecord;
 import org.recap.model.marc.HoldingsMarcRecord;
 import org.recap.model.marc.ItemMarcRecord;
-import org.recap.repository.jpa.BibliographicDetailsRepository;
-import org.recap.util.CommonUtil;
-import org.recap.util.DBReportUtil;
 import org.recap.util.MarcUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
-public class AccessionMarcToBibEntityConverter implements AccessionXmlToBibEntityConverterInterface {
-    @Autowired
-    private MarcUtil marcUtil;
-
-    @Autowired
-    private DBReportUtil dbReportUtil;
-
-    @Autowired
-    private CommonUtil commonUtil;
-
-    @Autowired
-    private BibliographicDetailsRepository bibliographicDetailsRepository;
+public class AccessionMarcToBibEntityConverter extends AccessionXmlConverterAbstract {
 
     /**
      * This method uses the marc record and builds the bibliographic entity. For exceptions, adds them to report entities. Also adds failed record counts.
@@ -60,8 +49,8 @@ public class AccessionMarcToBibEntityConverter implements AccessionXmlToBibEntit
         List<ItemEntity> itemEntities = new ArrayList<>();
         StringBuilder errorMessage = new StringBuilder();
 
-        getDbReportUtil().setInstitutionEntitiesMap(commonUtil.getInstitutionEntityMap());
-        getDbReportUtil().setCollectionGroupMap(commonUtil.getCollectionGroupMap());
+        dbReportUtil.setInstitutionEntitiesMap(commonUtil.getInstitutionEntityMap());
+        dbReportUtil.setCollectionGroupMap(commonUtil.getCollectionGroupMap());
 
         BibMarcRecord bibMarcRecord = marcUtil.buildBibMarcRecord(record);
         Record bibRecord = bibMarcRecord.getBibRecord();
@@ -222,7 +211,7 @@ public class AccessionMarcToBibEntityConverter implements AccessionXmlToBibEntit
                 failedBibCount = failedBibCount+1;
             }
             reasonForFailureBib = errorMessage.toString();
-            reportDataEntities = getDbReportUtil().generateBibFailureReportEntity(bibliographicEntity, bibRecord);
+            reportDataEntities = dbReportUtil.generateBibFailureReportEntity(bibliographicEntity, bibRecord);
             ReportDataEntity errorReportDataEntity = new ReportDataEntity();
             errorReportDataEntity.setHeaderName(RecapCommonConstants.ERROR_DESCRIPTION);
             errorReportDataEntity.setHeaderValue(errorMessage.toString());
@@ -359,21 +348,8 @@ public class AccessionMarcToBibEntityConverter implements AccessionXmlToBibEntit
         return map;
     }
 
-    /**
-     * Gets db report util.
-     *
-     * @return the db report util
-     */
-    public DBReportUtil getDbReportUtil() {
-        return dbReportUtil;
-    }
-
-    /**
-     * Sets db report util.
-     *
-     * @param dbReportUtil the db report util
-     */
-    public void setDbReportUtil(DBReportUtil dbReportUtil) {
-        this.dbReportUtil = dbReportUtil;
+    @Override
+    public boolean isFormat(String format) {
+        return "MARC".equalsIgnoreCase(format);
     }
 }

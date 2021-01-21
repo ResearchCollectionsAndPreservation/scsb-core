@@ -5,7 +5,7 @@ import org.recap.model.jpa.ImsLocationEntity;
 
 import java.util.Map;
 
-@FunctionalInterface
+
 public interface AccessionXmlToBibEntityConverterInterface {
 
     /**

@@ -9,6 +9,7 @@ import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
 import org.recap.converter.AccessionXmlToBibEntityConverterInterface;
 import org.recap.converter.XmlToBibEntityConverterFactory;
+import org.recap.model.ILSConfigProperties;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
 import org.recap.model.jpa.BibliographicEntity;
@@ -49,6 +50,9 @@ import java.util.Set;
 public class AccessionUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessionUtil.class);
+
+    @Autowired
+    private PropertyUtil propertyUtil;
 
     @Autowired
     DummyDataService dummyDataService;
@@ -93,6 +97,8 @@ public class AccessionUtil {
     private String scsbSolrClientUrl;
 
     private RestTemplate restTemplate;
+
+
     /**
      * Gets rest template.
      *
@@ -343,7 +349,8 @@ public class AccessionUtil {
      */
     public synchronized String updateData(Object record, String owningInstitution, List<Map<String, String>> responseMapList, AccessionRequest accessionRequest, boolean isValidBoundWithRecord, boolean isFirstRecord,ImsLocationEntity imsLocationEntity){
         String response = null;
-        AccessionXmlToBibEntityConverterInterface converter = xmlToBibEntityConverterFactory.getConverter(owningInstitution);
+        ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(owningInstitution);
+        AccessionXmlToBibEntityConverterInterface converter = xmlToBibEntityConverterFactory.getConverter(ilsConfigProperties.getBibDataFormat());
         if (null != converter) {
             Map responseMap = converter.convert(record, owningInstitution, accessionRequest,imsLocationEntity);
             responseMapList.add(responseMap);

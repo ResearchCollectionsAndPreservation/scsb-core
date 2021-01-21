@@ -17,7 +17,7 @@ public class ItemCheckinResponse {
     private String esipDataIn;
     private String esipDataOut;
     private List<String> itemBarcodes;
-    private String itemOwningInstitution=""; // PUL, CUL, NYPL
+    private String itemOwningInstitution="";
     private boolean alert;
     private boolean magneticMedia;
     private boolean resensitize;

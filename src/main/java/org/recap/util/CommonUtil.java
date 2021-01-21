@@ -256,7 +256,7 @@ public class CommonUtil {
     public BibRecords getBibRecordsForSCSBFormat(String unmarshal) {
         BibRecords bibRecords = null;
         try {
-            extractBibRecords(unmarshal);
+             bibRecords = extractBibRecords(unmarshal);
         } catch (JAXBException e) {
             logger.error(RecapCommonConstants.LOG_ERROR,e);
         }

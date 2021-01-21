@@ -15,17 +15,17 @@ public class ItemRequestInformation {
 
     private List<String> itemBarcodes;
     private String titleIdentifier;
-    private String itemOwningInstitution = ""; // PUL, CUL, NYPL
+    private String itemOwningInstitution = "";
     private String patronBarcode = "";
     private String emailAddress = "";
-    private String requestingInstitution = ""; // PUL, CUL, NYPL
-    private String requestType = ""; // Retrieval,EDD, Hold, Recall, Borrow Direct
+    private String requestingInstitution = "";
+    private String requestType = "";
     private String deliveryLocation = "";
     private String customerCode = "";
     private String requestNotes = "";
-    private String trackingId; // NYPL - trackingId
-    private String author; // NYPL - author
-    private String callNumber; // NYPL - callNumber
+    private String trackingId;
+    private String author;
+    private String callNumber;
 
     /**
      * EDD Request

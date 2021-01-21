@@ -10,6 +10,6 @@ import java.util.List;
 @Data
 public class ItemCheckInRequest {
     private List<String> itemBarcodes;
-    private String itemOwningInstitution=""; // PUL, CUL, NYPL
+    private String itemOwningInstitution="";
     private String patronIdentifier;
 }

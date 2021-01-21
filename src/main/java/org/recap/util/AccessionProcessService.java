@@ -346,7 +346,7 @@ public class AccessionProcessService {
                 stopWatch.start();
                 ResponseEntity<ItemRefileResponse> responseEntity = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.POST, request, ItemRefileResponse.class);
                 stopWatch.stop();
-                logger.info("Time taken to refile item barcode {} in NYPL : {}", itemBarcode, stopWatch.getTotalTimeSeconds());
+                logger.info("Time taken to refile item barcode {} is : {}", itemBarcode, stopWatch.getTotalTimeSeconds());
                 logger.info("Refile response for item barcode {} : {}", itemBarcode, null != responseEntity.getBody() ? responseEntity.getBody().getScreenMessage() : null);
             } else {
                 HttpEntity request = new HttpEntity<>(itemRequestInfo, getHttpHeadersAuth());
