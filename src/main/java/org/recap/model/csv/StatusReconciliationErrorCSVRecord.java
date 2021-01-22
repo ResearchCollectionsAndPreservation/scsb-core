@@ -17,7 +17,10 @@ public class StatusReconciliationErrorCSVRecord implements Serializable {
     @DataField(pos = 2, columnName = "Institution")
     private String institution;
 
-    @DataField(pos = 3, columnName = "ReasonForFailure")
+    @DataField(pos = 3, columnName = "ImsLocation")
+    private String imsLocation;
+
+    @DataField(pos = 4, columnName = "ReasonForFailure")
     private String reasonForFailure;
 
     /**
@@ -54,6 +57,24 @@ public class StatusReconciliationErrorCSVRecord implements Serializable {
      */
     public void setInstitution(String institution) {
         this.institution = institution;
+    }
+
+    /**
+     * Gets imsLocation.
+     *
+     * @return the imsLocation
+     */
+    public String getImsLocation() {
+        return imsLocation;
+    }
+
+    /**
+     * Sets imsLocation.
+     *
+     * @param imsLocation the imsLocation
+     */
+    public void setImsLocation(String imsLocation) {
+        this.imsLocation = imsLocation;
     }
 
     /**

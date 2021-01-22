@@ -13,7 +13,7 @@ import static org.junit.Assert.assertNotNull;
 public class DailyReconcilationJobControllerUT extends BaseTestCase{
 
     @Autowired
-    DailyReconcilationJobController dailyReconcilationJobController;
+    DailyReconciliationJobController dailyReconcilationJobController;
 
     @Test
     public void testDailyReconcilationJobController() throws Exception {

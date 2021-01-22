@@ -6,6 +6,7 @@ import org.recap.RecapCommonConstants;
 import org.recap.RecapConstants;
 import org.recap.model.accession.AccessionRequest;
 import org.recap.model.accession.AccessionResponse;
+import org.recap.model.gfa.ScsbLasItemStatusCheckModel;
 import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.jpa.*;
 import org.recap.model.report.SubmitCollectionReportInfo;
@@ -332,5 +333,23 @@ public class CommonUtil {
             }
         }
         return itemBarcodes;
+    }
+
+    /**
+     * Get list of SCSB Item Check Models from item entities
+     * @param itemEntities ItemEntities
+     * @return List of ScsbLasItemStatusCheckModel
+     */
+    public List<ScsbLasItemStatusCheckModel> getScsbItemStatusModelListByItemEntities(List<ItemEntity> itemEntities) {
+        List<ScsbLasItemStatusCheckModel> itemStatusCheckModelList = new ArrayList<>();
+        if (!itemEntities.isEmpty()) {
+            for (ItemEntity itemEntity : itemEntities) {
+                ScsbLasItemStatusCheckModel itemStatusCheckModel = new ScsbLasItemStatusCheckModel();
+                itemStatusCheckModel.setItemBarcode(itemEntity.getBarcode());
+                itemStatusCheckModel.setImsLocation(itemEntity.getImsLocationEntity().getImsLocationCode());
+                itemStatusCheckModelList.add(itemStatusCheckModel);
+            }
+        }
+        return itemStatusCheckModelList;
     }
 }

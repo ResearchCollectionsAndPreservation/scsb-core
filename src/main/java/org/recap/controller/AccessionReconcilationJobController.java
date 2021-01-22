@@ -2,7 +2,9 @@ package org.recap.controller;
 
 import org.apache.camel.CamelContext;
 import org.recap.RecapCommonConstants;
+import org.recap.RecapConstants;
 import org.recap.camel.accessionreconciliation.BarcodeReconciliationRouteBuilder;
+import org.recap.repository.jpa.ImsLocationDetailsRepository;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
 import org.recap.util.PropertyUtil;
 import org.slf4j.Logger;
@@ -20,7 +22,7 @@ import java.util.List;
  * Created by akulak on 24/5/17.
  */
 @RestController
-@RequestMapping("/accessionReconcilation")
+@RequestMapping("/accessionReconciliation")
 public class AccessionReconcilationJobController {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessionReconcilationJobController.class);
@@ -30,6 +32,9 @@ public class AccessionReconcilationJobController {
 
     @Autowired
     InstitutionDetailsRepository institutionDetailsRepository;
+
+    @Autowired
+    ImsLocationDetailsRepository imsLocationDetailsRepository;
 
     @Autowired
     ApplicationContext applicationContext;
@@ -47,23 +52,28 @@ public class AccessionReconcilationJobController {
     private String accessionReconciliationProcessedPath;
 
     /**
-     * This method is used for generating report by, comparing LAS(ReCAP) barcodes and SCSB barcodes. The LAS barcodes are send to SCSB as CVS files, in specific FTP folder.
-     * The barcodes are physically seprated by institution. This method will initiate the comparison of all the three institution at the same time.
+     * This method is used for generating report by, comparing each LAS(ReCAP/HD) barcodes and SCSB barcodes. The LAS barcodes are send to SCSB as CVS files, in specific FTP folder.
+     * The barcodes are physically separated by institution. This method will initiate the comparison of all the three institution at the same time.
      *
      * @return String
      * @throws Exception
      */
-    @PostMapping(value = "/startAccessionReconcilation")
-    public String startAccessionReconcilation() throws Exception {
+    @PostMapping(value = "/startAccessionReconciliation")
+    public String startAccessionReconciliation() throws Exception {
         logger.info("Before accession reconciliation process : {}", camelContext.getRoutes().size());
-        logger.info("Starting Accession Reconcilation Routes");
+        logger.info("Starting Accession Reconciliation Routes");
+        List<String> imsLocationCodesExceptUN = imsLocationDetailsRepository.findAllImsLocationCodeExceptUN();
         List<String> allInstitutionCodeExceptHTC = institutionDetailsRepository.findAllInstitutionCodeExceptHTC();
-        for (String institution : allInstitutionCodeExceptHTC) {
-            camelContext.addRoutes(new BarcodeReconciliationRouteBuilder(applicationContext, camelContext,
-                    institution, accessionReconciliationPath, accessionReconciliationFilePath, accessionReconciliationProcessedPath));
+        for (String imsLocation : imsLocationCodesExceptUN) {
+            for (String institution : allInstitutionCodeExceptHTC) {
+                camelContext.addRoutes(new BarcodeReconciliationRouteBuilder(applicationContext, camelContext,
+                        institution, imsLocation, accessionReconciliationPath, accessionReconciliationFilePath, accessionReconciliationProcessedPath));
+            }
         }
-        for (String institution : allInstitutionCodeExceptHTC) {
-            camelContext.getRouteController().startRoute(institution + "accessionReconcilationS3Route");
+        for (String imsLocation : imsLocationCodesExceptUN) {
+            for (String institution : allInstitutionCodeExceptHTC) {
+                camelContext.getRouteController().startRoute(imsLocation + institution + RecapConstants.ACCESSION_RECONCILIATION_S3_ROUTE_ID);
+            }
         }
         logger.info("After accession reconciliation process : {}", camelContext.getRoutes().size());
         return RecapCommonConstants.SUCCESS;

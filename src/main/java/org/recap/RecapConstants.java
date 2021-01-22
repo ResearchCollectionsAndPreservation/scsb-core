@@ -10,12 +10,12 @@ public final class RecapConstants {
 
     public static final String EDD_REQUEST = "EDD";
     public static final String REFILED_REQUEST = "REFILED";
-    public static final String REQUEST_ACCESSION_RECONCILATION_MAIL_QUEUE = "AccessionReconcilation";
+    public static final String REQUEST_ACCESSION_RECONCILIATION_MAIL_QUEUE = "AccessionReconciliation";
     public static final String REQUEST_INITIAL_DATA_LOAD = "requestInitialDataLoad";
     public static final String SUBMIT_COLLECTION_EXCEPTION = "Exception";
     public static final String SUBJECT_FOR_SUBMIT_COL_EXCEPTION = "Exception Occured during Submit collection";
     public static final String DELETED_RECORDS_EMAIL_TEMPLATE = "deleted_records_email_body.vm";
-    public static final String EMAIL_Q = "scsbactivemq:queue:CircEmailQ";
+    public static final String EMAIL_Q = "scsbactivemq:queue:CoreEmailQ";
     public static final String EMAIL_ROUTE_ID = "RequestRecallEmailRouteId";
     public static final String FORMAT_MARC = "marc";
     public static final String FORMAT_SCSB = "scsb";
@@ -137,9 +137,9 @@ public final class RecapConstants {
     public static final String EMAIL_DELETED_RECORDS_DISPLAY_MESSAGE = "Total No. of Records Deleted : ";
     public static final String DAILY_RECONCILIATION = "DailyReconciliation";
 
-    //Daily Reconcilation
-    public static final String DAILY_RR_FTP_ROUTE_ID = "DailyReconcilationFtpRoute";
-    public static final String DAILY_RR_FS_ROUTE_ID = "DailyReconcilationFsRoute";
+    //Daily Reconciliation
+    public static final String DAILY_RR_S3_ROUTE_ID = "DailyReconciliationS3Route";
+    public static final String DAILY_RR_FS_ROUTE_ID = "DailyReconciliationFsRoute";
     public static final String DAILY_RR_FS_OPTIONS = "?delete=true";
     public static final String DAILY_RR_FS_FILE = "file:";
     public static final String DAILY_RR_LAS = "LAS";
@@ -167,6 +167,8 @@ public final class RecapConstants {
     public static final String STATUS_RECONCILIATION_REPORT = "scsbactivemq:queue:statusReconciliationReportQ";
     public static final String STATUS_RECONCILIATION_REPORT_ID = "statusReconciliationReportRoute";
     public static final String COMPLETE = "Complete";
+    public static final String ACCESSION_RECONCILIATION_S3_ROUTE_ID = "accessionReconciliationS3Route";
+    public static final String ACCESSION_RECONCILIATION_FS_ROUTE_ID = "accessionReconciliationFsRoute";
     public static final String ACCESSION_RECONCILATION_FILE_NAME = "AccessionReconcilation";
     public static final String ACCESSION_RECONCILATION_SOLR_CLIENT_URL = "accessionReconcilationService/startAccessionReconcilation";
     public static final String SUBMIT_COLLECTION_COMPLETED_ROUTE = "submitCollectionCompletedRoute";
@@ -183,7 +185,7 @@ public final class RecapConstants {
     public static final String ITEM_BARCODE_NOT_FOUND = "ITEM_BARCODE_NOT_FOUND";
     public static final String CAMEL_SPLIT_COMPLETE = "CamelSplitComplete";
     public static final String DIRECT = "direct:";
-    public static final String PROCESS_DAILY_RECONCILIATION = "processDailyReconciliaion";
+    public static final String PROCESS_DAILY_RECONCILIATION = "processDailyReconciliation";
     public static final String ACCESSION_RECONCILIATION_HEADER = "Barcodes not present in SCSB";
     public static final String BARCODE_RECONCILIATION_FILE_DATE_FORMAT = "yyyyMMdd";
     public static final String ACCESSION_JOB_INITIATE_ROUTE_ID = "scsbactivemq:queue:accessionInitiateRoute";

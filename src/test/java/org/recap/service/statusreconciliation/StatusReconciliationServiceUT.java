@@ -51,7 +51,7 @@ public class StatusReconciliationServiceUT extends BaseTestCaseUT {
     public void getStatusReconciliationCSVRecord() throws Exception {
         ItemStatusEntity itemStatusEntity=new ItemStatusEntity();
         statusReconciliationService.reFileItems(Arrays.asList("123456"),Arrays.asList(1));
-        StatusReconciliationCSVRecord statusReconciliationCSVRecord=statusReconciliationService.getStatusReconciliationCSVRecord("12345","Available","1","IN",new Date().toString(),itemStatusEntity);
+        StatusReconciliationCSVRecord statusReconciliationCSVRecord=statusReconciliationService.getStatusReconciliationCSVRecord("12345","Available","1","IN",new Date().toString(),itemStatusEntity, "RECAP");
         assertEquals("12345",statusReconciliationCSVRecord.getBarcode());
     }
 

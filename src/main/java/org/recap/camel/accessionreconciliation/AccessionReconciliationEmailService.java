@@ -27,14 +27,16 @@ public class AccessionReconciliationEmailService {
     PropertyUtil propertyUtil;
 
     private final String institutionCode;
+    private final String imsLocationCode;
 
     /**
      * Instantiates a new Accession reconciliation email service.
      *
      * @param institutionCode the institution code
      */
-    public AccessionReconciliationEmailService(String institutionCode) {
+    public AccessionReconciliationEmailService(String institutionCode, String imsLocationCode) {
         this.institutionCode = institutionCode;
+        this.imsLocationCode = imsLocationCode;
     }
 
     /**
@@ -43,8 +45,8 @@ public class AccessionReconciliationEmailService {
      * @param exchange the exchange
      */
     public void processInput(Exchange exchange) {
-        logger.info("accession email started for {}", institutionCode);
-        producerTemplate.sendBodyAndHeader(RecapConstants.EMAIL_Q, getEmailPayLoad(exchange), RecapConstants.EMAIL_BODY_FOR, "AccessionReconcilation");
+        logger.info("accession email started for {} - {}", imsLocationCode, institutionCode);
+        producerTemplate.sendBodyAndHeader(RecapConstants.EMAIL_Q, getEmailPayLoad(exchange), RecapConstants.EMAIL_BODY_FOR, RecapConstants.REQUEST_ACCESSION_RECONCILIATION_MAIL_QUEUE);
     }
 
     /**
@@ -58,7 +60,7 @@ public class AccessionReconciliationEmailService {
         emailPayLoad.setTo(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.accession.reconciliation.to"));
         emailPayLoad.setCc(propertyUtil.getPropertyByInstitutionAndKey(institutionCode, "email.accession.reconciliation.cc"));
         logger.info("Accession Reconciliation email sent to : {} and cc : {} ", emailPayLoad.getTo(), emailPayLoad.getCc());
-        emailPayLoad.setMessageDisplay("Barcode Reconciliation has been completed for " + institutionCode.toUpperCase() + ". The report is at the FTP location " + fileNameWithPath);
+        emailPayLoad.setMessageDisplay("Barcode Reconciliation has been completed for " + institutionCode.toUpperCase() + " at " + imsLocationCode + ". The report is at the S3 location " + fileNameWithPath);
         return emailPayLoad;
     }
 
