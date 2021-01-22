@@ -26,7 +26,10 @@ public class StatusReconciliationCSVRecord implements Serializable{
     @DataField(pos = 5, columnName = "StatusInLas")
     private String statusInLas;
 
-    @DataField(pos = 6, columnName = "DateTime")
+    @DataField(pos = 6, columnName = "ImsLocation")
+    private String imsLocation;
+
+    @DataField(pos = 7, columnName = "DateTime")
     private String dateTime;
 
     /**
@@ -135,5 +138,23 @@ public class StatusReconciliationCSVRecord implements Serializable{
      */
     public void setStatusInLas(String statusInLas) {
         this.statusInLas = statusInLas;
+    }
+
+    /**
+     * Gets imsLocation.
+     *
+     * @return the imsLocation
+     */
+    public String getImsLocation() {
+        return imsLocation;
+    }
+
+    /**
+     * Sets imsLocation.
+     *
+     * @param imsLocation the imsLocation
+     */
+    public void setImsLocation(String imsLocation) {
+        this.imsLocation = imsLocation;
     }
 }

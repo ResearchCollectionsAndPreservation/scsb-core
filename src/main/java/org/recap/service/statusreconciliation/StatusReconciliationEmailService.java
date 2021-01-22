@@ -33,8 +33,8 @@ public class StatusReconciliationEmailService {
      * @param exchange the exchange
      */
     public void processInput(Exchange exchange) {
-        String fileLocation = (String) exchange.getIn().getHeaders().get("CamelFileNameProduced");
-        producerTemplate.sendBodyAndHeader(RecapConstants.EMAIL_Q, getEmailPayLoad(fileLocation), RecapConstants.EMAIL_BODY_FOR, "StatusReconcilation");
+        String fileLocation = (String) exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY);
+        producerTemplate.sendBodyAndHeader(RecapConstants.EMAIL_Q, getEmailPayLoad(fileLocation), RecapConstants.EMAIL_BODY_FOR, RecapConstants.STATUS_RECONCILIATION);
     }
 
     private EmailPayLoad getEmailPayLoad(String fileLocation) {
@@ -42,7 +42,7 @@ public class StatusReconciliationEmailService {
         emailPayLoad.setCc(statusReconciliationEmailCC);
         emailPayLoad.setTo(statusReconciliationEmailTo);
         log.info("Status Reconciliation : email sent to : {} and cc : {} ", emailPayLoad.getTo(), emailPayLoad.getCc());
-        emailPayLoad.setMessageDisplay("The \"Out\" Status Reconciliation report is available at the FTP location " + fileLocation);
+        emailPayLoad.setMessageDisplay("The \"Out\" Status Reconciliation report is available at the S3 location " + fileLocation);
         return emailPayLoad;
     }
 }

@@ -53,6 +53,7 @@ public class AccessionReconciliationProcessor {
     AmazonS3 awsS3Client;
 
     private String institutionCode;
+    private String imsLocationCode;
 
     int noOfLinesInFile=0;
 
@@ -61,8 +62,9 @@ public class AccessionReconciliationProcessor {
      *
      * @param institutionCode the institution code
      */
-    public AccessionReconciliationProcessor(String institutionCode) {
+    public AccessionReconciliationProcessor(String institutionCode, String imsLocationCode) {
         this.institutionCode = institutionCode;
+        this.imsLocationCode = imsLocationCode;
     }
 
     /**
@@ -86,7 +88,7 @@ public class AccessionReconciliationProcessor {
         try {
             String line= RecapConstants.NEW_LINE;
             byte[] newLine=line.getBytes(StandardCharsets.UTF_8);
-            Path filePath = Paths.get(accessionFilePath+RecapCommonConstants.PATH_SEPARATOR+institutionCode+RecapCommonConstants.PATH_SEPARATOR+ RecapConstants.ACCESSION_RECONCILATION_FILE_NAME+institutionCode+simpleDateFormat.format(new Date())+".csv");
+            Path filePath = Paths.get(accessionFilePath+RecapCommonConstants.PATH_SEPARATOR+imsLocationCode+RecapCommonConstants.PATH_SEPARATOR+institutionCode+RecapCommonConstants.PATH_SEPARATOR+ RecapConstants.ACCESSION_RECONCILATION_FILE_NAME+imsLocationCode+institutionCode+simpleDateFormat.format(new Date())+".csv");
             if (!filePath.toFile().exists()) {
                 Files.createDirectories(filePath.getParent());
                 Files.createFile(filePath);
@@ -116,7 +118,7 @@ public class AccessionReconciliationProcessor {
         if (awsS3Client.doesObjectExist(bucketName, xmlFileName)) {
             String basepath = xmlFileName.substring(0, xmlFileName.lastIndexOf('/'));
             String fileName = xmlFileName.substring(xmlFileName.lastIndexOf('/'));
-            awsS3Client.copyObject(bucketName, xmlFileName, bucketName, basepath + "/.done-" + institutionCode + fileName);
+            awsS3Client.copyObject(bucketName, xmlFileName, bucketName, basepath + "/.done-" + imsLocationCode + "-" + institutionCode + fileName);
             awsS3Client.deleteObject(bucketName, xmlFileName);
         }
     }
@@ -125,8 +127,8 @@ public class AccessionReconciliationProcessor {
         if ((boolean)exchange.getProperty(RecapConstants.CAMEL_SPLIT_COMPLETE)){
             logger.info("split last index-->{}",index);
             try {
-                logger.info("Starting {}accessionReconcilationFsRoute",institutionCode);
-                camelContext.getRouteController().startRoute(institutionCode+"accessionReconcilationFsRoute");
+                logger.info("Starting {}{}{}",imsLocationCode, institutionCode, RecapConstants.ACCESSION_RECONCILIATION_FS_ROUTE_ID);
+                camelContext.getRouteController().startRoute(imsLocationCode+institutionCode+RecapConstants.ACCESSION_RECONCILIATION_FS_ROUTE_ID);
             } catch (Exception e) {
                 logger.error(RecapCommonConstants.LOG_ERROR, e);
             }

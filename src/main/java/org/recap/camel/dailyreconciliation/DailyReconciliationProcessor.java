@@ -69,6 +69,12 @@ public class DailyReconciliationProcessor {
     @Autowired
     AmazonS3 awsS3Client;
 
+    private String imsLocationCode;
+
+    public DailyReconciliationProcessor(String imsLocationCode) {
+        this.imsLocationCode = imsLocationCode;
+    }
+
     /**
      * Process input for daily reconciliation report.
      *
@@ -77,16 +83,16 @@ public class DailyReconciliationProcessor {
     public void processInput(Exchange exchange) {
         try {
             String xmlFileName = exchange.getIn().getHeader(RecapConstants.CAMEL_AWS_KEY).toString();
-            logger.info("fileProcessing:{}",xmlFileName);
+            logger.info("{} LAS File Processing: {}", imsLocationCode, xmlFileName);
             List<DailyReconcilationRecord> dailyReconcilationRecordList = (List<DailyReconcilationRecord>)exchange.getIn().getBody();
             try (XSSFWorkbook xssfWorkbook = new XSSFWorkbook()) {
-                XSSFSheet lasSheet = xssfWorkbook.createSheet(RecapConstants.DAILY_RR_LAS);
-                xssfWorkbook.setSheetOrder(RecapConstants.DAILY_RR_LAS, 0);
+                XSSFSheet lasSheet = xssfWorkbook.createSheet(imsLocationCode + "_" + RecapConstants.DAILY_RR_LAS);
+                xssfWorkbook.setSheetOrder(imsLocationCode + "_" + RecapConstants.DAILY_RR_LAS, 0);
                 int i = 0;
                 setColumnWidthForSheet(lasSheet);
                 CellStyle cellStyle = xssfWorkbook.createCellStyle();
                 cellStyle.setAlignment(HorizontalAlignment.LEFT);
-                logger.info("started creating las sheet");
+                logger.info("started creating las sheet for : {}", imsLocationCode);
                 for (DailyReconcilationRecord dailyReconcilationRecord : dailyReconcilationRecordList) {
                     XSSFRow row = lasSheet.createRow(i);
                     createCellForEqualRow(row, xssfWorkbook, dailyReconcilationRecord.getCustomerCode(), cellStyle, dailyReconcilationRecord.getRequestId(), 0, dailyReconcilationRecord.getBarcode(), 1, 2, dailyReconcilationRecord.getStopCode(), 3, dailyReconcilationRecord.getPatronId(), 4, dailyReconcilationRecord.getCreateDate(), 5);
@@ -94,7 +100,7 @@ public class DailyReconciliationProcessor {
                     createCell(xssfWorkbook, row,cellStyle, dailyReconcilationRecord.getErrorNote(), 12);
                     i++;                         
                 }
-                logger.info("completed creating las sheet");
+                logger.info("completed creating las sheet for : {}", imsLocationCode);
                 Sheet readLasSheet = xssfWorkbook.getSheetAt(0);
                 XSSFSheet scsbSheet = xssfWorkbook.createSheet(RecapConstants.DAILY_RR_SCSB);
                 xssfWorkbook.setSheetOrder(RecapConstants.DAILY_RR_SCSB, 1);
@@ -107,22 +113,23 @@ public class DailyReconciliationProcessor {
                 logger.info("completed creating scsb sheet");
                 compareLasAndScsbSheets(xssfWorkbook,cellStyle);
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat(RecapConstants.DAILY_RR_FILE_DATE_FORMAT);
-                FileOutputStream fileOutputStream = new FileOutputStream(filePath + "/" + RecapConstants.DAILY_RR + simpleDateFormat.format(new Date()) + ".xlsx");
+                logger.info("File Path: {}, Ims : {}", filePath, imsLocationCode);
+                FileOutputStream fileOutputStream = new FileOutputStream(filePath + "/" + imsLocationCode + "/" + RecapConstants.DAILY_RR + simpleDateFormat.format(new Date()) + ".xlsx");
                 xssfWorkbook.write(fileOutputStream);
                 fileOutputStream.flush();
                 fileOutputStream.close();
                 logger.info("total number of sheets created {}",xssfWorkbook.getNumberOfSheets());
-                camelContext.getRouteController().startRoute(RecapConstants.DAILY_RR_FS_ROUTE_ID);
-                logger.info("started "+ RecapConstants.DAILY_RR_FS_ROUTE_ID);
+                camelContext.getRouteController().startRoute(RecapConstants.DAILY_RR_FS_ROUTE_ID + imsLocationCode);
+                logger.info("started {}", RecapConstants.DAILY_RR_FS_ROUTE_ID + imsLocationCode);
                 String bucketName = exchange.getIn().getHeader("CamelAwsS3BucketName").toString();
                 if (awsS3Client.doesObjectExist(bucketName, xmlFileName)) {
                     String basepath = xmlFileName.substring(0, xmlFileName.lastIndexOf('/'));
                     String fileName = xmlFileName.substring(xmlFileName.lastIndexOf('/'));
-                    awsS3Client.copyObject(bucketName, xmlFileName, bucketName, basepath + "/.done" + fileName);
+                    awsS3Client.copyObject(bucketName, xmlFileName, bucketName, basepath + "/.done-" + imsLocationCode + fileName);
                     awsS3Client.deleteObject(bucketName, xmlFileName);
                 }
             }
-            logger.info("fileProcessed:{}",xmlFileName);
+            logger.info("{} LAS File Processed: {}",imsLocationCode, xmlFileName);
         }
         catch (Exception e){
             logger.error(RecapCommonConstants.LOG_ERROR, e);

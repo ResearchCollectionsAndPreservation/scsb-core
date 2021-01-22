@@ -39,7 +39,7 @@ public class AccessionReconcilationJobControllerUT extends BaseTestCaseUT {
         Mockito.when(institutionDetailsRepository.findAllInstitutionCodeExceptHTC()).thenReturn(allInstitutionCodeExceptHTC);
         Mockito.when(camelContext.getRouteController()).thenReturn(routeController);
         Mockito.doNothing().when(routeController).startRoute(Mockito.anyString());
-        String result = accessionReconcilationJobController.startAccessionReconcilation();
+        String result = accessionReconcilationJobController.startAccessionReconciliation();
         assertNotNull(result);
         assertEquals(RecapCommonConstants.SUCCESS,result);
     }
