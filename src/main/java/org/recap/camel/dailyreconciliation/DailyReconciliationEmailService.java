@@ -27,9 +27,6 @@ public class DailyReconciliationEmailService {
     @Autowired
     private PropertyUtil propertyUtil;
 
-    @Value("${email.daily.reconciliation.to}")
-    private String emailTo;
-
     private String fileLocation;
 
     private final String imsLocationCode;
@@ -47,7 +44,7 @@ public class DailyReconciliationEmailService {
 
     private EmailPayLoad getEmailPayLoad() {
         EmailPayLoad emailPayLoad = new EmailPayLoad();
-        emailPayLoad.setTo(propertyUtil.getPropertyByImsLocationAndKey(imsLocationCode, "email.daily.reconciliation.to"));
+        emailPayLoad.setTo(propertyUtil.getPropertyByImsLocationAndKey(imsLocationCode, "las.email.daily.reconciliation.to"));
         logger.info("Daily Reconciliation email sent to {}", emailPayLoad.getTo());
         emailPayLoad.setMessageDisplay("Daily reconciliation report is available at the S3 location " + fileLocation);
         return emailPayLoad;
