@@ -45,13 +45,12 @@ public class EmailRouteBuilder {
      * @param passwordDirectory the password directory
      * @param from              the from
      * @param subject           the subject
-     * @param requestPendingTo  the request pending to
      * @param smtpServer        the smtp server
      */
     @Autowired
     public EmailRouteBuilder(CamelContext context, CommonUtil commonUtil, @Value("${email.smtp.server.username}") String username, @Value("${email.smtp.server.password.file}") String passwordDirectory,
                              @Value("${email.smtp.server.address.from}") String from, @Value("${email.request.recall.subject}") String subject,
-                             @Value("${recap-las.email.recap.assist.email.to}") String requestPendingTo, @Value("${email.smtp.server}") String smtpServer) {
+                             @Value("${email.smtp.server}") String smtpServer) {
         try {
             context.addRoutes(new RouteBuilder() {
                 @Override
