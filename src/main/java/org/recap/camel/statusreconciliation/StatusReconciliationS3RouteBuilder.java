@@ -32,29 +32,31 @@ public class StatusReconciliationS3RouteBuilder {
      * @param statusReconciliation the status reconciliation
      */
     @Autowired
-    public StatusReconciliationS3RouteBuilder(CamelContext camelContext, ApplicationContext applicationContext, @Value("${status.reconciliation}") String statusReconciliation) {
+    public StatusReconciliationS3RouteBuilder(CamelContext camelContext, ApplicationContext applicationContext, @Value("${s3.add.s3.routes.on.startup}") boolean addS3RoutesOnStartup, @Value("${status.reconciliation}") String statusReconciliation) {
         try {
-            camelContext.addRoutes(new RouteBuilder() {
-                @Override
-                public void configure() throws Exception {
-                    from(RecapConstants.STATUS_RECONCILIATION_REPORT)
-                            .routeId(RecapConstants.STATUS_RECONCILIATION_REPORT_ID)
-                            .onCompletion().onWhen(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION))
-                            .log("status reconciliation process finished files generated in S3")
-                            .bean(applicationContext.getBean(StatusReconciliationEmailService.class), RecapConstants.PROCESS_INPUT)
-                            .end()
-                            .choice()
-                            .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION))
-                            .marshal().bindy(BindyType.Csv, StatusReconciliationCSVRecord.class)
-                            .setHeader(S3Constants.KEY, simple(statusReconciliation+"StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv"))
-                            .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
-                            .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION_FAILURE))
-                            .setHeader(S3Constants.KEY, simple(statusReconciliation+"StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv"))
-                            .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
-                            .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
-                            .log("status reconciliation failure report generated in s3");
-                }
-            });
+            if (addS3RoutesOnStartup) {
+                camelContext.addRoutes(new RouteBuilder() {
+                    @Override
+                    public void configure() throws Exception {
+                        from(RecapConstants.STATUS_RECONCILIATION_REPORT)
+                                .routeId(RecapConstants.STATUS_RECONCILIATION_REPORT_ID)
+                                .onCompletion().onWhen(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION))
+                                .log("status reconciliation process finished files generated in S3")
+                                .bean(applicationContext.getBean(StatusReconciliationEmailService.class), RecapConstants.PROCESS_INPUT)
+                                .end()
+                                .choice()
+                                .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION))
+                                .marshal().bindy(BindyType.Csv, StatusReconciliationCSVRecord.class)
+                                .setHeader(S3Constants.KEY, simple(statusReconciliation + "StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv"))
+                                .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
+                                .when(header(RecapConstants.FOR).isEqualTo(RecapConstants.STATUS_RECONCILIATION_FAILURE))
+                                .setHeader(S3Constants.KEY, simple(statusReconciliation + "StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv"))
+                                .to(RecapConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
+                                .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
+                                .log("status reconciliation failure report generated in s3");
+                    }
+                });
+            }
         } catch (Exception e) {
             logger.error(RecapCommonConstants.LOG_ERROR, e);
         }
