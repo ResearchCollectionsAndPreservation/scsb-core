@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by rajeshbabuk on 05/Mar/2021
@@ -51,6 +53,16 @@ public class BibliographicRepositoryDAO {
         entityManager.flush();
         entityManager.refresh(savedBibliographicEntity);
         return savedBibliographicEntity;
+    }
+
+    @Transactional
+    public List<BibliographicEntity> saveOrUpdateList(List<BibliographicEntity> bibliographicEntityList) {
+        List<BibliographicEntity> savedBibliographicEntityList = new ArrayList<>();
+        for(BibliographicEntity bibliographicEntity : bibliographicEntityList) {
+            savedBibliographicEntityList.add(saveOrUpdate(bibliographicEntity));
+        }
+        entityManager.clear();
+        return savedBibliographicEntityList;
     }
 
     private boolean fetchBibliographicEntityAndSetIdIfExists(BibliographicEntity bibliographicEntity, boolean isNew) {

@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -416,8 +417,8 @@ public class SubmitCollectionDAOService {
         logger.info("updatedBibliographicEntityList size--->{}",updatedBibliographicEntityList.size());
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        repositoryService.getBibliographicDetailsRepository().saveAll(updatedBibliographicEntityList);
-        repositoryService.getBibliographicDetailsRepository().flush();
+        bibliographicRepositoryDAO.saveOrUpdateList(updatedBibliographicEntityList);
+    //    repositoryService.getBibliographicDetailsRepository().flush();
         stopWatch.stop();
         logger.info("Time taken to save {} bib size---->{} sec",updatedBibliographicEntityList.size(),stopWatch.getTotalTimeSeconds());
     }
@@ -622,6 +623,14 @@ public class SubmitCollectionDAOService {
         }
     }
 
+    private void updateItemLocation(BibliographicEntity dummyBibliographicEntity, BibliographicEntity updatedBibliographicEntity) {
+        updatedBibliographicEntity.getItemEntities().get(0).setImsLocationId(dummyBibliographicEntity.getItemEntities().get(0).getImsLocationId());
+        Optional<ImsLocationEntity> imsLocationEntity = imsLocationDetailsRepository.findById(dummyBibliographicEntity.getItemEntities().get(0).getImsLocationId());
+          if(imsLocationEntity.isPresent()) {
+              updatedBibliographicEntity.getItemEntities().get(0).setImsLocationEntity(imsLocationEntity.get());
+          }
+    }
+
     /**
      * Update dummy record for non bound with bibliographic entity.
      *
@@ -682,6 +691,7 @@ public class SubmitCollectionDAOService {
                 }
                 BibliographicEntity fetchedBibliographicEntity = repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(incomingBibliographicEntity.getOwningInstitutionId(), incomingBibliographicEntity.getOwningInstitutionBibId());
                 setItemAvailabilityStatus(incomingBibliographicEntity.getItemEntities());
+                updateItemLocation(fetchBibliographicEntity, incomingBibliographicEntity);//Added to get imslocation code for existing dummy record, this value is used when the input xml dosent have the imslocation code in it
                 bibliographicEntityToSave = incomingBibliographicEntity;
                 updateCatalogingStatusForItem(bibliographicEntityToSave);
                 updateCatalogingStatusForBib(bibliographicEntityToSave);
@@ -690,8 +700,9 @@ public class SubmitCollectionDAOService {
                     processedBibIds.add(fetchedBibliographicEntity.getId());
                 }
                 savedBibliographicEntity = bibliographicEntityToSave;
-                entityManager.merge(savedBibliographicEntity);
-                entityManager.flush();
+                bibliographicRepositoryDAO.saveOrUpdate(savedBibliographicEntity);
+             //   entityManager.merge(savedBibliographicEntity);
+              //  entityManager.flush();
 
                 //TODO need to change the item change log message for boundwith dummy record
                 List<ItemChangeLogEntity> preparedItemChangeLogEntityList = prepareItemChangeLogEntity(ScsbConstants.SUBMIT_COLLECTION, ScsbConstants.SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE, savedBibliographicEntity.getItemEntities());
