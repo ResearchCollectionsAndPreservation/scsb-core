@@ -677,6 +677,7 @@ public class SubmitCollectionDAOService {
             boolean isCheckCGDNotNull = checkIsCGDNotNull(incomingBibliographicEntity);
             if (isCheckCGDNotNull) {
                 updateCustomerCode(fetchBibliographicEntity, incomingBibliographicEntity);//Added to get customer code for existing dummy record, this value is used when the input xml dosent have the customer code in it
+                updateImsLocationId(fetchBibliographicEntity, incomingBibliographicEntity);//Added to get ims location Id for existing dummy record, this value is used when the input xml dosent have the ims location Id in it
                 if(deleteDummyRecord) {
                     removeDummyRecord(idMapToRemoveIndexList, fetchBibliographicEntity);
                 }
@@ -690,8 +691,9 @@ public class SubmitCollectionDAOService {
                     processedBibIds.add(fetchedBibliographicEntity.getId());
                 }
                 savedBibliographicEntity = bibliographicEntityToSave;
-                entityManager.merge(savedBibliographicEntity);
-                entityManager.flush();
+                savedBibliographicEntity = bibliographicRepositoryDAO.saveOrUpdate(savedBibliographicEntity);
+                //entityManager.merge(savedBibliographicEntity);
+                //entityManager.flush();
 
                 //TODO need to change the item change log message for boundwith dummy record
                 List<ItemChangeLogEntity> preparedItemChangeLogEntityList = prepareItemChangeLogEntity(ScsbConstants.SUBMIT_COLLECTION, ScsbConstants.SUBMIT_COLLECTION_DUMMY_RECORD_UPDATE, savedBibliographicEntity.getItemEntities());
@@ -1084,6 +1086,10 @@ public class SubmitCollectionDAOService {
 
     private void updateCustomerCode(BibliographicEntity dummyBibliographicEntity, BibliographicEntity updatedBibliographicEntity) {
         updatedBibliographicEntity.getItemEntities().get(0).setCustomerCode(dummyBibliographicEntity.getItemEntities().get(0).getCustomerCode());
+    }
+
+    private void updateImsLocationId(BibliographicEntity dummyBibliographicEntity, BibliographicEntity updatedBibliographicEntity) {
+        updatedBibliographicEntity.getItemEntities().get(0).setImsLocationId(dummyBibliographicEntity.getItemEntities().get(0).getImsLocationId());
     }
 
     private BibliographicEntity updateCatalogingStatusForItem(BibliographicEntity bibliographicEntity) {

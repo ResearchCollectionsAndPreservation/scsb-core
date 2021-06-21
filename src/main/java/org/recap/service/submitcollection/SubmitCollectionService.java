@@ -116,6 +116,7 @@ public class SubmitCollectionService {
                         response = processMarc(inputRecords, processedBibIds, submitCollectionReportInfoMap, idMapToRemoveIndexList, bibIdMapToRemoveIndexList, checkLimit,isCGDProtected,institutionEntity,updatedDummyRecordOwnInstBibIdSet);
                     }
                     if (response != null){//This happens when there is a failure
+                        exchange.setException(new Exception(response));
                         setResponse(response, submitCollectionResponseList);
                         getSubmitCollectionReportHelperService().setSubmitCollectionReportInfoForInvalidXml(institutionCode,submitCollectionReportInfoMap.get(ScsbConstants.SUBMIT_COLLECTION_FAILURE_LIST),response);
                         generateSubmitCollectionReport(submitCollectionReportInfoMap.get(ScsbConstants.SUBMIT_COLLECTION_FAILURE_LIST), ScsbCommonConstants.SUBMIT_COLLECTION_REPORT, ScsbCommonConstants.SUBMIT_COLLECTION_FAILURE_REPORT, xmlFileName,reportRecordNumberList);
