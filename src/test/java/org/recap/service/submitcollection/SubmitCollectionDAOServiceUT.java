@@ -533,6 +533,11 @@ public class SubmitCollectionDAOServiceUT extends BaseTestCaseUT {
         Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
         Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(),Mockito.anyString())).thenReturn(getBibliographicEntity("1577261074"));
         Mockito.when(repositoryService.getItemChangeLogDetailsRepository()).thenReturn(itemChangeLogDetailsRepository);
+        Mockito.when(bibliographicRepositoryDAO.saveOrUpdate(Mockito.any())).thenReturn(savedBibliographicEntity);
+        Mockito.when(savedBibliographicEntity.getId()).thenReturn(1);
+        List<ItemEntity> incomingItemEntityList=new ArrayList<>();
+        incomingItemEntityList.add(incomingItemEntity);
+        Mockito.when(savedBibliographicEntity.getItemEntities()).thenReturn(incomingItemEntityList);
         List<BibliographicEntity> bibliographicEntities1 = submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(boundWithBibliographicEntityObjectList,1,submitCollectionReportInfoMap,getIntegers(),idMapToRemoveIndexList,bibIdMapToRemoveIndexList,processedBarcodeSetForDummyRecords);
         assertNotNull(bibliographicEntities1);
     }
@@ -911,6 +916,7 @@ public class SubmitCollectionDAOServiceUT extends BaseTestCaseUT {
         Mockito.doNothing().when(bibliographicDetailsRepository).delete(fetchBibliographicEntity);
         Mockito.doNothing().when(bibliographicDetailsRepository).flush();
         Mockito.when(repositoryService.getBibliographicDetailsRepository().findByOwningInstitutionIdAndOwningInstitutionBibId(incomingBibliographicEntity.getOwningInstitutionId(), incomingBibliographicEntity.getOwningInstitutionBibId())).thenReturn(getBibliographicEntity("1577261074"));
+        Mockito.when(bibliographicRepositoryDAO.saveOrUpdate(Mockito.any())).thenReturn(savedBibliographicEntity);
         BibliographicEntity bibliographicEntity = submitCollectionDAOService.updateDummyRecordForBoundWith(incomingBibliographicEntity,submitCollectionReportInfoMap,idMapToRemoveIndexList,processedBarcodeSet,savedBibliographicEntity,fetchBibliographicEntity,itemChangeLogEntityList,deleteDummyRecord,processedBibIds);
         assertNotNull(bibliographicEntity);
     }

@@ -2,6 +2,7 @@
 package org.recap.service.submitcollection;
 
 import junit.framework.TestCase;
+import org.apache.camel.Exchange;
 import org.junit.Test;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcXmlReader;
@@ -116,6 +117,8 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
     @Mock
     RestTemplate restTemplate;
 
+    @Mock
+    Exchange exchange;
 
     @Value("${" + PropertyKeyConstants.SCSB_SOLR_DOC_URL + "}")
     private String scsbSolrClientUrl;
@@ -1166,7 +1169,7 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
         Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
         ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
         Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null);
+        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, exchange);
         assertEquals(ScsbConstants.SUBMIT_COLLECTION_REJECTION_RECORD,submitCollectionResponseList.get(0).getMessage());
     }
 
@@ -1319,7 +1322,7 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
         List<BibRecord> bibRecordList=new ArrayList<>();
         bibRecordList.add(bibRecord);
         Mockito.when(bibRecords.getBibRecordList()).thenReturn(bibRecordList);
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("NYPL",updatedContentForNYPL1,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null);
+        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("NYPL",updatedContentForNYPL1,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, exchange);
         assertTrue(submitCollectionResponseList.get(0).getMessage().contains(ScsbConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE));
     }
 
@@ -1337,7 +1340,7 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
         ReflectionTestUtils.setField(marcUtil,"inputLimit",0);
         ReflectionTestUtils.setField(submitCollectionService,"inputLimit",0);
         Mockito.when(commonUtil.extractBibRecords(Mockito.any())).thenThrow(JAXBException.class);
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("NYPL",updatedContentForNYPL1,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null);
+        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("NYPL",updatedContentForNYPL1,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, exchange);
         assertEquals(ScsbConstants.INVALID_SCSB_XML_FORMAT_MESSAGE,submitCollectionResponseList.get(0).getMessage());
     }
     @Test
