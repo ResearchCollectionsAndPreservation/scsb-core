@@ -2,6 +2,8 @@ package org.recap.converter;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.marc4j.MarcWriter;
+import org.marc4j.MarcXmlWriter;
 import org.marc4j.marc.Record;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -17,10 +19,7 @@ import org.recap.model.jaxb.Holdings;
 import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.jaxb.marc.CollectionType;
 import org.recap.model.jaxb.marc.ContentType;
-import org.recap.model.jpa.BibliographicEntity;
-import org.recap.model.jpa.HoldingsEntity;
-import org.recap.model.jpa.InstitutionEntity;
-import org.recap.model.jpa.ItemEntity;
+import org.recap.model.jpa.*;
 import org.recap.model.marc.BibMarcRecord;
 import org.recap.model.marc.HoldingsMarcRecord;
 import org.recap.repository.jpa.InstitutionDetailsRepository;
@@ -36,14 +35,10 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -79,6 +74,24 @@ public class SCSBToBibEntityConverterUT extends BaseTestCaseUT {
 
     @Mock
     CollectionType collectionType;
+
+    @Mock
+    InstitutionEntity institutionEntity;
+
+    @Mock
+    BibRecord bibRecord;
+
+    @Mock
+    Bib bib;
+
+    @Mock
+    Record bibRecordObject;
+
+    @Mock
+    ReportEntity bibReportEntity;
+
+    @Mock
+    HoldingsEntity holdingsEntity;
 
     @Before
     public  void setup(){
@@ -245,9 +258,70 @@ public class SCSBToBibEntityConverterUT extends BaseTestCaseUT {
         Map result = scsbToBibEntityConverter.convert(getBibRecords().getBibRecordList().get(0),getInstitutionEntity());
         assertNotNull(result);
     }
+
+    @Test
+    public void convertItemValidation() throws Exception {
+        BibRecord bibRecord = new BibRecord();
+        Bib bib = new Bib();
+        Holdings holdings = new Holdings();
+        Holding holding = new Holding();
+        holding.setOwningInstitutionHoldingsId("1");
+        ContentType contentType = new ContentType();
+        contentType.setCollection(collectionType);
+        holding.setContent(contentType);
+        holdings.setHolding(Arrays.asList(holding));
+        bibRecord.setBib(bib);
+        bibRecord.setHoldings(Arrays.asList(holdings));
+        holdingsMarcRecord.setHoldingsRecord(record);
+        bibMarcRecord.setBibRecord(record);
+        bibMarcRecord.setHoldingsMarcRecords(Arrays.asList(holdingsMarcRecord));
+        StringBuilder errorMessage = new StringBuilder();
+        errorMessage.append("Owning Institution Bib Id cannot be null");
+        BibRecord bibRecordx = (BibRecord) getBibRecords().getBibRecordList().get(0);
+        CollectionType itemContentCollectionx=bibRecordx.getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection();
+        String itemContentx = itemContentCollectionx.serialize(itemContentCollectionx);
+        MarcUtil marcUtil1=new MarcUtil();
+        List<Record> itemRecordListx = marcUtil1.convertMarcXmlToRecord(itemContentx);
+        Record itemRecordx=itemRecordListx.get(0);
+        Mockito.when(marcUtil.getDataFieldValue(itemRecordx,"876", 'p')).thenReturn("33433002031718");
+        Mockito.when(marcUtil.getDataFieldValue(itemRecordx,"900", 'b')).thenReturn("NA");
+        Mockito.when(marcUtil.getDataFieldValue(itemRecordx,"876", 'k')).thenReturn("itemLibrary");
+        Mockito.when(marcUtil.getDataFieldValue(itemRecordx,"876", 't')).thenReturn("1");
+        Mockito.when(marcUtil.getDataFieldValue(itemRecordx,"900", 'a')).thenReturn("Shared");
+        Mockito.when(marcUtil.getDataFieldValue(itemRecordx,"876", 'h')).thenReturn("In Library Use");
+        Mockito.when(marcUtil.getDataFieldValue(itemRecordx,"876", 'a')).thenReturn(".i100000046");
+        Mockito.when(commonUtil.getInstitutionEntityMap()).thenReturn(new HashMap());
+        Map<String, Integer> collectionGroupMap=new HashMap<>();
+        collectionGroupMap.put("Shared",1);
+        Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
+        Mockito.when(marcUtil.buildBibMarcRecord(Mockito.any(BibRecord.class))).thenReturn(bibMarcRecord);
+        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenReturn(itemRecordListx);
+        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.anyString(),Mockito.anyString())).thenReturn(getHoldingsEntity());
+        Map<String, Object> map = new HashMap<>();
+        BibliographicEntity bibliographicEntity=saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186");
+        map.put(ScsbConstants.BIBLIOGRAPHIC_ENTITY,bibliographicEntity);
+        Mockito.when(marcUtil.extractXmlAndSetEntityToMap(Mockito.any(),Mockito.any(),Mockito.anyMap(),Mockito.any())).thenReturn(map);
+        Map result = scsbToBibEntityConverter.convert(getBibRecords().getBibRecordList().get(0),getInstitutionEntity());
+        assertNotNull(result);
+    }
+
+    @Test
+    public void convertHoldingValidation() throws Exception {
+        Mockito.when(bibRecord.getBib()).thenReturn(bib);
+        Mockito.when(bib.getOwningInstitutionBibId()).thenReturn("");
+        Mockito.when(marcUtil.buildBibMarcRecord(bibRecord)).thenReturn(bibMarcRecord);
+        Mockito.when(bibMarcRecord.getBibRecord()).thenReturn(bibRecordObject);
+        Map<String, Object> bibMap=new HashMap<>();
+        bibMap.put("bibReportEntity",bibReportEntity);
+        Mockito.when(marcUtil.extractXmlAndSetEntityToMap(Mockito.any(),Mockito.any(),Mockito.anyMap(),Mockito.any())).thenReturn(bibMap);
+        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.anyString(),Mockito.anyString())).thenReturn(holdingsEntity);
+        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
+        Map result = scsbToBibEntityConverter.convert(bibRecord,institutionEntity);
+        assertNotNull(result);
+    }
+
     @Test
     public void convertException() throws JAXBException {
-
         InstitutionEntity institutionEntity = getInstitutionEntity();
         BibRecord bibRecord = new BibRecord();
         Bib bib = new Bib();

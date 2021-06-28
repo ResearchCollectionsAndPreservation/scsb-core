@@ -109,6 +109,7 @@ public class AccessionMarcToBibEntityConverterUT extends BaseTestCaseUT {
         Mockito.when( marcUtil.getDataFieldValue(null,"876", 'x')).thenReturn("Shared");
         Mockito.when( marcUtil.getDataFieldValue(null,"876", 'h')).thenReturn("In Library Use");
         Mockito.when( marcUtil.getDataFieldValue(null,"876", 'a')).thenReturn("7453441");
+        Mockito.when( marcUtil.getDataFieldValue(record, "852", 'h')).thenReturn(null);
         Map collectionGroupMap=new HashMap();
         collectionGroupMap.put("Shared",1);
         Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
@@ -123,6 +124,12 @@ public class AccessionMarcToBibEntityConverterUT extends BaseTestCaseUT {
         List<ItemEntity> itemEntities = bibliographicEntity.getItemEntities();
         assertNotNull(itemEntities);
         assertTrue(itemEntities.size() == 1);
+    }
+
+    @Test
+    public void isFormat() throws Exception {
+        boolean isFormat= marcToBibEntityConverter.isFormat("MARC");
+        assertTrue(isFormat);
     }
 
     @Test
@@ -159,6 +166,7 @@ public class AccessionMarcToBibEntityConverterUT extends BaseTestCaseUT {
         Mockito.when(holdingsMarcRecord.getItemMarcRecordList()).thenReturn(itemMarcRecordList);
         Mockito.when( marcUtil.getDataFieldValue(null,"876", 'p')).thenReturn("");
         Mockito.when( marcUtil.getDataFieldValue(null,"876", 't')).thenReturn("");
+        Mockito.when( marcUtil.getDataFieldValue(null,"876", 'k')).thenReturn("itemLibrary");
         Mockito.when( marcUtil.getDataFieldValue(null,"876", 'x')).thenReturn("");
         Mockito.when( marcUtil.getDataFieldValue(null,"876", 'h')).thenReturn(null);
         Mockito.when( marcUtil.getDataFieldValue(null,"876", 'a')).thenReturn("");
