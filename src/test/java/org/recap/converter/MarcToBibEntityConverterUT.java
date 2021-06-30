@@ -10,6 +10,7 @@ import org.mockito.Mockito;
 import org.recap.BaseTestCaseUT;
 import org.recap.ScsbCommonConstants;
 import org.recap.ScsbConstants;
+import org.recap.model.jaxb.Bib;
 import org.recap.model.jpa.*;
 import org.recap.model.marc.BibMarcRecord;
 import org.recap.model.marc.HoldingsMarcRecord;
@@ -85,9 +86,15 @@ public class MarcToBibEntityConverterUT extends BaseTestCaseUT {
     ImsLocationEntity imsLocationEntity;
 
     @Mock
-    OwnerCodeEntity ownerCodeEntity;
+    InstitutionEntity institutionEntity;
 
-    @Ignore
+    @Mock
+    Bib bib;
+
+    @Mock
+    ReportEntity bibReportEntity;
+
+    @Test
     public void convert() throws Exception {
         List<Record> records = getRecords();
         Map institutionEntityMap=new HashMap();
@@ -118,25 +125,39 @@ public class MarcToBibEntityConverterUT extends BaseTestCaseUT {
         Mockito.when(marcUtil.extractXmlAndSetEntityToMap(Mockito.any(),Mockito.any(),Mockito.anyMap(),Mockito.any())).thenReturn(map);
         Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'p')).thenReturn("32101095533293");
         Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 't')).thenReturn("0");
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'k')).thenReturn("itemLibrary");
         Mockito.when(institutionDetailsRepository.findById(Mockito.anyInt())).thenReturn(Optional.of(getInstitutionEntity()));
         Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'x')).thenReturn(ScsbCommonConstants.SHARED_CGD);
         Map collectionGroupMap=new HashMap();
         collectionGroupMap.put("Shared",1);
+        Mockito.when(imsLocationEntity.getId()).thenReturn(1);
+        Mockito.when(imsLocationDetailsRepository.findByImsLocationCode("RECAP")).thenReturn(imsLocationEntity);
         Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
         Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'h')).thenReturn("Library");
         Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'a')).thenReturn("7453441");
-        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'l')).thenReturn("imsLocation");
-        Mockito.when(ownerCodeDetailsRepository.findByOwnerCodeAndImsLocationId(Mockito.anyString(),Mockito.anyInt())).thenReturn(ownerCodeEntity);
-        Mockito.when(ownerCodeEntity.getInstitutionId()).thenReturn(1);
+        Mockito.when(marcUtil.getDataFieldValue(itemRecord, "876", 'l')).thenReturn("RECAP");
+        Mockito.when(ownerCodeDetailsRepository.findByOwnerCodeAndImsLocationId(Mockito.anyString(),Mockito.anyInt())).thenReturn(getOwnerCodeEntity());
         Map convertedMap = marcToBibEntityConverter.convert(records.get(0),null);
-        Mockito.when(imsLocationEntity.getId()).thenReturn(1);
-        Mockito.when(imsLocationDetailsRepository.findByImsLocationCode(Mockito.anyString())).thenReturn(imsLocationEntity);
         BibliographicEntity bibliographicEntity = (BibliographicEntity)convertedMap.get("bibliographicEntity");
         assertNotNull(bibliographicEntity);
         assertEquals("115115",bibliographicEntity.getOwningInstitutionBibId());
         assertEquals(new Integer(3),bibliographicEntity.getOwningInstitutionId());
         assertEquals("5123222f-2333-413e-8c9c-cb8709f010c3",bibliographicEntity.getHoldingsEntities().get(0).getOwningInstitutionHoldingsId());
-   }
+    }
+
+    @Test
+    public void convertHoldingValidation() throws Exception {
+        Mockito.when(bib.getOwningInstitutionBibId()).thenReturn("");
+        Mockito.when(marcUtil.buildBibMarcRecord(Mockito.any(Record.class))).thenReturn(bibMarcRecord);
+        Mockito.when(bibMarcRecord.getBibRecord()).thenReturn(bibRecord);
+        Map<String, Object> map = new HashMap<>();
+        map.put("bibReportEntity",bibReportEntity);
+        Mockito.when(holdingsMarcRecord.getHoldingsRecord()).thenReturn(bibRecord);
+        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.anyMap(),Mockito.any(),Mockito.anyString())).thenReturn(map);
+        Mockito.when(marcUtil.extractXmlAndSetEntityToMap(Mockito.any(),Mockito.any(),Mockito.anyMap(),Mockito.any())).thenReturn(map);
+        Map result = marcToBibEntityConverter.convert(bibRecord,institutionEntity);
+        assertNotNull(result);
+    }
 
     @Test
     public void convertError() throws Exception {
@@ -197,7 +218,7 @@ public class MarcToBibEntityConverterUT extends BaseTestCaseUT {
         Map convertedMap = marcToBibEntityConverter.convert(records.get(0),null);
         BibliographicEntity bibliographicEntity = (BibliographicEntity)convertedMap.get("bibliographicEntity");
         assertNull(bibliographicEntity);
-      }
+    }
 
     private List<Record> getRecords() throws Exception {
         URL resource = getClass().getResource("sampleRecord.xml");
@@ -211,9 +232,11 @@ public class MarcToBibEntityConverterUT extends BaseTestCaseUT {
         OwnerCodeEntity ownerCodeEntity=new OwnerCodeEntity();
         ownerCodeEntity.setId(1);
         ownerCodeEntity.setInstitutionId(1);
-        ownerCodeEntity.setDescription("Princeton");
+        ownerCodeEntity.setDescription(ScsbCommonConstants.PRINCETON);
         ownerCodeEntity.setOwnerCode("PUL");
         InstitutionEntity institutionEntity=new InstitutionEntity();
+        institutionEntity.setId(1);
+        institutionEntity.setInstitutionName(ScsbCommonConstants.PRINCETON);
         institutionEntity.setInstitutionCode("PUL");
         ownerCodeEntity.setInstitutionEntity(institutionEntity);
         return ownerCodeEntity;

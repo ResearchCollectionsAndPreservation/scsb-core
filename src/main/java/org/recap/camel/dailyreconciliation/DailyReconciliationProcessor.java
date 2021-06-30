@@ -38,6 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static org.recap.ScsbConstants.getGFAStatusAvailableList;
@@ -85,7 +86,12 @@ public class DailyReconciliationProcessor {
         try {
             String xmlFileName = exchange.getIn().getHeader(ScsbConstants.CAMEL_AWS_KEY).toString();
             logger.info("{} LAS File Processing: {}", imsLocationCode, xmlFileName);
-            List<DailyReconcilationRecord> dailyReconcilationRecordList = (List<DailyReconcilationRecord>)exchange.getIn().getBody();
+            List<DailyReconcilationRecord> dailyReconcilationRecordList = null;
+            if (exchange.getIn().getBody() instanceof DailyReconcilationRecord) {
+                dailyReconcilationRecordList = new ArrayList<>();
+            } else {
+                dailyReconcilationRecordList = (List<DailyReconcilationRecord>) exchange.getIn().getBody();
+            }
             try (XSSFWorkbook xssfWorkbook = new XSSFWorkbook()) {
                 XSSFSheet lasSheet = xssfWorkbook.createSheet(imsLocationCode + "_" + ScsbConstants.DAILY_RR_LAS);
                 xssfWorkbook.setSheetOrder(imsLocationCode + "_" + ScsbConstants.DAILY_RR_LAS, 0);
