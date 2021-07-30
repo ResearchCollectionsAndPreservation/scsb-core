@@ -75,6 +75,9 @@ public class SubmitCollectionProcessor {
     @Value("${" + PropertyKeyConstants.SCSB_BUCKET_NAME + "}")
     private String bucketName;
 
+    @Value("${" + PropertyKeyConstants.SUBMIT_COLLECTION_USE_SOLR_PARTIAL_INDEX_TOTAL_DOCS_SIZE + ":1000}")
+    private int solrMaxDocSizeToUsePartialIndex;
+
     public SubmitCollectionProcessor() {
     }
 
@@ -110,11 +113,21 @@ public class SubmitCollectionProcessor {
             logger.info("Submit Collection : Solr indexing started for {} records", processedBibIds.size());
             logger.info("idMapToRemoveIndex---> {}", idMapToRemoveIndexList.size());
             if (!processedBibIds.isEmpty()) {
-                submitCollectionBatchService.indexData(processedBibIds);
+                StopWatch stopWatchSolrIndexing = new StopWatch();
+                stopWatchSolrIndexing.start();
+                String indexingStatus = null;
+                if (processedBibIds.size() > solrMaxDocSizeToUsePartialIndex) { // If the number of bib Ids is greater than configured value, default is 1000, index data with multi-threading using partial index api
+                    indexingStatus = submitCollectionBatchService.partialIndexData(processedBibIds);
+                } else { // If the number of bib Ids is less than configured value, default is 1000, index data without multi-threading
+                    indexingStatus = submitCollectionBatchService.indexData(processedBibIds);
+                }
+                logger.info("Submit Collection : Solr indexing Status - {}", indexingStatus);
                 logger.info("Submit Collection : Solr indexing completed and remove the incomplete record from solr index for {} records", idMapToRemoveIndexList.size());
+                stopWatchSolrIndexing.stop();
+                logger.info("Submit Collection : Total Time taken to do solr indexing : {} sec", stopWatchSolrIndexing.getTotalTimeSeconds());
             }
             if (!updatedBoundWithDummyRecordOwnInstBibIdSet.isEmpty()) {
-                logger.info("Updated boudwith dummy record own inst bib id size-->{}", updatedBoundWithDummyRecordOwnInstBibIdSet.size());
+                logger.info("Updated boundwith dummy record own inst bib id size-->{}", updatedBoundWithDummyRecordOwnInstBibIdSet.size());
                 submitCollectionService.indexDataUsingOwningInstBibId(new ArrayList<>(updatedBoundWithDummyRecordOwnInstBibIdSet), institutionId);
             }
             if (!idMapToRemoveIndexList.isEmpty() || !bibIdMapToRemoveIndexList.isEmpty()) {//remove the incomplete record from solr index

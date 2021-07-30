@@ -218,4 +218,6 @@ public final class ScsbConstants {
     public static final String ACCESSION_CAUGHT_EXCEPTION_METHOD = "caughtException";
     public static final String EMAIL_FOR = "emailFor";
     public static final String ACCESSION_DIRECT_ROUTE_FOR_EXCEPTION = "direct:AccessionException";
+
+    public static final String BIB_ID_LIST = "BibIdList";
 }

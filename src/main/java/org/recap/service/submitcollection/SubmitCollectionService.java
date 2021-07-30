@@ -11,6 +11,7 @@ import org.recap.ScsbConstants;
 import org.recap.converter.MarcToBibEntityConverter;
 import org.recap.converter.SCSBToBibEntityConverter;
 import org.recap.converter.XmlToBibEntityConverterInterface;
+import org.recap.model.solr.SolrIndexRequest;
 import org.recap.model.jaxb.BibRecord;
 import org.recap.model.jaxb.marc.BibRecords;
 import org.recap.model.jpa.BibliographicEntity;
@@ -84,6 +85,12 @@ public class SubmitCollectionService {
 
     @Value("${" + PropertyKeyConstants.SUBMIT_COLLECTION_INPUT_LIMIT + "}")
     private Integer inputLimit;
+
+    @Value("${" + PropertyKeyConstants.SUBMIT_COLLECTION_SOLR_PARTIAL_INDEX_THREAD_SIZE + ":1}")
+    private int solrPartialIndexThreadSize;
+
+    @Value("${" + PropertyKeyConstants.SUBMIT_COLLECTION_SOLR_PARTIAL_INDEX_DOCS_SIZE + ":10000}")
+    private int solrPartialIndexDocsPerThreadSize;
 
     /**
      * Process string.
@@ -287,6 +294,21 @@ public class SubmitCollectionService {
      */
     public String indexData(Set<Integer> bibliographicIdList){
         return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/indexByBibliographicId", bibliographicIdList, String.class);
+    }
+
+    /**
+     * Do partial indexing in multithreading
+     *
+     * @param bibliographicIdList Bibliographic Id List
+     * @return Status
+     */
+    public String partialIndexData(Set<Integer> bibliographicIdList) {
+        SolrIndexRequest solrIndexRequest = new SolrIndexRequest();
+        solrIndexRequest.setPartialIndexType(ScsbConstants.BIB_ID_LIST);
+        solrIndexRequest.setNumberOfThreads(solrPartialIndexThreadSize);
+        solrIndexRequest.setNumberOfDocs(solrPartialIndexDocsPerThreadSize);
+        solrIndexRequest.setBibIds(StringUtils.join(bibliographicIdList, ","));
+        return getRestTemplate().postForObject(scsbSolrClientUrl + "solrIndexer/partialIndexData", solrIndexRequest, String.class);
     }
 
     public String indexDataUsingOwningInstBibId(List<String> owningInstBibliographicIdList,Integer owningInstId){
