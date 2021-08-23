@@ -160,16 +160,19 @@ public class StatusReconciliationController {
             log.info("status reconciliation total page count: {}", totalPagesCount);
             List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList = new ArrayList<>();
             List<StatusReconciliationErrorCSVRecord> statusReconciliationErrorCSVRecords = new ArrayList<>();
+            int refileCount = 0;
             for (int pageNum = 0; pageNum < totalPagesCount + 1; pageNum++) {
                 long from = getFromDate(pageNum);
                 List<ItemEntity> itemEntityList = getItemDetailsRepository().getNotAvailableItems(getStatusReconciliationDayLimit(), requestStatusIds, from, getBatchSize(), itemStatusEntity.getId());
                 log.info("items fetched from data base-----> {}", itemEntityList.size());
                 List<List<ItemEntity>> itemEntityChunkList = Lists.partition(itemEntityList, getStatusReconciliationLasBarcodeLimit());
-                statusReconciliationCSVRecordList.addAll(statusReconciliationService.itemStatusComparison(itemEntityChunkList, statusReconciliationErrorCSVRecords));
+                List<StatusReconciliationCSVRecord> returnedStatusReconciliationCSVRecordList = statusReconciliationService.itemStatusComparison(itemEntityChunkList, statusReconciliationErrorCSVRecords, refileCount);
+                refileCount = (int) (refileCount + returnedStatusReconciliationCSVRecordList.stream().filter(record -> record.getReconciliationStatus().equalsIgnoreCase(ScsbConstants.CHANGED_TO_AVAILABLE)).count());
+                statusReconciliationCSVRecordList.addAll(returnedStatusReconciliationCSVRecordList);
                 log.info("status reconciliation page num: {} and records {} processed", pageNum, from + getBatchSize());
             }
-            Map<String, List<StatusReconciliationCSVRecord>> imsLocationsStatusReconciliationList = statusReconciliationCSVRecordList.stream().collect(groupingBy(StatusReconciliationCSVRecord::getImsLocation));
-            Map<String, List<StatusReconciliationErrorCSVRecord>> imsLocationsStatusReconciliationErrorList = statusReconciliationErrorCSVRecords.stream().collect(groupingBy(StatusReconciliationErrorCSVRecord::getImsLocation));
+            Map<String, List<StatusReconciliationCSVRecord>> imsLocationsStatusReconciliationList = statusReconciliationCSVRecordList.stream().filter(record -> record.getImsLocation() != null).collect(groupingBy(StatusReconciliationCSVRecord::getImsLocation));
+            Map<String, List<StatusReconciliationErrorCSVRecord>> imsLocationsStatusReconciliationErrorList = statusReconciliationErrorCSVRecords.stream().filter(record -> record.getImsLocation() != null).collect(groupingBy(StatusReconciliationErrorCSVRecord::getImsLocation));
             sendStatusReconciliationRecordsToQueueAndEmail(imsLocationsStatusReconciliationList,ScsbConstants.STATUS_RECONCILIATION);
             sendStatusReconciliationErrorRecordsToQueueAndEmail(imsLocationsStatusReconciliationErrorList,ScsbConstants.STATUS_RECONCILIATION_FAILURE);
         }
@@ -182,6 +185,9 @@ public class StatusReconciliationController {
                 Map<String, Object> headers = new HashMap<>();
                 headers.put(ScsbConstants.FOR, headerFor);
                 headers.put(ScsbConstants.IMS_LOCATION, key);
+                headers.put(ScsbConstants.CHANGED_TO_AVAILABLE, value.stream().filter(record -> record.getReconciliationStatus().equalsIgnoreCase(ScsbConstants.CHANGED_TO_AVAILABLE)).count());
+                headers.put(ScsbConstants.UNCHANGED, value.stream().filter(record -> record.getReconciliationStatus().equalsIgnoreCase(ScsbConstants.UNCHANGED)).count());
+                headers.put(ScsbConstants.UNKNOWN_CODE, value.stream().filter(record -> record.getReconciliationStatus().equalsIgnoreCase(ScsbConstants.UNKNOWN_CODE)).count());
                 producer.sendBodyAndHeaders(ScsbConstants.STATUS_RECONCILIATION_REPORT, value, headers);
             });
         }

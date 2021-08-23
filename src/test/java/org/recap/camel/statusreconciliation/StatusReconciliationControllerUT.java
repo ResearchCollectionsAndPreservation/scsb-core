@@ -88,7 +88,7 @@ public class StatusReconciliationControllerUT extends BaseTestCaseUT {
         List<StatusReconciliationCSVRecord> itemStatusComparison=new ArrayList<>();
         itemStatusComparison.add(statusReconciliationCSVRecord);
         Mockito.when(statusReconciliationCSVRecord.getImsLocation()).thenReturn("RECAP");
-        Mockito.when(statusReconciliationService.itemStatusComparison(Mockito.anyList(),Mockito.anyList())).thenReturn(itemStatusComparison);
+        Mockito.when(statusReconciliationService.itemStatusComparison(Mockito.anyList(),Mockito.anyList(),0)).thenReturn(itemStatusComparison);
         ResponseEntity responseEntity = statusReconciliationController.itemStatusReconciliation();
         assertEquals("Success", responseEntity.getBody().toString());
     }

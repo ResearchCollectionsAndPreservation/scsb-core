@@ -220,4 +220,9 @@ public final class ScsbConstants {
     public static final String ACCESSION_DIRECT_ROUTE_FOR_EXCEPTION = "direct:AccessionException";
 
     public static final String BIB_ID_LIST = "BibIdList";
+    public static final String CHANGED_TO_AVAILABLE = "Changed To Available";
+    public static final String UNCHANGED = "Unchanged";
+    public static final String UNKNOWN_CODE = "Unknown Code";
+    public static final String UNKNOWN_IMS_STATUS = "Unknown IMS Status";
+    public static final String UNUSUAL = "THIS IS UNUSUAL";
 }

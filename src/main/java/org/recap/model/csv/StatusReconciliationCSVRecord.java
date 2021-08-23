@@ -1,5 +1,6 @@
 package org.recap.model.csv;
 
+import lombok.Data;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 
@@ -8,6 +9,7 @@ import java.io.Serializable;
 /**
  * Created by hemalathas on 19/5/17.
  */
+@Data
 @CsvRecord(generateHeaderColumns = true, separator = ",", quoting = true, crlf = "UNIX", skipFirstLine = true)
 public class StatusReconciliationCSVRecord implements Serializable{
 
@@ -17,144 +19,30 @@ public class StatusReconciliationCSVRecord implements Serializable{
     @DataField(pos = 2, columnName = "RequestAvailability")
     private String requestAvailability;
 
-    @DataField(pos = 3, columnName = "RequestId")
+    @DataField(pos = 3, columnName = "OwningInstitution")
+    private String owningInstitution;
+
+    @DataField(pos = 4, columnName = "RequestingInstitution")
+    private String requestingInstitution;
+
+    @DataField(pos = 5, columnName = "RequestId")
     private String requestId;
 
-    @DataField(pos = 4, columnName = "StatusInScsb")
+    @DataField(pos = 6, columnName = "StatusInScsb")
     private String statusInScsb;
 
-    @DataField(pos = 5, columnName = "StatusInLas")
+    @DataField(pos = 7, columnName = "StatusInLas")
     private String statusInLas;
 
-    @DataField(pos = 6, columnName = "ImsLocation")
+    @DataField(pos = 8, columnName = "ImsLocation")
     private String imsLocation;
 
-    @DataField(pos = 7, columnName = "DateTime")
-    private String dateTime;
+    @DataField(pos = 9, columnName = "RequestedDateTime")
+    private String requestedDateTime;
 
-    /**
-     * Gets barcode.
-     *
-     * @return the barcode
-     */
-    public String getBarcode() {
-        return barcode;
-    }
+    @DataField(pos = 10, columnName = "UpdatedDateTime")
+    private String updatedDateTime;
 
-    /**
-     * Sets barcode.
-     *
-     * @param barcode the barcode
-     */
-    public void setBarcode(String barcode) {
-        this.barcode = barcode;
-    }
-
-    /**
-     * Gets request availability.
-     *
-     * @return the request availability
-     */
-    public String getRequestAvailability() {
-        return requestAvailability;
-    }
-
-    /**
-     * Sets request availability.
-     *
-     * @param requestAvailability the request availability
-     */
-    public void setRequestAvailability(String requestAvailability) {
-        this.requestAvailability = requestAvailability;
-    }
-
-    /**
-     * Gets request id.
-     *
-     * @return the request id
-     */
-    public String getRequestId() {
-        return requestId;
-    }
-
-    /**
-     * Sets request id.
-     *
-     * @param requestId the request id
-     */
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
-
-    /**
-     * Gets date time.
-     *
-     * @return the date time
-     */
-    public String getDateTime() {
-        return dateTime;
-    }
-
-    /**
-     * Sets date time.
-     *
-     * @param dateTime the date time
-     */
-    public void setDateTime(String dateTime) {
-        this.dateTime = dateTime;
-    }
-
-    /**
-     * Gets status in scsb.
-     *
-     * @return the status in scsb
-     */
-    public String getStatusInScsb() {
-        return statusInScsb;
-    }
-
-    /**
-     * Sets status in scsb.
-     *
-     * @param statusInScsb the status in scsb
-     */
-    public void setStatusInScsb(String statusInScsb) {
-        this.statusInScsb = statusInScsb;
-    }
-
-    /**
-     * Gets status in las.
-     *
-     * @return the status in las
-     */
-    public String getStatusInLas() {
-        return statusInLas;
-    }
-
-    /**
-     * Sets status in las.
-     *
-     * @param statusInLas the status in las
-     */
-    public void setStatusInLas(String statusInLas) {
-        this.statusInLas = statusInLas;
-    }
-
-    /**
-     * Gets imsLocation.
-     *
-     * @return the imsLocation
-     */
-    public String getImsLocation() {
-        return imsLocation;
-    }
-
-    /**
-     * Sets imsLocation.
-     *
-     * @param imsLocation the imsLocation
-     */
-    public void setImsLocation(String imsLocation) {
-        this.imsLocation = imsLocation;
-    }
+    @DataField(pos = 11, columnName = "ReconciliationStatus")
+    private String reconciliationStatus;
 }

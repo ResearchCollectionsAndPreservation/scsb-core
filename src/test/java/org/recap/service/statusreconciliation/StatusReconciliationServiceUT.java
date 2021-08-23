@@ -95,7 +95,7 @@ public class StatusReconciliationServiceUT extends BaseTestCaseUT {
         ReflectionTestUtils.setField(mockStatusReconciliationService,"requestItemStatusDetailsRepository",requestItemStatusDetailsRepository);
         ReflectionTestUtils.setField(mockStatusReconciliationService,"requestItemDetailsRepository",requestItemDetailsRepository);
         ReflectionTestUtils.setField(mockStatusReconciliationService,"itemStatusDetailsRepository",itemStatusDetailsRepository);
-        Mockito.when(mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList)).thenCallRealMethod();
+        Mockito.when(mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList, 0)).thenCallRealMethod();
         List<ItemChangeLogEntity> itemChangeLogEntityList=new ArrayList<>();
         List<String> requestStatusCodes = Arrays.asList(ScsbCommonConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ScsbCommonConstants.REQUEST_STATUS_EDD, ScsbCommonConstants.REQUEST_STATUS_CANCELED, ScsbCommonConstants.REQUEST_STATUS_INITIAL_LOAD);
         List<RequestStatusEntity> requestStatusEntityList=new ArrayList<>();
@@ -110,7 +110,7 @@ public class StatusReconciliationServiceUT extends BaseTestCaseUT {
         Mockito.when(requestStatusEntity.getRequestStatusCode()).thenReturn(ScsbCommonConstants.REQUEST_STATUS_CANCELED);
         Mockito.when(requestItemEntity.getNotes()).thenReturn("Cancel requested");
         Mockito.when(requestItemEntity.getId()).thenReturn(1);
-        List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList=mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList);
+        List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList=mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList,0);
         ReflectionTestUtils.invokeMethod(mockStatusReconciliationService,"processMismatchStatus",statusReconciliationCSVRecordList,itemChangeLogEntityList,"IN",itemEntity);
         assertNotNull(statusReconciliationCSVRecordList);
     }
@@ -136,7 +136,7 @@ public class StatusReconciliationServiceUT extends BaseTestCaseUT {
         ReflectionTestUtils.setField(mockStatusReconciliationService,"requestItemStatusDetailsRepository",requestItemStatusDetailsRepository);
         ReflectionTestUtils.setField(mockStatusReconciliationService,"requestItemDetailsRepository",requestItemDetailsRepository);
         ReflectionTestUtils.setField(mockStatusReconciliationService,"itemStatusDetailsRepository",itemStatusDetailsRepository);
-        Mockito.when(mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList)).thenCallRealMethod();
+        Mockito.when(mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList,0)).thenCallRealMethod();
         List<ItemChangeLogEntity> itemChangeLogEntityList=new ArrayList<>();
         List<String> requestStatusCodes = Arrays.asList(ScsbCommonConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ScsbCommonConstants.REQUEST_STATUS_EDD, ScsbCommonConstants.REQUEST_STATUS_CANCELED, ScsbCommonConstants.REQUEST_STATUS_INITIAL_LOAD);
         List<RequestStatusEntity> requestStatusEntityList=new ArrayList<>();
@@ -151,7 +151,7 @@ public class StatusReconciliationServiceUT extends BaseTestCaseUT {
         Mockito.when(requestStatusEntity.getRequestStatusCode()).thenReturn("test");
         Mockito.when(requestItemEntity.getNotes()).thenReturn("Cancel requested");
         Mockito.when(requestItemEntity.getId()).thenReturn(1);
-        List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList=mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList);
+        List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList=mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList,0);
         ReflectionTestUtils.invokeMethod(mockStatusReconciliationService,"processMismatchStatus",statusReconciliationCSVRecordList,itemChangeLogEntityList,"IN",itemEntity);
         assertNotNull(statusReconciliationCSVRecordList);
     }
@@ -179,7 +179,7 @@ public class StatusReconciliationServiceUT extends BaseTestCaseUT {
         ReflectionTestUtils.setField(mockStatusReconciliationService,"itemStatusDetailsRepository",itemStatusDetailsRepository);
         ReflectionTestUtils.setField(mockStatusReconciliationService,"itemDetailsRepository",itemDetailsRepository);
         ReflectionTestUtils.setField(mockStatusReconciliationService,"solrDocIndexService",solrDocIndexService);
-        Mockito.when(mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList)).thenCallRealMethod();
+        Mockito.when(mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList,0)).thenCallRealMethod();
         List<ItemChangeLogEntity> itemChangeLogEntityList=new ArrayList<>();
         List<String> requestStatusCodes = Arrays.asList(ScsbCommonConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ScsbCommonConstants.REQUEST_STATUS_EDD, ScsbCommonConstants.REQUEST_STATUS_CANCELED, ScsbCommonConstants.REQUEST_STATUS_INITIAL_LOAD);
         List<RequestStatusEntity> requestStatusEntityList=new ArrayList<>();
@@ -193,7 +193,7 @@ public class StatusReconciliationServiceUT extends BaseTestCaseUT {
         Mockito.when(requestStatusEntity.getRequestStatusCode()).thenReturn("test");
         Mockito.when(requestItemEntity.getNotes()).thenReturn("Cancel requested");
         Mockito.when(requestItemEntity.getId()).thenReturn(1);
-        List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList=mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList);
+        List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList=mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList,0);
         ReflectionTestUtils.invokeMethod(mockStatusReconciliationService,"processMismatchStatus",statusReconciliationCSVRecordList,itemChangeLogEntityList,"IN",itemEntity);
         assertNotNull(statusReconciliationCSVRecordList);
     }
@@ -219,7 +219,7 @@ public class StatusReconciliationServiceUT extends BaseTestCaseUT {
         ReflectionTestUtils.setField(mockStatusReconciliationService,"requestItemStatusDetailsRepository",requestItemStatusDetailsRepository);
         ReflectionTestUtils.setField(mockStatusReconciliationService,"requestItemDetailsRepository",requestItemDetailsRepository);
         ReflectionTestUtils.setField(mockStatusReconciliationService,"itemStatusDetailsRepository",itemStatusDetailsRepository);
-        Mockito.when(mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList)).thenCallRealMethod();
+        Mockito.when(mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList,0)).thenCallRealMethod();
         List<ItemChangeLogEntity> itemChangeLogEntityList=new ArrayList<>();
         List<String> requestStatusCodes = Arrays.asList(ScsbCommonConstants.REQUEST_STATUS_RETRIEVAL_ORDER_PLACED, ScsbCommonConstants.REQUEST_STATUS_EDD, ScsbCommonConstants.REQUEST_STATUS_CANCELED, ScsbCommonConstants.REQUEST_STATUS_INITIAL_LOAD);
         List<RequestStatusEntity> requestStatusEntityList=new ArrayList<>();
@@ -236,7 +236,7 @@ public class StatusReconciliationServiceUT extends BaseTestCaseUT {
         Mockito.when(requestItemEntity.getId()).thenReturn(1);
         Mockito.when(requestItemStatusDetailsRepository.findByRequestStatusCode(ScsbCommonConstants.REQUEST_STATUS_REFILED)).thenReturn(byRequestStatusCode);
         Mockito.when(byRequestStatusCode.getId()).thenReturn(1);
-        List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList=mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList);
+        List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList=mockStatusReconciliationService.itemStatusComparison(itemEntityChunkList,statusReconciliationErrorCSVRecordList, 0);
         ReflectionTestUtils.invokeMethod(mockStatusReconciliationService,"processMismatchStatus",statusReconciliationCSVRecordList,itemChangeLogEntityList,"IN",itemEntity);
         assertNotNull(statusReconciliationCSVRecordList);
     }
@@ -245,7 +245,7 @@ public class StatusReconciliationServiceUT extends BaseTestCaseUT {
     public void getStatusReconciliationCSVRecord() throws Exception {
         ItemStatusEntity itemStatusEntity=new ItemStatusEntity();
         statusReconciliationService.reFileItems(Arrays.asList("123456"),Arrays.asList(1));
-        StatusReconciliationCSVRecord statusReconciliationCSVRecord=statusReconciliationService.getStatusReconciliationCSVRecord("12345","Available","1","IN",new Date().toString(),itemStatusEntity, "RECAP");
+        StatusReconciliationCSVRecord statusReconciliationCSVRecord=statusReconciliationService.getStatusReconciliationCSVRecord("12345", "PUL", "PUL", "Available","1","IN",new Date().toString(),new Date().toString(),itemStatusEntity, "RECAP", false, false);
         assertEquals("12345",statusReconciliationCSVRecord.getBarcode());
     }
 

@@ -59,6 +59,9 @@ public class CommonUtil {
     @Autowired
     AccessionUtil accessionUtil;
 
+    @Autowired
+    private PropertyUtil propertyUtil;
+
     @Value("${" + PropertyKeyConstants.SCSB_SUPPORT_INSTITUTION + "}")
     private String supportInstitution;
 
@@ -375,5 +378,17 @@ public class CommonUtil {
      */
     public List<InstitutionEntity> findAllInstitutionsExceptSupportInstitution() {
         return institutionDetailsRepository.findAllInstitutionsExceptSupportInstitution(supportInstitution);
+    }
+
+    /**
+     * Checks if the Gfa item status is available
+     * @param imsLocationCode IMS Location Code
+     * @param imsItemStatus IMS Item Status
+     * @return boolean
+     */
+    public boolean checkIfImsItemStatusIsAvailableOrNotAvailable(String imsLocationCode, String imsItemStatus, boolean checkAvailable) {
+        String propertyKey = checkAvailable ? PropertyKeyConstants.IMS.IMS_AVAILABLE_ITEM_STATUS_CODES : PropertyKeyConstants.IMS.IMS_NOT_AVAILABLE_ITEM_STATUS_CODES;
+        String imsItemStatusCodes = propertyUtil.getPropertyByImsLocationAndKey(imsLocationCode, propertyKey);
+        return StringUtils.startsWithAny(imsItemStatus, imsItemStatusCodes.split(","));
     }
 }

@@ -304,13 +304,15 @@ public class SubmitCollectionBatchService extends SubmitCollectionService {
     private List<BarcodeBibliographicEntityObject> getBarcodeOwningInstitutionBibIdObjectList(List<BibliographicEntity> bibliographicEntityList) {
         List<BarcodeBibliographicEntityObject> barcodeOwningInstitutionBibIdObjectList = new ArrayList<>();
         for (BibliographicEntity bibliographicEntity : bibliographicEntityList) {
-            for (ItemEntity itemEntity : bibliographicEntity.getItemEntities()) {
-                if(itemEntity.getBarcode() != null) {
-                    BarcodeBibliographicEntityObject barcodeOwningInstitutionBibIdObject = new BarcodeBibliographicEntityObject();
-                    barcodeOwningInstitutionBibIdObject.setBarcode(itemEntity.getBarcode());
-                    barcodeOwningInstitutionBibIdObject.setOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionBibId());
-                    barcodeOwningInstitutionBibIdObject.setBibliographicEntity(bibliographicEntity);
-                    barcodeOwningInstitutionBibIdObjectList.add(barcodeOwningInstitutionBibIdObject);
+            if (null != bibliographicEntity.getItemEntities() && !bibliographicEntity.getItemEntities().isEmpty()) {
+                for (ItemEntity itemEntity : bibliographicEntity.getItemEntities()) {
+                    if(itemEntity.getBarcode() != null) {
+                        BarcodeBibliographicEntityObject barcodeOwningInstitutionBibIdObject = new BarcodeBibliographicEntityObject();
+                        barcodeOwningInstitutionBibIdObject.setBarcode(itemEntity.getBarcode());
+                        barcodeOwningInstitutionBibIdObject.setOwningInstitutionBibId(bibliographicEntity.getOwningInstitutionBibId());
+                        barcodeOwningInstitutionBibIdObject.setBibliographicEntity(bibliographicEntity);
+                        barcodeOwningInstitutionBibIdObjectList.add(barcodeOwningInstitutionBibIdObject);
+                    }
                 }
             }
         }
