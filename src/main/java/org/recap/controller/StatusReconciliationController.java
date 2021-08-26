@@ -160,6 +160,8 @@ public class StatusReconciliationController {
             log.info("status reconciliation total page count: {}", totalPagesCount);
             List<StatusReconciliationCSVRecord> statusReconciliationCSVRecordList = new ArrayList<>();
             List<StatusReconciliationErrorCSVRecord> statusReconciliationErrorCSVRecords = new ArrayList<>();
+            List<String> barcodeList = new ArrayList<>();
+            List<Integer> requestIdList = new ArrayList<>();
             int refileCount = 0;
             for (int pageNum = 0; pageNum < totalPagesCount + 1; pageNum++) {
                 long from = getFromDate(pageNum);
@@ -167,9 +169,18 @@ public class StatusReconciliationController {
                 log.info("items fetched from data base-----> {}", itemEntityList.size());
                 List<List<ItemEntity>> itemEntityChunkList = Lists.partition(itemEntityList, getStatusReconciliationLasBarcodeLimit());
                 List<StatusReconciliationCSVRecord> returnedStatusReconciliationCSVRecordList = statusReconciliationService.itemStatusComparison(itemEntityChunkList, statusReconciliationErrorCSVRecords, refileCount);
+                returnedStatusReconciliationCSVRecordList.stream().filter(record -> record.getReconciliationStatus().equalsIgnoreCase(ScsbConstants.CHANGED_TO_AVAILABLE)).forEach(refileRecord -> {
+                    if (refileRecord.getRequestAvailability().equalsIgnoreCase(ScsbConstants.YES)) {
+                        barcodeList.add(refileRecord.getBarcode());
+                        requestIdList.add(Integer.parseInt(refileRecord.getRequestId()));
+                    }
+                });
                 refileCount = (int) (refileCount + returnedStatusReconciliationCSVRecordList.stream().filter(record -> record.getReconciliationStatus().equalsIgnoreCase(ScsbConstants.CHANGED_TO_AVAILABLE)).count());
                 statusReconciliationCSVRecordList.addAll(returnedStatusReconciliationCSVRecordList);
                 log.info("status reconciliation page num: {} and records {} processed", pageNum, from + getBatchSize());
+            }
+            if (!barcodeList.isEmpty() && !requestIdList.isEmpty()) {
+                statusReconciliationService.reFileItems(barcodeList, requestIdList);
             }
             Map<String, List<StatusReconciliationCSVRecord>> imsLocationsStatusReconciliationList = statusReconciliationCSVRecordList.stream().filter(record -> record.getImsLocation() != null).collect(groupingBy(StatusReconciliationCSVRecord::getImsLocation));
             Map<String, List<StatusReconciliationErrorCSVRecord>> imsLocationsStatusReconciliationErrorList = statusReconciliationErrorCSVRecords.stream().filter(record -> record.getImsLocation() != null).collect(groupingBy(StatusReconciliationErrorCSVRecord::getImsLocation));
@@ -180,7 +191,7 @@ public class StatusReconciliationController {
     }
 
     private void sendStatusReconciliationRecordsToQueueAndEmail(Map<String, List<StatusReconciliationCSVRecord>> imsLocationsStatusReconciliationList, String headerFor) {
-        if(!imsLocationsStatusReconciliationList.isEmpty()) {
+        if (!imsLocationsStatusReconciliationList.isEmpty()) {
             imsLocationsStatusReconciliationList.forEach((key, value) -> {
                 Map<String, Object> headers = new HashMap<>();
                 headers.put(ScsbConstants.FOR, headerFor);
@@ -192,13 +203,15 @@ public class StatusReconciliationController {
             });
         }
     }
+
     private void sendStatusReconciliationErrorRecordsToQueueAndEmail(Map<String, List<StatusReconciliationErrorCSVRecord>> imsLocationsStatusReconciliationErrorList, String headerFor) {
-        if(!imsLocationsStatusReconciliationErrorList.isEmpty()) {
+        if (!imsLocationsStatusReconciliationErrorList.isEmpty()) {
             imsLocationsStatusReconciliationErrorList.forEach((key, value) -> {
                 Map<String, Object> headers = new HashMap<>();
                 headers.put(ScsbConstants.FOR, headerFor);
                 headers.put(ScsbConstants.IMS_LOCATION, key);
-                producer.sendBodyAndHeaders(ScsbConstants.STATUS_RECONCILIATION_REPORT, value, headers);
+                headers.put(ScsbConstants.FAILED, (value != null) ? value.size() : 0);
+                producer.sendBodyAndHeaders(ScsbConstants.STATUS_RECONCILIATION_FAILURE_REPORT, value, headers);
             });
         }
     }

@@ -42,21 +42,29 @@ public class StatusReconciliationS3RouteBuilder {
                         from(ScsbConstants.STATUS_RECONCILIATION_REPORT)
                                 .routeId(ScsbConstants.STATUS_RECONCILIATION_REPORT_ID)
                                 .onCompletion()
-                                    .onWhen(header(ScsbConstants.FOR).isEqualTo(ScsbConstants.STATUS_RECONCILIATION))
-                                        .log("status reconciliation process finished files generated in S3")
-                                        .bean(applicationContext.getBean(StatusReconciliationEmailService.class), ScsbConstants.PROCESS_INPUT)
-                                    .end()
-                                .choice()
-                                    .when(header(ScsbConstants.FOR).isEqualTo(ScsbConstants.STATUS_RECONCILIATION))
-                                        .marshal().bindy(BindyType.Csv, StatusReconciliationCSVRecord.class)
-                                        .setHeader(S3Constants.KEY, simple(statusReconciliation+"${in.headers.ImsLocation}/StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv"))
-                                        .to(ScsbConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
-                                    .when(header(ScsbConstants.FOR).isEqualTo(ScsbConstants.STATUS_RECONCILIATION_FAILURE))
-                                        .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
-                                        .setHeader(S3Constants.KEY, simple(statusReconciliation+"${in.headers.ImsLocation}/StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv"))
-                                        .to(ScsbConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
-                                        .log("status reconciliation failure report generated in s3")
-                                .endChoice();
+                                    .log("status reconciliation process finished files generated in S3")
+                                    .bean(applicationContext.getBean(StatusReconciliationEmailService.class), ScsbConstants.PROCESS_INPUT)
+                                .end()
+                                .marshal().bindy(BindyType.Csv, StatusReconciliationCSVRecord.class)
+                                .setHeader(S3Constants.KEY, simple(statusReconciliation + "${in.headers.ImsLocation}/StatusReconciliation-${date:now:yyyyMMdd_HHmmss}.csv"))
+                                .to(ScsbConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
+                                .log("status reconciliation report generated in s3");
+                    }
+                });
+
+                camelContext.addRoutes(new RouteBuilder() {
+                    @Override
+                    public void configure() throws Exception {
+                        from(ScsbConstants.STATUS_RECONCILIATION_FAILURE_REPORT)
+                                .routeId(ScsbConstants.STATUS_RECONCILIATION_FAILURE_REPORT_ID)
+                                .onCompletion()
+                                    .log("status reconciliation process finished failure files generated in S3")
+                                    .bean(applicationContext.getBean(StatusReconciliationEmailService.class), ScsbConstants.PROCESS_INPUT_FAILURE)
+                                .end()
+                                .marshal().bindy(BindyType.Csv, StatusReconciliationErrorCSVRecord.class)
+                                .setHeader(S3Constants.KEY, simple(statusReconciliation + "${in.headers.ImsLocation}/StatusReconciliationFailure-${date:now:yyyyMMdd_HHmmss}.csv"))
+                                .to(ScsbConstants.SCSB_CAMEL_S3_TO_ENDPOINT)
+                                .log("status reconciliation failure report generated in s3");
                     }
                 });
             }

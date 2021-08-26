@@ -38,7 +38,15 @@ public class StatusReconciliationEmailServiceUT extends BaseTestCaseUT {
     public void processInput(){
         CamelContext ctx = new DefaultCamelContext();
         Exchange exchange = new DefaultExchange(ctx);
-        exchange.getIn().setHeader("CamelFileName", "DailyReconciliationFile");
+        exchange.getIn().setHeader("CamelFileName", "StatusReconciliationFile");
         statusReconciliationEmailService.processInput(exchange);
+    }
+
+    @Test
+    public void processInputForFailure(){
+        CamelContext ctx = new DefaultCamelContext();
+        Exchange exchange = new DefaultExchange(ctx);
+        exchange.getIn().setHeader("CamelFileName", "StatusReconciliationFailureFile");
+        statusReconciliationEmailService.processInputForFailure(exchange);
     }
 }
