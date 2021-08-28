@@ -1,6 +1,8 @@
 package org.recap.camel.dailyreconciliation;
 
 import com.amazonaws.services.s3.AmazonS3;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +27,7 @@ import org.recap.model.jpa.RequestItemEntity;
 import org.recap.model.csv.DailyReconcilationRecord;
 import org.recap.repository.jpa.ItemDetailsRepository;
 import org.recap.repository.jpa.RequestItemDetailsRepository;
+import org.recap.util.PropertyUtil;
 import org.recap.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +44,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import static org.recap.ScsbConstants.getGFAStatusAvailableList;
-import static org.recap.ScsbConstants.getGFAStatusNotAvailableList;
-
 /**
  * The type Daily reconcilation processor.
  */
+@Getter
+@Setter
 @Service
 @Scope("prototype")
 public class DailyReconciliationProcessor {
@@ -69,9 +71,14 @@ public class DailyReconciliationProcessor {
     private SecurityUtil securityUtil;
 
     @Autowired
+    private PropertyUtil propertyUtil;
+
+    @Autowired
     AmazonS3 awsS3Client;
 
     private String imsLocationCode;
+    private String imsAvailableCodes;
+    private String imsNotAvailableCodes;
 
     public DailyReconciliationProcessor(String imsLocationCode) {
         this.imsLocationCode = imsLocationCode;
@@ -84,6 +91,12 @@ public class DailyReconciliationProcessor {
      */
     public void processInput(Exchange exchange) {
         try {
+            imsAvailableCodes = propertyUtil.getPropertyByImsLocationAndKey(imsLocationCode, PropertyKeyConstants.IMS.IMS_AVAILABLE_ITEM_STATUS_CODES);
+            imsNotAvailableCodes = propertyUtil.getPropertyByImsLocationAndKey(imsLocationCode, PropertyKeyConstants.IMS.IMS_NOT_AVAILABLE_ITEM_STATUS_CODES);
+            String queueableCodes = propertyUtil.getPropertyByImsLocationAndKey(imsLocationCode, PropertyKeyConstants.IMS.IMS_REQUESTABLE_NOT_RETRIEVABLE_ITEM_STATUS_CODES);
+            if (StringUtils.isNotBlank(queueableCodes)) {
+                imsAvailableCodes = imsAvailableCodes + "," + queueableCodes;
+            }
             String xmlFileName = exchange.getIn().getHeader(ScsbConstants.CAMEL_AWS_KEY).toString();
             logger.info("{} LAS File Processing: {}", imsLocationCode, xmlFileName);
             List<DailyReconcilationRecord> dailyReconcilationRecordList = null;
@@ -368,10 +381,10 @@ public class DailyReconciliationProcessor {
             sheet2[2] = sheet2Status.getStringCellValue();
         }
         boolean equalRow = Arrays.equals(sheet1, sheet2);
-        buidComparisionSheet(row3, xssfWorkbook, sheet1LasStatus, sheet1, sheet2, equalRow,cellStyle);
+        buildComparisionSheet(row3, xssfWorkbook, sheet1LasStatus, sheet1, sheet2, equalRow,cellStyle);
     }
 
-    private void buidComparisionSheet(XSSFRow row3, XSSFWorkbook xssfWorkbook, String sheet1LasStatus, String[] sheet1, String[] sheet2, boolean equalRow,CellStyle cellStyle) {
+    private void buildComparisionSheet(XSSFRow row3, XSSFWorkbook xssfWorkbook, String sheet1LasStatus, String[] sheet1, String[] sheet2, boolean equalRow,CellStyle cellStyle) {
         if (equalRow){
             createCellForEqualRow(row3, xssfWorkbook, sheet1LasStatus, cellStyle, sheet1[0], 0, sheet1[1], 1, 2, sheet2[0], 3, sheet2[1], 4, sheet2[2], 5);
             createCell(xssfWorkbook,row3,cellStyle, ScsbConstants.DAILY_RR_MATCHED,6);
@@ -402,8 +415,8 @@ public class DailyReconciliationProcessor {
     private String getLasStatusForCompare(Cell sheet1Status, String[] sheet1) {
         String sheet1LasStatus;
         sheet1LasStatus = sheet1Status.getStringCellValue();
-        List<String> lasAvailableStatusList = getGFAStatusAvailableList();
-        List<String> lasNotAvailableStatusList = getGFAStatusNotAvailableList();
+        String[] lasAvailableStatusList = imsAvailableCodes.split(",");
+        String[] lasNotAvailableStatusList = imsNotAvailableCodes.split(",");
         boolean statusFound = false;
         for (String lasAvailableStatus : lasAvailableStatusList) {
             if(StringUtils.startsWithIgnoreCase(sheet1LasStatus,lasAvailableStatus)){
