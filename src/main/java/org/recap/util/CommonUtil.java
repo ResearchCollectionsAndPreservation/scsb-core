@@ -450,7 +450,7 @@ public class CommonUtil {
         return bibMatchPointInfo;
     }
 
-    public boolean isCgdChangedToShared(Map<String, ItemEntity> fetchedBarcodeItemEntityMap, Map<String, ItemEntity> incomingBarcodeItemEntityMap, Map<Integer, String> collectionGroupIdCodeMap, boolean checkExisting) {
+    public boolean isCgdChangedToShared(Map<String, ItemEntity> fetchedBarcodeItemEntityMap, Map<String, ItemEntity> incomingBarcodeItemEntityMap, Map<Integer, String> collectionGroupIdCodeMap, Map<Integer, String> itemStatusIdCodeMap, boolean checkExisting) {
         boolean isCgdChangedToShared = false;
         for (Map.Entry<String, ItemEntity> incomingBarcodeItemEntityMapEntry : incomingBarcodeItemEntityMap.entrySet()) {
             ItemEntity incomingItemEntity = incomingBarcodeItemEntityMapEntry.getValue();
@@ -458,11 +458,13 @@ public class CommonUtil {
             if (fetchedItemEntity != null && fetchedItemEntity.getOwningInstitutionItemId().equalsIgnoreCase(incomingItemEntity.getOwningInstitutionItemId()) && fetchedItemEntity.getBarcode().equals(incomingItemEntity.getBarcode()) && !fetchedItemEntity.isDeleted()) {
                 Integer fetchedCgdId = null != fetchedItemEntity.getCollectionGroupEntity() ? fetchedItemEntity.getCollectionGroupEntity().getId() : fetchedItemEntity.getCollectionGroupId();
                 Integer incomingCgdId = null != incomingItemEntity.getCollectionGroupEntity() ? incomingItemEntity.getCollectionGroupEntity().getId() : incomingItemEntity.getCollectionGroupId();
+                String itemStatusCode = itemStatusIdCodeMap.get(fetchedItemEntity.getItemAvailabilityStatusId());
+                boolean isItemAvailable = ScsbConstants.ITEM_STATUS_AVAILABLE.equalsIgnoreCase(itemStatusCode);
                 if (fetchedCgdId != null && incomingCgdId != null) {
-                    String fetchedCgdCode = collectionGroupIdCodeMap.get(incomingItemEntity.getCollectionGroupId());
+                    String fetchedCgdCode = collectionGroupIdCodeMap.get(fetchedItemEntity.getCollectionGroupId());
                     String incomingCgdCode = collectionGroupIdCodeMap.get(incomingItemEntity.getCollectionGroupId());
                     if ((checkExisting && ScsbCommonConstants.SHARED_CGD.equalsIgnoreCase(fetchedCgdCode))
-                            || (!checkExisting && fetchedCgdId.intValue() != incomingCgdId.intValue() && ScsbCommonConstants.SHARED_CGD.equalsIgnoreCase(incomingCgdCode))) {
+                            || (!checkExisting && isItemAvailable && fetchedCgdId.intValue() != incomingCgdId.intValue() && ScsbCommonConstants.SHARED_CGD.equalsIgnoreCase(incomingCgdCode))) {
                         isCgdChangedToShared = true;
                         break;
                     }
