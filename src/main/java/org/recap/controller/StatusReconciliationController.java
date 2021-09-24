@@ -169,13 +169,13 @@ public class StatusReconciliationController {
                 log.info("items fetched from data base-----> {}", itemEntityList.size());
                 List<List<ItemEntity>> itemEntityChunkList = Lists.partition(itemEntityList, getStatusReconciliationLasBarcodeLimit());
                 List<StatusReconciliationCSVRecord> returnedStatusReconciliationCSVRecordList = statusReconciliationService.itemStatusComparison(itemEntityChunkList, statusReconciliationErrorCSVRecords, refileCount);
-                returnedStatusReconciliationCSVRecordList.stream().filter(record -> record.getReconciliationStatus().equalsIgnoreCase(ScsbConstants.CHANGED_TO_AVAILABLE)).forEach(refileRecord -> {
+                returnedStatusReconciliationCSVRecordList.stream().filter(record -> record.getReconciliationStatus() != null && ScsbConstants.CHANGED_TO_AVAILABLE.equalsIgnoreCase(record.getReconciliationStatus())).forEach(refileRecord -> {
                     if (refileRecord.getRequestAvailability().equalsIgnoreCase(ScsbConstants.YES)) {
                         barcodeList.add(refileRecord.getBarcode());
                         requestIdList.add(Integer.parseInt(refileRecord.getRequestId()));
                     }
                 });
-                refileCount = (int) (refileCount + returnedStatusReconciliationCSVRecordList.stream().filter(record -> record.getReconciliationStatus().equalsIgnoreCase(ScsbConstants.CHANGED_TO_AVAILABLE)).count());
+                refileCount = (int) (refileCount + returnedStatusReconciliationCSVRecordList.stream().filter(record -> record.getReconciliationStatus() != null && ScsbConstants.CHANGED_TO_AVAILABLE.equalsIgnoreCase(record.getReconciliationStatus())).count());
                 statusReconciliationCSVRecordList.addAll(returnedStatusReconciliationCSVRecordList);
                 log.info("status reconciliation page num: {} and records {} processed", pageNum, from + getBatchSize());
             }
@@ -196,9 +196,9 @@ public class StatusReconciliationController {
                 Map<String, Object> headers = new HashMap<>();
                 headers.put(ScsbConstants.FOR, headerFor);
                 headers.put(ScsbConstants.IMS_LOCATION, key);
-                headers.put(ScsbConstants.CHANGED_TO_AVAILABLE, value.stream().filter(record -> record.getReconciliationStatus().equalsIgnoreCase(ScsbConstants.CHANGED_TO_AVAILABLE)).count());
-                headers.put(ScsbConstants.UNCHANGED, value.stream().filter(record -> record.getReconciliationStatus().equalsIgnoreCase(ScsbConstants.UNCHANGED)).count());
-                headers.put(ScsbConstants.UNKNOWN_CODE, value.stream().filter(record -> record.getReconciliationStatus().equalsIgnoreCase(ScsbConstants.UNKNOWN_CODE)).count());
+                headers.put(ScsbConstants.CHANGED_TO_AVAILABLE, value.stream().filter(record -> record.getReconciliationStatus() != null && ScsbConstants.CHANGED_TO_AVAILABLE.equalsIgnoreCase(record.getReconciliationStatus())).count());
+                headers.put(ScsbConstants.UNCHANGED, value.stream().filter(record -> record.getReconciliationStatus() != null && ScsbConstants.UNCHANGED.equalsIgnoreCase(record.getReconciliationStatus())).count());
+                headers.put(ScsbConstants.UNKNOWN_CODE, value.stream().filter(record -> record.getReconciliationStatus() != null && ScsbConstants.UNKNOWN_CODE.equalsIgnoreCase(record.getReconciliationStatus())).count());
                 producer.sendBodyAndHeaders(ScsbConstants.STATUS_RECONCILIATION_REPORT, value, headers);
             });
         }

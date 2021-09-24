@@ -98,8 +98,15 @@ public interface BibliographicDetailsRepository extends BaseRepository<Bibliogra
     @Query(value = "UPDATE `BIBLIOGRAPHIC_T` SET `MATCHING_IDENTITY`=null, `MATCH_SCORE`=0, `ANAMOLY_FLAG`=0, `MA_QUALIFIER`=:maQualifier WHERE `BIBLIOGRAPHIC_ID` in (:bibliographicIds)",nativeQuery = true)
     int resetMatchingColumnsAndUpdateMaQualifier(@Param("bibliographicIds") Set<Integer> bibIds,  @Param("maQualifier") Integer maQualifier);
 
-    @Query(value = "SELECT BIBLIOGRAPHIC_ID, MATCH_SCORE FROM BIBLIOGRAPHIC_T WHERE MATCHING_IDENTITY = :matchingIdentity", nativeQuery = true)
+    @Query(value = "SELECT BIBLIOGRAPHIC_ID FROM BIBLIOGRAPHIC_T WHERE MATCHING_IDENTITY = :matchingIdentity", nativeQuery = true)
     Set<Integer> findIdByMatchingIdentity(@Param("matchingIdentity") String matchingIdentity);
+
+    @Query(value = "SELECT bib.BIBLIOGRAPHIC_ID, item.COLLECTION_GROUP_ID FROM BIBLIOGRAPHIC_T bib " +
+            "left outer join BIBLIOGRAPHIC_ITEM_T bibItem ON bibItem.BIBLIOGRAPHIC_ID = bib.BIBLIOGRAPHIC_ID " +
+            "left outer join ITEM_T item ON item.ITEM_ID = bibItem.ITEM_ID " +
+            "WHERE bib.MATCHING_IDENTITY = :matchingIdentity and bib.IS_DELETED = 0 and bib.CATALOGING_STATUS = 'Complete' " +
+            "and item.IS_DELETED = 0 and item.CATALOGING_STATUS = 'Complete'", nativeQuery = true)
+    List<Object[]> findBibIdAndCgdIdByMatchingIdentity(@Param("matchingIdentity") String matchingIdentity);
 
 
 }

@@ -226,4 +226,5 @@ public final class ScsbConstants {
     public static final String NUMBER_PATTERN="[^0-9]";
 
     public static final String LOG_MA_QUALIFIER_UPDATE = "Number of Bib Ids Updated with MA Qualifier to {} : {}";
+    public static final String LOG_MATCH_ID_QUALIFIER_UPDATE = "Matching Id - {}, Update MA Qualifier to {}, Collected {} Bib Ids: {}";
 }

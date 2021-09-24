@@ -1,6 +1,7 @@
 package org.recap.service.submitcollection;
 
 import org.apache.commons.collections.map.HashedMap;
+import org.apache.commons.lang3.StringUtils;
 import org.recap.PropertyKeyConstants;
 import org.recap.ScsbConstants;
 import org.recap.ScsbCommonConstants;
@@ -372,8 +373,10 @@ public class SubmitCollectionDAOService {
     private void setMAQualifierToBibByCGD(BibliographicEntity bibliographicEntity, String cgdCode) {
         if (ScsbCommonConstants.SHARED_CGD.equalsIgnoreCase(cgdCode)) {
             bibliographicEntity.setMaQualifier(ScsbCommonConstants.MA_QUALIFIER_3);
+            logger.info("Update MA Qualifier to {}, Collected Bib Ids: {}", ScsbCommonConstants.MA_QUALIFIER_3, bibliographicEntity.getId());
         } else {
             bibliographicEntity.setMaQualifier(ScsbCommonConstants.MA_QUALIFIER_1);
+            logger.info("Update MA Qualifier to {}, Collected Bib Ids: {}", ScsbCommonConstants.MA_QUALIFIER_1, bibliographicEntity.getId());
         }
     }
 
@@ -1078,8 +1081,12 @@ public class SubmitCollectionDAOService {
     }
 
     private BibliographicEntity updateCatalogingStatusForBib(BibliographicEntity fetchBibliographicEntity) {
-        if (ScsbCommonConstants.INCOMPLETE_STATUS.equalsIgnoreCase(fetchBibliographicEntity.getCatalogingStatus()) && isHasCgdShared(fetchBibliographicEntity)) {
-            setMAQualifierToBibByCGD(fetchBibliographicEntity, ScsbCommonConstants.SHARED_CGD);
+        if (StringUtils.isBlank(fetchBibliographicEntity.getCatalogingStatus()) || ScsbCommonConstants.INCOMPLETE_STATUS.equalsIgnoreCase(fetchBibliographicEntity.getCatalogingStatus())) {
+            if (isHasCgdShared(fetchBibliographicEntity)) {
+                setMAQualifierToBibByCGD(fetchBibliographicEntity, ScsbCommonConstants.SHARED_CGD);
+            } else {
+                setMAQualifierToBibByCGD(fetchBibliographicEntity, null);
+            }
         }
         fetchBibliographicEntity.setCatalogingStatus(ScsbCommonConstants.INCOMPLETE_STATUS);
         for(ItemEntity itemEntity:fetchBibliographicEntity.getItemEntities()){
@@ -1240,6 +1247,7 @@ public class SubmitCollectionDAOService {
             String fetchedInstitutionCode = null != fetchBibliographicEntity.getInstitutionEntity() ? fetchBibliographicEntity.getInstitutionEntity().getInstitutionCode() : ScsbCommonConstants.NA;
             SubmitCollectionMatchPointsCheckCallable submitCollectionMatchPointsCheckCallable = applicationContext.getBean(SubmitCollectionMatchPointsCheckCallable.class);
             submitCollectionMatchPointsCheckCallable.setFetchedBibId(fetchBibliographicEntity.getId());
+            submitCollectionMatchPointsCheckCallable.setFetchedBibMAQualifier(fetchBibliographicEntity.getMaQualifier());
             submitCollectionMatchPointsCheckCallable.setExistingMarcXml(new String(fetchBibliographicEntity.getContent()));
             submitCollectionMatchPointsCheckCallable.setIncomingMarcXml(new String(incomingBibliographicEntity.getContent()));
             submitCollectionMatchPointsCheckCallable.setMatchingIdentifier(fetchBibliographicEntity.getMatchingIdentity());

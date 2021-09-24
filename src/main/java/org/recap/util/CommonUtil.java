@@ -474,6 +474,45 @@ public class CommonUtil {
         return isCgdChangedToShared;
     }
 
+    public boolean isCgdAlreadyShared(Map<String, ItemEntity> fetchedBarcodeItemEntityMap, Map<String, ItemEntity> incomingBarcodeItemEntityMap, Map<Integer, String> collectionGroupIdCodeMap, Map<Integer, String> itemStatusIdCodeMap) {
+       return isCgdChangedToShared(fetchedBarcodeItemEntityMap, incomingBarcodeItemEntityMap, collectionGroupIdCodeMap, itemStatusIdCodeMap, true);
+    }
+
+    public void collectSharedAndNonSharedBibIdsForMatchingId(Set<Integer> sharedBibIds, Set<Integer> nonSharedBibIds, String matchingIdentifier, Map<Integer, String> collectionGroupIdCodeMap) {
+        List<Object[]> bibIdAndCgdIdByMatchingIdentityObjectList = bibliographicDetailsRepository.findBibIdAndCgdIdByMatchingIdentity(matchingIdentifier);
+        if (!bibIdAndCgdIdByMatchingIdentityObjectList.isEmpty()) {
+            Map<Integer, Set<String>> mapWithBibIdAndCgdCodes = getMapWithBibIdAndCgdCodes(bibIdAndCgdIdByMatchingIdentityObjectList, collectionGroupIdCodeMap);
+            for (Map.Entry<Integer, Set<String>> bibIdAndCgdCodes : mapWithBibIdAndCgdCodes.entrySet()) {
+                Integer bibId = bibIdAndCgdCodes.getKey();
+                Set<String> cgdCodes = bibIdAndCgdCodes.getValue();
+                if (cgdCodes.contains(ScsbCommonConstants.SHARED_CGD)) {
+                    sharedBibIds.add(bibId);
+                } else {
+                    nonSharedBibIds.add(bibId);
+                }
+            }
+        }
+    }
+
+    private Map<Integer, Set<String>> getMapWithBibIdAndCgdCodes(List<Object[]> bibIdAndCgdIdByMatchingIdentityObjectList, Map<Integer, String> collectionGroupIdCodeMap) {
+        Map<Integer, Set<String>> bibIdAndCgdCodesMap = new HashMap<>();
+        for (Object[] bibIdAndCgdIdObj : bibIdAndCgdIdByMatchingIdentityObjectList) {
+            Integer bibId = Integer.parseInt(bibIdAndCgdIdObj[0].toString());
+            String collectionGroupCode = null;
+            if (bibIdAndCgdIdObj.length > 1) {
+                collectionGroupCode = collectionGroupIdCodeMap.get(Integer.parseInt(bibIdAndCgdIdObj[1].toString()));
+            }
+            if (bibIdAndCgdCodesMap.containsKey(bibId)) {
+                bibIdAndCgdCodesMap.get(bibId).add(collectionGroupCode);
+            } else {
+                Set<String> cgdCodes = new HashSet<>();
+                cgdCodes.add(collectionGroupCode);
+                bibIdAndCgdCodesMap.put(bibId, cgdCodes);
+            }
+        }
+        return bibIdAndCgdCodesMap;
+    }
+
     public Set<Integer> collectFuturesAndUpdateMAQualifier(List<Future> futures) {
         Set<Integer> bibIds = new HashSet<>();
         Set<Integer> allBibIdsToResetAndSetQualifierTo1 = new HashSet<>();
@@ -489,10 +528,12 @@ public class CommonUtil {
                     if (bibIdsToResetAndSetQualifierTo1 != null) {
                         allBibIdsToResetAndSetQualifierTo1.addAll(bibIdsToResetAndSetQualifierTo1);
                         bibIds.addAll(bibIdsToResetAndSetQualifierTo1);
-                    } else if (bibIdsToSetQualifierTo2 != null) {
+                    }
+                    if (bibIdsToSetQualifierTo2 != null) {
                         allBibIdsToSetQualifierTo2.addAll(bibIdsToSetQualifierTo2);
                         bibIds.addAll(bibIdsToSetQualifierTo2);
-                    } else if (bibIdsToResetAndSetQualifierTo3 != null) {
+                    }
+                    if (bibIdsToResetAndSetQualifierTo3 != null) {
                         allBibIdsToResetAndSetQualifierTo3.addAll(bibIdsToResetAndSetQualifierTo3);
                         bibIds.addAll(bibIdsToResetAndSetQualifierTo3);
                     }
