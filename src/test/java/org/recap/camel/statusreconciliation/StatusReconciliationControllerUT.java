@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by hemalathas on 2/6/17.
@@ -96,6 +97,12 @@ public class StatusReconciliationControllerUT extends BaseTestCaseUT {
         Mockito.when(statusReconciliationService.itemStatusComparison(Mockito.anyList(),Mockito.anyList(),Mockito.anyInt())).thenReturn(itemStatusComparison);
         ResponseEntity responseEntity = statusReconciliationController.itemStatusReconciliation();
         assertEquals("Success", responseEntity.getBody().toString());
+    }
+
+    @Test
+    public void checkGetters(){
+        ProducerTemplate template = statusReconciliationController.getProducer();
+        assertNotNull(template);
     }
 
     private RequestStatusEntity getRequestStatusEntity(int id,String status) {

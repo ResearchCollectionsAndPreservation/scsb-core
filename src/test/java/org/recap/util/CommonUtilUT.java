@@ -5,6 +5,7 @@ import org.marc4j.marc.Record;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.recap.BaseTestCaseUT;
 import org.recap.PropertyKeyConstants;
 import org.recap.ScsbCommonConstants;
@@ -15,21 +16,36 @@ import org.recap.model.jpa.*;
 import org.recap.model.report.SubmitCollectionReportInfo;
 import org.recap.repository.jpa.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import javax.xml.bind.JAXBException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 
 public class CommonUtilUT extends BaseTestCaseUT {
 
     @InjectMocks
+    @Spy
     CommonUtil commonUtil;
+
+    @Mock
+    BibJSONUtil bibJSONUtil;
+
+    @Mock
+    Future future;
 
     @Mock
     ItemStatusDetailsRepository itemStatusDetailsRepository;
 
     @Mock
     ItemDetailsRepository itemDetailsRepository;
+
+    @Mock
+    BibliographicDetailsRepository bibliographicDetailsRepository;
 
     @Mock
     ItemChangeLogDetailsRepository itemChangeLogDetailsRepository;
@@ -257,6 +273,13 @@ public class CommonUtilUT extends BaseTestCaseUT {
     }
 
     @Test
+    public void getBibRecordsForSCSBFormatException() throws JAXBException {
+        Mockito.doThrow(new JAXBException("Error")).when(commonUtil).extractBibRecords(null);
+        BibRecords bibRecords=commonUtil.getBibRecordsForSCSBFormat(null);
+        assertNull(bibRecords);
+    }
+
+    @Test
     public void checkIfImsItemStatusIsAvailableOrNotAvailable(){
         Mockito.when(propertyUtil.getPropertyByImsLocationAndKey(Mockito.anyString(),Mockito.anyString())).thenReturn("IN");
         boolean status=commonUtil.checkIfImsItemStatusIsAvailableOrNotAvailable("RECAP","IN",true);
@@ -268,6 +291,106 @@ public class CommonUtilUT extends BaseTestCaseUT {
         Mockito.when(propertyUtil.getPropertyByImsLocationAndKey(Mockito.anyString(),Mockito.anyString())).thenReturn("IN");
         boolean status=commonUtil.checkIfImsItemStatusIsRequestableNotRetrievable("RECAP","IN");
         assertTrue(status);
+    }
+
+    @Test
+    public void checkIfMatchPointsChanged(){
+        String nonHoldingIdInstitution = "PUL,CUL,HTC,HD";
+        ReflectionTestUtils.setField(commonUtil,"nonHoldingIdInstitution",nonHoldingIdInstitution);
+        List<Record> incomingMarcRecords = new ArrayList<>();
+        incomingMarcRecords.add(record);
+        Mockito.when(marcUtil.convertMarcXmlToRecord(any())).thenReturn(incomingMarcRecords);
+        boolean status = commonUtil.checkIfMatchPointsChanged("MarcRecord.xml","MarcRecord.xml","PUL");
+        assertFalse(status);
+    }
+
+    @Test
+    public void isCgdChangedToShared(){
+        ItemEntity itemEntity = getItemEntity();
+        Map<String, ItemEntity> fetchedBarcodeItemEntityMap = new HashMap<>();
+        fetchedBarcodeItemEntityMap.put("1",itemEntity);
+        Map<String, ItemEntity> incomingBarcodeItemEntityMap = new HashMap<>();
+        incomingBarcodeItemEntityMap.put("1",itemEntity);
+        Map<Integer, String> collectionGroupIdCodeMap = new HashMap<>();
+        collectionGroupIdCodeMap.put(1,ScsbCommonConstants.SHARED_CGD);
+        Map<Integer, String> itemStatusIdCodeMap = new HashMap<>();
+        itemStatusIdCodeMap.put(1,"AVAILABLE");
+        boolean checkExisting = true;
+        boolean status = commonUtil.isCgdChangedToShared(fetchedBarcodeItemEntityMap,incomingBarcodeItemEntityMap,collectionGroupIdCodeMap,itemStatusIdCodeMap,checkExisting);
+        assertTrue(status);
+    }
+
+    @Test
+    public void isCgdChangedToSharedAsNull(){
+        ItemEntity itemEntity = getItemEntity();
+        Map<String, ItemEntity> fetchedBarcodeItemEntityMap = new HashMap<>();
+        fetchedBarcodeItemEntityMap.put("1",itemEntity);
+        Map<String, ItemEntity> incomingBarcodeItemEntityMap = new HashMap<>();
+        incomingBarcodeItemEntityMap.put("1",itemEntity);
+        Map<Integer, String> collectionGroupIdCodeMap = new HashMap<>();
+        collectionGroupIdCodeMap.put(1,ScsbCommonConstants.AVAILABLE);
+        Map<Integer, String> itemStatusIdCodeMap = new HashMap<>();
+        itemStatusIdCodeMap.put(1,"AVAILABLE");
+        boolean checkExisting = true;
+        boolean status = commonUtil.isCgdChangedToShared(fetchedBarcodeItemEntityMap,incomingBarcodeItemEntityMap,collectionGroupIdCodeMap,itemStatusIdCodeMap,checkExisting);
+        assertFalse(status);
+    }
+
+    @Test
+    public void isCgdAlreadyShared(){
+        ItemEntity itemEntity = getItemEntity();
+        Map<String, ItemEntity> fetchedBarcodeItemEntityMap = new HashMap<>();
+        fetchedBarcodeItemEntityMap.put("1",itemEntity);
+        Map<String, ItemEntity> incomingBarcodeItemEntityMap = new HashMap<>();
+        incomingBarcodeItemEntityMap.put("1",itemEntity);
+        Map<Integer, String> collectionGroupIdCodeMap = new HashMap<>();
+        collectionGroupIdCodeMap.put(1,ScsbCommonConstants.SHARED_CGD);
+        Map<Integer, String> itemStatusIdCodeMap = new HashMap<>();
+        itemStatusIdCodeMap.put(1,"AVAILABLE");
+        boolean status = commonUtil.isCgdAlreadyShared(fetchedBarcodeItemEntityMap,incomingBarcodeItemEntityMap,collectionGroupIdCodeMap,itemStatusIdCodeMap);
+        assertTrue(status);
+    }
+
+    @Test
+    public void collectSharedAndNonSharedBibIdsForMatchingId(){
+        Set<Integer> sharedBibIds = new HashSet<>();
+        Set<Integer> nonSharedBibIds = new HashSet<>();
+        String matchingIdentifier = "1";
+        Map<Integer, String> collectionGroupIdCodeMap = new HashMap<>();
+        collectionGroupIdCodeMap.put(1,ScsbCommonConstants.SHARED_CGD);
+        List<Object[]> bibIdAndCgdIdByMatchingIdentityObjectList = new ArrayList<>();
+        Object[] bibliographicEntity = {1,2};
+        bibIdAndCgdIdByMatchingIdentityObjectList.add(bibliographicEntity);
+        Mockito.when(bibliographicDetailsRepository.findBibIdAndCgdIdByMatchingIdentity(matchingIdentifier)).thenReturn(bibIdAndCgdIdByMatchingIdentityObjectList);
+        commonUtil.collectSharedAndNonSharedBibIdsForMatchingId(sharedBibIds,nonSharedBibIds,matchingIdentifier,collectionGroupIdCodeMap);
+    }
+
+    @Test
+    public void collectFuturesAndUpdateMAQualifier() throws ExecutionException, InterruptedException {
+        List<Future> futures = new ArrayList<>();
+        futures.add(future);
+        Set<Integer> integerSet = new HashSet<>();
+        integerSet.add(1);
+        Map<Integer, Set<Integer>> responseMap = new HashMap<>();
+        responseMap.put(ScsbCommonConstants.MA_QUALIFIER_1,integerSet);
+        responseMap.put(ScsbCommonConstants.MA_QUALIFIER_2,integerSet);
+        responseMap.put(ScsbCommonConstants.MA_QUALIFIER_3,integerSet);
+        Mockito.when(future.get()).thenReturn(responseMap);
+        commonUtil.collectFuturesAndUpdateMAQualifier(futures);
+    }
+
+    @Test
+    public void collectFuturesAndUpdateMAQualifierException() throws ExecutionException, InterruptedException {
+        List<Future> futures = new ArrayList<>();
+        futures.add(future);
+        Set<Integer> integerSet = new HashSet<>();
+        integerSet.add(1);
+        Map<Integer, Set<Integer>> responseMap = new HashMap<>();
+        responseMap.put(ScsbCommonConstants.MA_QUALIFIER_1,null);
+        responseMap.put(ScsbCommonConstants.MA_QUALIFIER_2,integerSet);
+        responseMap.put(ScsbCommonConstants.MA_QUALIFIER_3,integerSet);
+        Mockito.when(future.get()).thenReturn(responseMap);
+        commonUtil.collectFuturesAndUpdateMAQualifier(futures);
     }
 
     @Test
@@ -294,7 +417,7 @@ public class CommonUtilUT extends BaseTestCaseUT {
         Set<AccessionResponse> accessionResponsesList=new HashSet<>();
         List<ReportDataEntity> reportDataEntityList=new ArrayList<>();
         AccessionRequest accessionRequest=new AccessionRequest();
-        Mockito.when(accessionUtil.updateData(Mockito.any(),Mockito.anyString(),Mockito.anyList(),Mockito.any(),Mockito.anyBoolean(),Mockito.anyBoolean(),Mockito.any())).thenReturn(ScsbCommonConstants.SUCCESS);
+        Mockito.when(accessionUtil.updateData(any(),Mockito.anyString(),Mockito.anyList(), any(),Mockito.anyBoolean(),Mockito.anyBoolean(), any())).thenReturn(ScsbCommonConstants.SUCCESS);
         ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
         String updatedDataResponse=commonUtil.getUpdatedDataResponse(accessionResponsesList,responseMapList,"",reportDataEntityList,accessionRequest,true,1,record,imsLocationEntity);
         assertEquals(ScsbCommonConstants.SUCCESS,updatedDataResponse);
@@ -307,6 +430,16 @@ public class CommonUtilUT extends BaseTestCaseUT {
         assertNotNull(commonUtil);
     }
 
+    @Test
+    public void updateMAQualifierByBibIdSets(){
+        Set<Integer> allBibIdsToResetAndSetQualifierTo1 = new HashSet<>();
+        allBibIdsToResetAndSetQualifierTo1.add(1);
+        Set<Integer> allBibIdsToSetQualifierTo2 = new HashSet<>();
+        allBibIdsToSetQualifierTo2.add(3);
+        Set<Integer> allBibIdsToResetAndSetQualifierTo3 = new HashSet<>();
+        allBibIdsToResetAndSetQualifierTo3.add(1);
+        ReflectionTestUtils.invokeMethod(commonUtil,"updateMAQualifierByBibIdSets",allBibIdsToResetAndSetQualifierTo1,allBibIdsToSetQualifierTo2,allBibIdsToResetAndSetQualifierTo3);
+    }
     @Test
     public void addHoldingsEntityToMap(){
         HoldingsEntity holdingsEntity=new HoldingsEntity();
@@ -415,6 +548,7 @@ public class CommonUtilUT extends BaseTestCaseUT {
 
     private ItemEntity getItemEntity() {
         ItemEntity itemEntity = new ItemEntity();
+        itemEntity.setId(1);
         itemEntity.setLastUpdatedDate(new Date());
         itemEntity.setOwningInstitutionItemId("843617540");
         itemEntity.setOwningInstitutionId(1);

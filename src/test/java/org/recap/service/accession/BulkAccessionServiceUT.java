@@ -19,11 +19,7 @@ import org.recap.util.AccessionUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -136,19 +132,22 @@ public class BulkAccessionServiceUT extends BaseTestCaseUT {
 
     @Test
     public void getAccessionRequestException() {
-        Mockito.when(accessionDetailsRepository.findByAccessionStatus(Mockito.anyString())).thenReturn(getAccessionEntities("pending"));
-        List<AccessionEntity> accessionEntities=bulkAccessionService.getAccessionEntities(ScsbConstants.PENDING);
+        AccessionModelRequest accessionModelRequest = new AccessionModelRequest();
+        AccessionRequest accessionRequest = new AccessionRequest();
+        accessionModelRequest.setAccessionRequests(null);
         List<AccessionModelRequest> accessionModelRequestList=new ArrayList<>();
+        accessionModelRequestList.add(accessionModelRequest);
         List<AccessionRequest> accessionEntity1=bulkAccessionService.getAccessionRequest(accessionModelRequestList);
         assertNotNull(accessionEntity1);
-        assertEquals(java.util.Optional.ofNullable(1), java.util.Optional.ofNullable(accessionEntities.get(0).getId()));
     }
 
     @Test
     public void getAccessionRequest() {
-        Mockito.when(accessionDetailsRepository.findByAccessionStatus(Mockito.anyString())).thenReturn(getAccessionEntities("pending"));
-        bulkAccessionService.updateStatusForAccessionEntities(getAccessionEntities("[{\"customerCode\":\"PA\",\"itemBarcode\":\"123\"}]"), ScsbConstants.PENDING);
+        AccessionModelRequest accessionModelRequest = new AccessionModelRequest();
+        AccessionRequest accessionRequest = new AccessionRequest();
+        accessionModelRequest.setAccessionRequests(Arrays.asList(accessionRequest));
         List<AccessionModelRequest> accessionModelRequestList=new ArrayList<>();
+        accessionModelRequestList.add(accessionModelRequest);
         List<AccessionRequest> accessionEntity1=bulkAccessionService.getAccessionRequest(accessionModelRequestList);
         assertNotNull(accessionEntity1);
    }

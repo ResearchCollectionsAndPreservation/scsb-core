@@ -31,19 +31,19 @@ import org.recap.service.submitcollection.SubmitCollectionReportGenerator;
 import org.recap.service.submitcollection.SubmitCollectionReportHelperService;
 import org.recap.service.submitcollection.SubmitCollectionService;
 import org.recap.service.submitcollection.SubmitCollectionValidationService;
+import org.recap.util.CommonUtil;
 import org.recap.util.MarcUtil;
 import org.recap.util.PropertyUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Future;
 
 import static org.apache.camel.builder.Builder.simple;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 
 
 public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
@@ -59,6 +59,9 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
 
     @Mock
     SubmitCollectionService submitCollectionService;
+
+    @Mock
+    CommonUtil commonUtil;
 
     @Mock
     SubmitCollectionReportGenerator submitCollectionReportGenerator;
@@ -297,28 +300,30 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         ReflectionTestUtils.setField(submitCollectionDAOService, "bibliographicRepositoryDAO",bibliographicRepositoryDAO);
         ReflectionTestUtils.setField(submitCollectionDAOService, "entityManager",entityManager);
         ReflectionTestUtils.setField(marcUtil, "inputLimit",10);
-        Mockito.when(bibliographicRepositoryDAO.saveOrUpdate(Mockito.any())).thenReturn(incomingBibliographicEntity);
+        Mockito.when(bibliographicRepositoryDAO.saveOrUpdate(any())).thenReturn(incomingBibliographicEntity);
         Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
         StringBuilder errorMessage=new StringBuilder();
         Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
         Mockito.when(responseMap.get("errorMessage")).thenReturn(errorMessage);
         List<ItemEntity> itemEntities=new ArrayList<>();
         itemEntities.add(itemEntity);
+        Set<Integer> bibIds = new HashSet<>();
+        bibIds.add(1);
         Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(itemEntities);
         List<ItemEntity> fetchedItemBasedOnOwningInstitutionItemId=new ArrayList<>();
         Mockito.when(submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(Mockito.anyList())).thenReturn(fetchedItemBasedOnOwningInstitutionItemId);
 
-        Mockito.when(submitCollectionValidationService.isExistingBoundWithItem(Mockito.any())).thenReturn(false);
+        Mockito.when(submitCollectionValidationService.isExistingBoundWithItem(any())).thenReturn(false);
         Mockito.when(itemEntity.getBarcode()).thenReturn("123456");
         Mockito.when(itemEntity.getImsLocationEntity()).thenReturn(TestUtil.getImsLocationEntity(1,"RECAP","RECAP"));
         Mockito.when(itemEntity.getCollectionGroupId()).thenReturn(1);
         List<BibliographicEntity> bibliographicEntityList=new ArrayList<>();
         bibliographicEntityList.add(incomingBibliographicEntity);
         Mockito.when(institutionEntity.getId()).thenReturn(2);
-        Mockito.when(submitCollectionDAOService.updateDummyRecordForNonBoundWith(Mockito.any(),Mockito.anyMap(),Mockito.anyList(),Mockito.anySet(),Mockito.any(),Mockito.any(),Mockito.anyList(),Mockito.any(),Mockito.anyList())).thenCallRealMethod();
+        Mockito.when(submitCollectionDAOService.updateDummyRecordForNonBoundWith(any(),Mockito.anyMap(),Mockito.anyList(),Mockito.anySet(), any(), any(),Mockito.anyList(), any(),Mockito.anyList())).thenCallRealMethod();
         Mockito.when(submitCollectionDAOService.getBarcodeSetFromItemEntityList(Mockito.anyList())).thenCallRealMethod();
         Mockito.when(submitCollectionDAOService.getBarcodeItemEntityMap(Mockito.anyList())).thenCallRealMethod();
-        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anySet(),Mockito.any(),Mockito.anyList())).thenCallRealMethod();
+        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anySet(), any(),Mockito.anyList())).thenCallRealMethod();
         Mockito.when(submitCollectionDAOService.getBarcodeSetFromNonBoundWithBibliographicEntity(Mockito.anyList())).thenCallRealMethod();
         Mockito.when(submitCollectionDAOService.getBarcodeItemEntityMapFromNonBoundWithBibliographicEntityList(Mockito.anyList())).thenCallRealMethod();
         Mockito.when(submitCollectionDAOService.getItemEntityListUsingBarcodeList(Mockito.anyList(),Mockito.anyInt())).thenCallRealMethod();
@@ -329,7 +334,7 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         Mockito.when(itemEntity.getCatalogingStatus()).thenReturn(ScsbCommonConstants.COMPLETE_STATUS);
         Mockito.when(incomingBibliographicEntity.getOwningInstitutionBibId()).thenReturn("d34645");
         Mockito.when(responseMap.get("bibliographicEntity")).thenReturn(incomingBibliographicEntity);
-        Mockito.when(marcToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
+        Mockito.when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
         Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList())).thenCallRealMethod();
         Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
         Mockito.when(submitCollectionBatchService.getMarcToBibEntityConverter()).thenCallRealMethod();
@@ -337,7 +342,8 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
         Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(institutionEntity);
         Mockito.when(exchange.getIn()).thenReturn(message);
-        Mockito.when(submitCollectionBatchService.processMarc(Mockito.anyString(),Mockito.anySet(),Mockito.anyMap(),Mockito.anyList(),Mockito.anyList(),Mockito.anyBoolean(),Mockito.anyBoolean(),Mockito.any(),Mockito.anySet(),Mockito.any(),Mockito.anyList())).thenCallRealMethod();
+        Mockito.when(commonUtil.collectFuturesAndUpdateMAQualifier(any())).thenReturn(bibIds);
+        Mockito.when(submitCollectionBatchService.processMarc(Mockito.anyString(),Mockito.anySet(),Mockito.anyMap(),Mockito.anyList(),Mockito.anyList(),Mockito.anyBoolean(),Mockito.anyBoolean(), any(),Mockito.anySet(), any(),Mockito.anyList())).thenCallRealMethod();
         Mockito.when(message.getBody(String.class)).thenReturn(updatedMarcXml);
         Mockito.when(message.getHeader(ScsbConstants.CAMEL_FILE_NAME_ONLY)).thenReturn("xmlFileName");
         Mockito.when(awsS3Client.doesObjectExist(Mockito.anyString(),Mockito.anyString())).thenReturn(true);
@@ -347,7 +353,7 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         Mockito.when(submitCollectionBatchService.getConverter(Mockito.anyString())).thenCallRealMethod();
         Mockito.when(submitCollectionBatchService.getRepositoryService()).thenReturn(repositoryService);
         Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenReturn(institutionDetailsRepository);
-        Mockito.when(submitCollectionBatchService.process(Mockito.anyString(),Mockito.anyString(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anyString(),Mockito.anyList(),Mockito.anyBoolean(),Mockito.anyBoolean(),Mockito.anySet(),Mockito.any(),Mockito.any(),Mockito.anyList())).thenCallRealMethod();
+        Mockito.when(submitCollectionBatchService.process(Mockito.anyString(),Mockito.anyString(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anyString(),Mockito.anyList(),Mockito.anyBoolean(),Mockito.anyBoolean(),Mockito.anySet(), any(), any(),Mockito.anyList())).thenCallRealMethod();
         submitCollectionProcessor.processInput(exchange);
     }
 
@@ -380,6 +386,68 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         ex.getIn().setBody("Test text for Example");
         Mockito.when(setupDataService.getInstitutionCodeIdMap()).thenReturn(getMap());
         submitCollectionProcessor.processInput(ex);
+    }
+
+    @Test
+    public void performIndexingToRemoveBibs(){
+        Map<String, String> idMap = new HashMap<>();
+        idMap.put("1","1");
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        idMapToRemoveIndexList.add(idMap);
+        List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
+        bibIdMapToRemoveIndexList.add(idMap);
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"performIndexingToRemoveBibs",idMapToRemoveIndexList,bibIdMapToRemoveIndexList);
+    }
+
+    @Test
+    public void performIndexingToRemoveBibsException(){
+        Map<String, String> idMap = new HashMap<>();
+        idMap.put("1","1");
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        idMapToRemoveIndexList.add(idMap);
+        List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
+        bibIdMapToRemoveIndexList.add(idMap);
+        Mockito.doThrow(new NullPointerException()).when(submitCollectionBatchService).removeBibFromSolrIndex(bibIdMapToRemoveIndexList);
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"performIndexingToRemoveBibs",idMapToRemoveIndexList,bibIdMapToRemoveIndexList);
+    }
+
+    @Test
+    public void performIndexingByOwningInstitutionBibIds(){
+        Set<String> updatedBoundWithDummyRecordOwnInstBibIdSet = new HashSet<>();
+        updatedBoundWithDummyRecordOwnInstBibIdSet.add("test");
+        Integer institutionId = 1;
+        Mockito.when(submitCollectionService.indexDataUsingOwningInstBibId(any(),any())).thenReturn("test");
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"performIndexingByOwningInstitutionBibIds",updatedBoundWithDummyRecordOwnInstBibIdSet,institutionId);
+    }
+
+    @Test
+    public void collectFuturesAndProcess(){
+        List<Future> futures = new ArrayList<>();
+        Set<Integer> bibIds = new HashSet<>();
+        bibIds.add(1);
+        ReflectionTestUtils.setField(submitCollectionProcessor,"solrMaxDocSizeToUsePartialIndex",3);
+        Mockito.when(submitCollectionBatchService.indexData(any())).thenReturn("test");
+        Mockito.when(commonUtil.collectFuturesAndUpdateMAQualifier(futures)).thenReturn(bibIds);
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"collectFuturesAndProcess",futures);
+    }
+
+    @Test
+    public void getReportDataRequest(){
+        String xmlFileName = "test";
+        ReflectionTestUtils.setField(submitCollectionProcessor,"institutionCode","PUL");
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"getReportDataRequest",xmlFileName);
+    }
+
+    @Test
+    public void getEmailPayLoad(){
+        String xmlFileName = "test";
+        String reportFileName = "test";
+        ReflectionTestUtils.setField(submitCollectionProcessor,"submitCollectionEmailSubject","test@gmail.com");
+        ReflectionTestUtils.setField(submitCollectionProcessor,"institutionCode","PUL");
+        ReflectionTestUtils.setField(submitCollectionProcessor,"submitCollectionReportS3Dir","test");
+        Mockito.when(propertyUtil.getPropertyByInstitutionAndKey("PUL", PropertyKeyConstants.ILS.ILS_EMAIL_SUBMIT_COLLECTION_TO)).thenReturn("test@gmail.com");
+        Mockito.when(propertyUtil.getPropertyByInstitutionAndKey("PUL", PropertyKeyConstants.ILS.ILS_EMAIL_SUBMIT_COLLECTION_CC)).thenReturn("test@gmail.com");
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"getEmailPayLoad",xmlFileName,reportFileName);
     }
 
     private Map getMap() {

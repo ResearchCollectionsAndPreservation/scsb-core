@@ -2,6 +2,7 @@ package org.recap.controllerit;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.recap.BaseTestCase;
 import org.recap.ScsbCommonConstants;
 import org.recap.spring.SwaggerAPIProvider;
