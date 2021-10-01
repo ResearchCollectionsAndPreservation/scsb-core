@@ -492,7 +492,7 @@ public class AccessionUtil {
             if (ScsbCommonConstants.SHARED_CGD.equalsIgnoreCase(incomingItemCgd)) {
                 bibliographicEntity.setMaQualifier(ScsbCommonConstants.MA_QUALIFIER_3);
             } else {
-                if (null != fetchBibliographicEntity && ScsbCommonConstants.MA_QUALIFIER_3.intValue() != fetchBibliographicEntity.getMaQualifier().intValue()) {
+                if (null != fetchBibliographicEntity && ScsbCommonConstants.MA_QUALIFIER_3.intValue() != fetchBibliographicEntity.getMaQualifier()) {
                     fetchBibliographicEntity.setMaQualifier(ScsbCommonConstants.MA_QUALIFIER_1);
                 } else {
                     bibliographicEntity.setMaQualifier(ScsbCommonConstants.MA_QUALIFIER_1);
@@ -576,7 +576,7 @@ public class AccessionUtil {
                     if (ScsbCommonConstants.SHARED_CGD.equalsIgnoreCase(incomingItemCgd)) {
                         bibliographicEntity.setMaQualifier(ScsbCommonConstants.MA_QUALIFIER_3);
                     } else {
-                        if (!bibliographicEntity.isDeleted() && ScsbCommonConstants.MA_QUALIFIER_3.intValue() != bibliographicEntity.getMaQualifier().intValue()) {
+                        if (!bibliographicEntity.isDeleted() && ScsbCommonConstants.MA_QUALIFIER_3.intValue() != bibliographicEntity.getMaQualifier()) {
                             bibliographicEntity.setMaQualifier(ScsbCommonConstants.MA_QUALIFIER_1);
                         } else {
                             bibliographicEntity.setMaQualifier(ScsbCommonConstants.MA_QUALIFIER_1);
