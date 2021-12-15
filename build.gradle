@@ -40,7 +40,7 @@ repositories {
 
 
 dependencies {
-	compile fileTree(dir: '/data/commonjar', include: '*1.8.jar')
+	compile fileTree(dir: '/data/commonjar', include: '*2.1.jar')
 	implementation 'org.projectlombok:lombok:1.18.12'
 	annotationProcessor 'org.projectlombok:lombok:1.18.12'
 	testImplementation 'org.projectlombok:lombok:1.18.12'
@@ -99,6 +99,14 @@ dependencies {
 
 	runtime('mysql:mysql-connector-java')
 	runtime("org.springframework.boot:spring-boot-starter-actuator")
+}
+
+configurations.all {
+	resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+		if (details.requested.group == 'org.apache.logging.log4j') {
+			details.useVersion '2.16.0'
+		}
+	}
 }
 
 dependencyManagement {
