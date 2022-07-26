@@ -14,7 +14,7 @@ buildscript {
 plugins {
 	id "org.sonarqube" version "3.3"
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-	id 'org.springframework.boot' version '2.5.12'
+	id 'org.springframework.boot' version '2.7.1'
 }
 
 apply plugin: 'java'
@@ -62,10 +62,10 @@ dependencies {
 	implementation('org.apache.camel:camel-ftp:3.14.0')
 	implementation('org.apache.camel:camel-jms:3.14.0')
 	implementation('org.apache.camel:camel-zipfile:3.14.0')
-	implementation('org.apache.activemq:activemq-camel:5.15.15')
-	implementation('org.apache.activemq:activemq-pool:5.15.15')
-	implementation('org.apache.activemq:activemq-broker:5.15.15')
-	implementation('org.apache.activemq:activemq-client:5.15.15')
+	implementation('org.apache.activemq:activemq-camel:5.16.5')
+	implementation('org.apache.activemq:activemq-pool:5.17.1')
+	implementation('org.apache.activemq:activemq-broker:5.17.1')
+	implementation('org.apache.activemq:activemq-client:5.17.1')
 	implementation('info.freelibrary:freelib-marc4j:2.6.12')
 	implementation('org.apache.poi:poi:5.1.0')
 	implementation('org.apache.camel:camel-zip-deflater:3.14.0');
@@ -89,6 +89,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
+	testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.12.4'
 	testImplementation group: 'org.powermock', name: 'powermock-api-mockito2', version: '2.0.9'
 	testImplementation group: 'org.powermock', name: 'powermock-module-junit4', version: '2.0.9'
 
