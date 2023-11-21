@@ -91,6 +91,7 @@ dependencies {
 	testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.5.0'
 	testImplementation group: 'org.powermock', name: 'powermock-api-mockito2', version: '2.0.9'
 	testImplementation group: 'org.powermock', name: 'powermock-module-junit4', version: '2.0.9'
+	testImplementation 'javax.jms:javax.jms-api:2.0.1'
 
 	implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.33'
 	implementation ("org.springframework.boot:spring-boot-starter-actuator")

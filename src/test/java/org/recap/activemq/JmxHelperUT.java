@@ -5,8 +5,10 @@ import org.apache.activemq.broker.jmx.DestinationViewMBean;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.recap.BaseTestCaseUT;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -16,8 +18,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 @Slf4j
-@Ignore
-public class JmxHelperUT extends BaseTestCaseUT {
+@RunWith(MockitoJUnitRunner.Silent.class)
+public class JmxHelperUT  {
 
     @InjectMocks
     JmxHelper jmxHelper;

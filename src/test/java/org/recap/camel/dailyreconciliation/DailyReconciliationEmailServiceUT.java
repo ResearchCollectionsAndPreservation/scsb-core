@@ -2,50 +2,56 @@ package org.recap.camel.dailyreconciliation;
 
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Header;
-import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.recap.BaseTestCaseUT;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.recap.ScsbConstants;
 import org.recap.util.PropertyUtil;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-public class DailyReconciliationEmailServiceUT extends BaseTestCaseUT {
 
-    @Mock
-    DailyReconciliationEmailService dailyReconciliationEmailService;
-
-    @Mock
-    ProducerTemplate producerTemplate;
-
-    @Mock
-    Exchange exchange;
+@RunWith(MockitoJUnitRunner.Silent.class)
+public class DailyReconciliationEmailServiceUT  {
 
     @Mock
-    Message message;
+    private Exchange exchange;
 
     @Mock
-    Header dataheader;
+    private ProducerTemplate producerTemplate;
 
     @Mock
-    PropertyUtil propertyUtil;
+    private PropertyUtil propertyUtil;
+
+    @InjectMocks
+    private DailyReconciliationEmailService dailyReconciliationEmailService;
 
     @Before
-    public  void setup(){
-        ReflectionTestUtils.setField(dailyReconciliationEmailService,"fileLocation","fileLocation");
-        ReflectionTestUtils.setField(dailyReconciliationEmailService,"imsLocationCode","RECAP");
+    public void setup() {
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void process() throws Exception {
-        message.setHeader("CamelFileNameProduced",dataheader);
-        exchange.setIn(message);
-        Mockito.when(exchange.getIn()).thenReturn(message);
-//        dailyReconciliationEmailService.process(exchange);
+    public void testProcess() throws Exception {
+        try {
+            dailyReconciliationEmailService.process(exchange);
+            verify(producerTemplate, times(1)).sendBodyAndHeader(eq(ScsbConstants.EMAIL_Q), any(), eq(ScsbConstants.EMAIL_BODY_FOR), eq(ScsbConstants.DAILY_RECONCILIATION));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testGetEmailPayLoad() {
+        ReflectionTestUtils.invokeMethod(dailyReconciliationEmailService, "getEmailPayLoad");
     }
 }
