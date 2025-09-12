@@ -31,7 +31,13 @@ public class MarcFormatResolver extends AccessionResolverAbstract {
     public String getBibData(String itemBarcode, String customerCode, String institution) {
         ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(institution);
         BibDataForAccessionInterface bibDataForAccessionInterface = bibDataFactory.getAuth(ilsConfigProperties.getIlsBibdataApiAuth());
-        return bibDataForAccessionInterface.getBibData(itemBarcode, customerCode, institution, ilsConfigProperties.getIlsBibdataApiEndpoint());
+        String ilsBibdataApiSupportPost = ilsConfigProperties.getIlsBibdataApiSupportPost();
+        if(Boolean.TRUE.toString().equalsIgnoreCase(ilsBibdataApiSupportPost)) {
+            return bibDataForAccessionInterface.getBibData(itemBarcode, customerCode, institution, ilsConfigProperties.getIlsBibdataApiUpdateEndpoint());
+        }
+        else {
+            return bibDataForAccessionInterface.getBibData(itemBarcode, customerCode, institution, ilsConfigProperties.getIlsBibdataApiEndpoint());
+        }
     }
 
     @Override

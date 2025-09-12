@@ -2,10 +2,13 @@ package org.recap.service.accession;
 
 import lombok.extern.slf4j.Slf4j;
 import org.recap.ScsbConstants;
+import org.recap.model.ILSConfigProperties;
 import org.recap.service.partnerservice.NullHostnameVerifier;
 import org.recap.service.partnerservice.SCSBSimpleClientHttpRequestFactory;
 import org.springframework.http.*;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.recap.util.PropertyUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,7 +21,8 @@ import java.util.Map;
 @Service
 public class SimpleRestCallForBibdata extends BibDataAbstract{
 
-
+    @Autowired
+    PropertyUtil propertyUtil;
 
     public RestTemplate getRestTemplate(){
         return new RestTemplate();
@@ -41,9 +45,21 @@ public class SimpleRestCallForBibdata extends BibDataAbstract{
             log.info("BIBDATA URL = {}" , url);
             Map<String, String> params = getParamsMap(itemBarcode);
             RestTemplate restTmp = getRestTmp();
-            HttpEntity requestEntity = new HttpEntity(getHttpHeaders());
-            ResponseEntity<String> responseEntity = restTmp.exchange(url, HttpMethod.GET, requestEntity, String.class, params);
-            bibDataResponse = responseEntity.getBody();
+            ILSConfigProperties ilsConfigProperties = propertyUtil.getILSConfigProperties(institution);
+            String ilsBibdataApiSupportPost = ilsConfigProperties.getIlsBibdataApiSupportPost();
+
+            if(Boolean.TRUE.toString().equalsIgnoreCase(ilsBibdataApiSupportPost)) {
+                String ilsBearerApiKey = ilsConfigProperties.getIlsBearerApiKey();
+                HttpEntity requestEntity = new HttpEntity(getHttpHeaders(ilsBearerApiKey));
+                ResponseEntity<String> responseEntity = restTmp.exchange(url, HttpMethod.POST, requestEntity, String.class, params);
+                bibDataResponse = responseEntity.getBody();
+
+            }
+            else {
+                HttpEntity requestEntity = new HttpEntity(getHttpHeaders());
+                ResponseEntity<String> responseEntity = restTmp.exchange(url, HttpMethod.GET, requestEntity, String.class, params);
+                bibDataResponse = responseEntity.getBody();
+            }
         } catch (Exception e) {
             response = String.format("[%s] %s. (%s : %s)", itemBarcode, ScsbConstants.ITEM_BARCODE_NOT_FOUND, url, e.getMessage());
             log.error(response);
@@ -63,6 +79,15 @@ public class SimpleRestCallForBibdata extends BibDataAbstract{
     public HttpHeaders getHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_XML));
+        return headers;
+    }
+
+    public HttpHeaders getHttpHeaders(String ilsBearerApiKey)  {
+        String authorization = "Bearer " + ilsBearerApiKey;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_XML));
+        headers.set("Authorization", authorization);
         return headers;
     }
 
