@@ -1,18 +1,18 @@
 package org.recap.ils.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.recap.BaseTestCaseUT;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class BibRecordilsUT extends BaseTestCaseUT {
 
     @Test
     public void recordType() throws Exception {
-        BibRecord bibRecord=new BibRecord();
+        BibRecord bibRecord = new BibRecord();
         bibRecord.setHoldings(Arrays.asList(getHoldings()));
         bibRecord.setBib(getBib());
         assertNotNull(bibRecord.getBib());
@@ -20,14 +20,14 @@ public class BibRecordilsUT extends BaseTestCaseUT {
     }
 
     private Holdings getHoldings() {
-        Holdings holdings=new Holdings();
+        Holdings holdings = new Holdings();
         holdings.setHolding(Arrays.asList(getHolding()));
         assertNotNull(holdings.getHolding());
         return holdings;
     }
 
     private Holding getHolding() {
-        Holding holding=new Holding();
+        Holding holding = new Holding();
         holding.setContent(getContentType());
         holding.setOwningInstitutionHoldingsId("1");
         holding.setItems(Arrays.asList(getItems()));
@@ -38,14 +38,14 @@ public class BibRecordilsUT extends BaseTestCaseUT {
     }
 
     private Items getItems() {
-        Items items=new Items();
+        Items items = new Items();
         items.setContent(getContentType());
         assertNotNull(items.getContent());
         return items;
     }
 
     private Bib getBib() {
-        Bib bib=new Bib();
+        Bib bib = new Bib();
         bib.setContent(getContentType());
         bib.setOwningInstitutionBibId("1");
         bib.setOwningInstitutionId("2");
@@ -56,14 +56,14 @@ public class BibRecordilsUT extends BaseTestCaseUT {
     }
 
     private ContentType getContentType() {
-        ContentType contentType=new ContentType();
+        ContentType contentType = new ContentType();
         contentType.setCollection(getCollectionType());
         assertNotNull(contentType.getCollection());
         return contentType;
     }
 
     private CollectionType getCollectionType() {
-        CollectionType collectionType=new CollectionType();
+        CollectionType collectionType = new CollectionType();
         collectionType.setId("1");
         collectionType.setRecord(Arrays.asList(getRecordType()));
         assertNotNull(collectionType.getId());
@@ -72,7 +72,7 @@ public class BibRecordilsUT extends BaseTestCaseUT {
     }
 
     private RecordType getRecordType() {
-        RecordType recordType=new RecordType();
+        RecordType recordType = new RecordType();
         recordType.setId("1");
         recordType.setDatafield(Arrays.asList(getDataFieldType()));
         recordType.setLeader(getLeaderFieldType());
@@ -82,7 +82,7 @@ public class BibRecordilsUT extends BaseTestCaseUT {
         assertNotNull(recordType.getDatafield());
         assertNotNull(recordType.getLeader());
 
-        ControlFieldType controlFieldType=new ControlFieldType();
+        ControlFieldType controlFieldType = new ControlFieldType();
         controlFieldType.setId("1");
         controlFieldType.setTag("1");
         controlFieldType.setValue("1");
@@ -94,7 +94,7 @@ public class BibRecordilsUT extends BaseTestCaseUT {
     }
 
     private LeaderFieldType getLeaderFieldType() {
-        LeaderFieldType leaderFieldType=new LeaderFieldType();
+        LeaderFieldType leaderFieldType = new LeaderFieldType();
         leaderFieldType.setId("1");
         leaderFieldType.setValue("4");
         assertNotNull(leaderFieldType.getId());
@@ -103,7 +103,7 @@ public class BibRecordilsUT extends BaseTestCaseUT {
     }
 
     private DataFieldType getDataFieldType() {
-        DataFieldType dataFieldType=new DataFieldType();
+        DataFieldType dataFieldType = new DataFieldType();
         dataFieldType.setId("1");
         dataFieldType.setInd1("1");
         dataFieldType.setInd2("2");
@@ -118,7 +118,7 @@ public class BibRecordilsUT extends BaseTestCaseUT {
     }
 
     private SubfieldatafieldType getSubfieldatafieldType() {
-        SubfieldatafieldType subfieldatafieldType=new SubfieldatafieldType();
+        SubfieldatafieldType subfieldatafieldType = new SubfieldatafieldType();
         subfieldatafieldType.setCode("1");
         subfieldatafieldType.setId("3");
         subfieldatafieldType.setValue("1");

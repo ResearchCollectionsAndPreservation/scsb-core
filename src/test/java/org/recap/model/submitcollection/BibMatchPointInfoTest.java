@@ -1,32 +1,32 @@
 package org.recap.model.submitcollection;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.marc4j.marc.Record;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.recap.BaseTestCase;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.recap.util.BibJSONUtil;
 import org.recap.util.CommonUtil;
 import org.recap.util.MarcUtil;
-import org.springframework.stereotype.Service;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * Created by rajeshbabuk on 17/Sep/2021
  */
 
-@RunWith(MockitoJUnitRunner.class)
-public class BibMatchPointInfoTest{
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
+public class BibMatchPointInfoTest {
 
     @Mock
     private CommonUtil commonUtil;
@@ -123,8 +123,8 @@ public class BibMatchPointInfoTest{
 
     @Test
     public void testBibMatchInfoFromMarcRecord() {
-        ReflectionTestUtils.setField(commonUtil,"bibJSONUtil",bibJSONUtil);
-        ReflectionTestUtils.setField(commonUtil,"nonHoldingIdInstitution","test");
+        ReflectionTestUtils.setField(commonUtil, "bibJSONUtil", bibJSONUtil);
+        ReflectionTestUtils.setField(commonUtil, "nonHoldingIdInstitution", "test");
         Mockito.when(commonUtil.getBibMatchPointInfoForMarcRecord(getMarcRecord(), null)).thenCallRealMethod();
         BibMatchPointInfo bibMatchPointInfo = commonUtil.getBibMatchPointInfoForMarcRecord(getMarcRecord(), null);
         assertNotNull(bibMatchPointInfo);

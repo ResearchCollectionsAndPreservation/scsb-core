@@ -1,6 +1,6 @@
 package org.recap.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.recap.BaseTestCaseUT;
 import org.recap.model.jpa.BulkRequestItem;
 import org.recap.model.jpa.BulkRequestItemEntity;
@@ -10,7 +10,7 @@ import org.recap.model.jpa.PendingRequestEntity;
 import org.recap.model.jpa.ReplaceRequest;
 import org.recap.model.jpa.SearchItemResultRow;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Created by hemalathas on 20/3/17.
@@ -18,7 +18,7 @@ import static org.junit.Assert.assertNotNull;
 public class SearchItemResultRowUT extends BaseTestCaseUT {
 
     @Test
-    public void testSearchItemResultRow(){
+    public void testSearchItemResultRow() {
 
         SearchItemResultRow searchItemResultRow = new SearchItemResultRow();
         searchItemResultRow.setCallNumber("X");
@@ -51,18 +51,18 @@ public class SearchItemResultRowUT extends BaseTestCaseUT {
     }
 
     @Test
-    public void testResponseClass(){
-        ItemRefileResponse itemRefileResponse=new ItemRefileResponse();
+    public void testResponseClass() {
+        ItemRefileResponse itemRefileResponse = new ItemRefileResponse();
         assertNotNull(itemRefileResponse);
-        BulkRequestResponse bulkRequestResponse=new BulkRequestResponse();
+        BulkRequestResponse bulkRequestResponse = new BulkRequestResponse();
         assertNotNull(bulkRequestResponse);
-        BulkRequestItemEntity bulkRequestItemEntity=new BulkRequestItemEntity();
+        BulkRequestItemEntity bulkRequestItemEntity = new BulkRequestItemEntity();
         assertNotNull(bulkRequestItemEntity);
-        BulkRequestItem bulkRequestItem=new BulkRequestItem();
+        BulkRequestItem bulkRequestItem = new BulkRequestItem();
         assertNotNull(bulkRequestItem);
-        ReplaceRequest replaceRequest=new ReplaceRequest();
+        ReplaceRequest replaceRequest = new ReplaceRequest();
         assertNotNull(replaceRequest);
-        PendingRequestEntity pendingRequestEntity=new PendingRequestEntity();
+        PendingRequestEntity pendingRequestEntity = new PendingRequestEntity();
         assertNotNull(pendingRequestEntity);
     }
 

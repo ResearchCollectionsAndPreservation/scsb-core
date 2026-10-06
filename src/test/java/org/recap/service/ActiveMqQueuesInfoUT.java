@@ -1,20 +1,20 @@
 package org.recap.service;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.recap.BaseTestCaseUT;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ActiveMqQueuesInfoUT extends BaseTestCaseUT {
 
     @InjectMocks
     private ActiveMqQueuesInfo activeMqQueuesInfo;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
 

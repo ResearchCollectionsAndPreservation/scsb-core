@@ -1,9 +1,9 @@
 package org.recap;
 
 import org.apache.camel.CamelContext;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.recap.repository.jpa.BibliographicDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,7 +12,8 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
@@ -22,25 +23,26 @@ import java.nio.charset.Charset;
 
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-@RunWith(SpringRunner.class)
+@ExtendWith({SpringExtension.class})
 @SpringBootTest(classes = ScsbCoreApplication.class)
 @Transactional
 @Rollback()
+@TestPropertySource("classpath:application.properties")
 public class BaseTestCase {
-	protected MockMvc mockMvc;
-	protected HttpMessageConverter mappingJackson2HttpMessageConverter;
-	protected MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
-			MediaType.APPLICATION_JSON.getSubtype(),
-			Charset.forName("utf8"));
+    protected MockMvc mockMvc;
+    protected HttpMessageConverter mappingJackson2HttpMessageConverter;
+    protected MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
+            MediaType.APPLICATION_JSON.getSubtype(),
+            Charset.forName("utf8"));
 
-	@Autowired
-	private WebApplicationContext webApplicationContext;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
-	@Autowired
-	public BibliographicDetailsRepository bibliographicDetailsRepository;
+    @Autowired
+    public BibliographicDetailsRepository bibliographicDetailsRepository;
 
-	@Autowired
-	public CamelContext camelContext;
+    @Autowired
+    public CamelContext camelContext;
 
 /*	@Autowired
 	public void setConverters(HttpMessageConverter<?>[] converters) {
@@ -48,24 +50,24 @@ public class BaseTestCase {
 		Assert.assertNotNull("the JSON message converter must not be null", this.mappingJackson2HttpMessageConverter);
 	}*/
 
-	@Before
-	public void setup() throws Exception {
-		this.mockMvc = webAppContextSetup(webApplicationContext).build();
-	}
+    @BeforeEach
+    public void setup() throws Exception {
+        this.mockMvc = webAppContextSetup(webApplicationContext).build();
+    }
 
-	protected String objectToJson(Object object) throws IOException {
-		MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-		this.mappingJackson2HttpMessageConverter.write(object, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
-		return mockHttpOutputMessage.getBodyAsString();
-	}
+    protected String objectToJson(Object object) throws IOException {
+        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
+        this.mappingJackson2HttpMessageConverter.write(object, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        return mockHttpOutputMessage.getBodyAsString();
+    }
 
-	protected Object jsonToObject(String json, Class clazz) throws IOException {
-		MockHttpInputMessage mockHttpInputMessage = new MockHttpInputMessage(json.getBytes());
-		return this.mappingJackson2HttpMessageConverter.read(clazz, mockHttpInputMessage);
-	}
+    protected Object jsonToObject(String json, Class clazz) throws IOException {
+        MockHttpInputMessage mockHttpInputMessage = new MockHttpInputMessage(json.getBytes());
+        return this.mappingJackson2HttpMessageConverter.read(clazz, mockHttpInputMessage);
+    }
 
-	@Test
-	public void contextLoads() {
-	}
+    @Test
+    public void contextLoads() {
+    }
 
 }

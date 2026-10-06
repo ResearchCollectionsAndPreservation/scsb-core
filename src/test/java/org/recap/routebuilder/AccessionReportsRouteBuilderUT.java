@@ -2,20 +2,22 @@ package org.recap.routebuilder;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * @author Charan Raj C created on 02/11/23
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
-public class AccessionReportsRouteBuilderUT  {
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
+public class AccessionReportsRouteBuilderUT {
 
     @Mock
     private ReportProcessor reportProcessor;
@@ -25,21 +27,22 @@ public class AccessionReportsRouteBuilderUT  {
 
     private CamelContext camelContext;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         camelContext = new DefaultCamelContext();
     }
 
     @Test
-    public void accessionReportsTest(){
-        AccessionReportsRouteBuilder routeBuilder = new AccessionReportsRouteBuilder(camelContext,reportProcessor);
+    public void accessionReportsTest() {
+        AccessionReportsRouteBuilder routeBuilder = new AccessionReportsRouteBuilder(camelContext, reportProcessor);
     }
 
     @Test
-    public void accessionReportsRouteBuilderException()throws Exception {
-        try{
-            Mockito.when(new AccessionReportsRouteBuilder(camelContext, reportProcessor)).thenThrow(RuntimeException.class);}catch (Exception e){
+    public void accessionReportsRouteBuilderException() throws Exception {
+        try {
+            Mockito.when(new AccessionReportsRouteBuilder(camelContext, reportProcessor)).thenThrow(RuntimeException.class);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

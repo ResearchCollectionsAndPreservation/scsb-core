@@ -1,12 +1,12 @@
 package org.recap.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.recap.BaseTestCaseUT;
 import org.recap.model.jpa.ItemResponseInformation;
 
 import java.util.Date;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Created by hemalathas on 20/3/17.
@@ -15,7 +15,7 @@ public class ItemResponseInformationUT extends BaseTestCaseUT {
 
 
     @Test
-    public void testItemResponseInformation(){
+    public void testItemResponseInformation() {
 
         ItemResponseInformation itemResponseInformation = new ItemResponseInformation();
         itemResponseInformation.setPatronBarcode("45632985");

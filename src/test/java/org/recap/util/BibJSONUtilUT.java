@@ -2,8 +2,8 @@ package org.recap.util;
 
 import info.freelibrary.marc4j.impl.ControlFieldImpl;
 import org.apache.camel.ProducerTemplate;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
@@ -45,7 +45,7 @@ public class BibJSONUtilUT extends BaseTestCaseUT {
     @Mock
     ProducerTemplate producerTemplate;
 
-    @Before
+    @BeforeEach
     public void setup() {
         bibJSONUtil.setNonHoldingInstitutions(Arrays.asList("PUL"));
         bibJSONUtil.setProducerTemplate(producerTemplate);
@@ -55,7 +55,7 @@ public class BibJSONUtilUT extends BaseTestCaseUT {
 
     @Test
     public void getLCCNValue() {
-        Mockito.when(marcUtil.getDataFieldValue(any(), any(), any(), any(), any())).thenReturn("test");
+        Mockito.lenient().when(marcUtil.getDataFieldValue(any(), any(), any(), any(), any())).thenReturn("test");
         String result = bibJSONUtil.getLCCNValue(record);
         assertNotNull(result);
     }
@@ -64,7 +64,7 @@ public class BibJSONUtilUT extends BaseTestCaseUT {
     public void getISBNNumber() {
         List<String> isbnNumberList = new ArrayList<>();
         isbnNumberList.add("233");
-        Mockito.when(marcUtil.getMultiDataFieldValues(any(), anyString(), any(), any(), anyString())).thenReturn(isbnNumberList);
+        Mockito.lenient().when(marcUtil.getMultiDataFieldValues(any(), anyString(), any(), any(), anyString())).thenReturn(isbnNumberList);
         List<VariableField> dataFields = new ArrayList<>();
         dataFields.add(dataField);
         Mockito.when(record.getVariableFields(anyString())).thenReturn(dataFields);
@@ -78,7 +78,7 @@ public class BibJSONUtilUT extends BaseTestCaseUT {
     public void getISSNNumber() {
         List<String> isbnNumberList = new ArrayList<>();
         isbnNumberList.add("233");
-        Mockito.when(marcUtil.getMultiDataFieldValues(any(), anyString(), any(), any(), anyString())).thenReturn(isbnNumberList);
+        Mockito.lenient().when(marcUtil.getMultiDataFieldValues(any(), anyString(), any(), any(), anyString())).thenReturn(isbnNumberList);;
         List<VariableField> dataFields = new ArrayList<>();
         dataFields.add(dataField);
         Mockito.when(record.getVariableFields(anyString())).thenReturn(dataFields);
@@ -120,8 +120,8 @@ public class BibJSONUtilUT extends BaseTestCaseUT {
         nonHoldingInstitutions.add("PUL");
         List<VariableField> dataFields = new ArrayList<>();
         dataFields.add(controlField);
-        Mockito.when(record.getVariableFields("003")).thenReturn(dataFields);
-        Mockito.when(record.getVariableFields("001")).thenReturn(dataFields);
+        Mockito.lenient().when(record.getVariableFields("003")).thenReturn(dataFields);
+        Mockito.lenient().when(record.getVariableFields("001")).thenReturn(dataFields);
         Mockito.when(controlField.getData()).thenReturn("OCoLC");
         ReflectionTestUtils.setField(bibJSONUtil, "nonHoldingInstitutions", nonHoldingInstitutions);
         List<String> result = bibJSONUtil.getOCLCNumbers(record, institutionCode);

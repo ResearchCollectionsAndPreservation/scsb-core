@@ -3,8 +3,8 @@ package org.recap.camel.accessionReconciliation;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -14,7 +14,8 @@ import org.recap.camel.accessionreconciliation.AccessionReconciliationEmailServi
 import org.recap.util.PropertyUtil;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Created by akulak on 25/5/17.
  */
@@ -38,19 +39,19 @@ public class AccessionReconciliationEmailServiceUT extends BaseTestCaseUT {
 
     String institutionCode = "CUL";
 
-    @Before
-    public  void setup(){
+    @BeforeEach
+    public void setup() {
         MockitoAnnotations.initMocks(this);
-     }
+    }
 
     @Test
-    public void processInput(){
-        ReflectionTestUtils.setField(accessionReconciliationEmailService,"institutionCode",institutionCode);
-        message.setHeader("CamelFileNameProduced","AccessionReconciliationFile");
+    public void processInput() {
+        ReflectionTestUtils.setField(accessionReconciliationEmailService, "institutionCode", institutionCode);
+        message.setHeader("CamelFileNameProduced", "AccessionReconciliationFile");
         exchange.setIn(message);
         Mockito.when(exchange.getIn()).thenReturn(message);
         accessionReconciliationEmailService.processInput(exchange);
-        assertEquals("CUL",institutionCode);
+        assertEquals("CUL", institutionCode);
     }
 
 }

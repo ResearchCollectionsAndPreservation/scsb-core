@@ -1,6 +1,6 @@
 package org.recap.service.purge;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Created by hemalathas on 13/4/17.
@@ -40,8 +40,8 @@ public class PurgeServiceUT extends BaseTestCaseUT {
 
     @Test
     public void testPurgeEmailAddress() {
-        String[] responses={ScsbConstants.EDD_REQUEST,""};
-        for (String response:responses) {
+        String[] responses = {ScsbConstants.EDD_REQUEST, ""};
+        for (String response : responses) {
             List<RequestTypeEntity> requestTypeEntityList = new ArrayList<>();
             RequestTypeEntity requestTypeEntity = new RequestTypeEntity();
             requestTypeEntity.setRequestTypeCode(response);
@@ -54,18 +54,18 @@ public class PurgeServiceUT extends BaseTestCaseUT {
             assertNotNull(responseMap.get(ScsbCommonConstants.PURGE_EDD_REQUEST));
             assertNotNull(responseMap.get(ScsbCommonConstants.PURGE_PHYSICAL_REQUEST));
         }
-        }
+    }
 
     @Test
     public void testPurgeEmailAddressException() {
-        List<RequestTypeEntity> requestTypeEntityList =new ArrayList<>();
-        RequestTypeEntity requestTypeEntity=new RequestTypeEntity();
+        List<RequestTypeEntity> requestTypeEntityList = new ArrayList<>();
+        RequestTypeEntity requestTypeEntity = new RequestTypeEntity();
         requestTypeEntity.setRequestTypeCode("");
         requestTypeEntityList.add(requestTypeEntity);
         Mockito.when(requestTypeDetailsRepository.findAll()).thenThrow(NullPointerException.class);
         Map<String, String> responseMap = purgeService.purgeEmailAddress();
         assertNotNull(responseMap);
-        assertEquals(ScsbCommonConstants.FAILURE,responseMap.get(ScsbCommonConstants.STATUS));
+        assertEquals(ScsbCommonConstants.FAILURE, responseMap.get(ScsbCommonConstants.STATUS));
     }
 
     @Test
@@ -77,7 +77,7 @@ public class PurgeServiceUT extends BaseTestCaseUT {
 
     @Test
     public void testPurgeExceptionRequestsException() {
-        ReflectionTestUtils.setField(purgeService,"requestItemDetailsRepository",null);
+        ReflectionTestUtils.setField(purgeService, "requestItemDetailsRepository", null);
         Map<String, String> responseMap = purgeService.purgeExceptionRequests();
         assertNotNull(responseMap);
         assertEquals(ScsbCommonConstants.FAILURE, responseMap.get(ScsbCommonConstants.STATUS));
@@ -92,7 +92,7 @@ public class PurgeServiceUT extends BaseTestCaseUT {
 
     @Test
     public void testPurgeAccessionRequestsException() {
-        ReflectionTestUtils.setField(purgeService,"accessionDetailsRepository",null);
+        ReflectionTestUtils.setField(purgeService, "accessionDetailsRepository", null);
         Map<String, String> responseMap = purgeService.purgeAccessionRequests();
         assertNotNull(responseMap);
         assertEquals(ScsbCommonConstants.FAILURE, responseMap.get(ScsbCommonConstants.STATUS));

@@ -1,6 +1,6 @@
 package org.recap.controllerit;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.recap.BaseTestCase;
 import org.recap.ScsbCommonConstants;
 import org.recap.spring.SwaggerAPIProvider;
@@ -38,7 +38,7 @@ public class BaseControllerUT extends BaseTestCase {
         Assert.assertNotNull("the JSON message converter must not be null", this.mappingJackson2HttpMessageConverter);
     }*/
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
     }

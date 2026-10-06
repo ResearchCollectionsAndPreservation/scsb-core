@@ -1,6 +1,6 @@
 package org.recap.service.accession;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -33,12 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class SCSBFormatResolverUT extends BaseTestCaseUT{
+
+public class SCSBFormatResolverUT extends BaseTestCaseUT {
 
     @InjectMocks
     SCSBFormatResolver mockSCSBFormatResolver;
@@ -93,108 +91,108 @@ public class SCSBFormatResolverUT extends BaseTestCaseUT{
 
     @Test
     public void processXmlBoundwith() throws Exception {
-        List<Map<String, String>> responseMapList=new ArrayList<>();
-        List<ReportDataEntity> reportDataEntityList=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
-        List<BibRecord> bibRecordList=new ArrayList<>();
+        List<Map<String, String>> responseMapList = new ArrayList<>();
+        List<ReportDataEntity> reportDataEntityList = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
+        List<BibRecord> bibRecordList = new ArrayList<>();
         bibRecordList.add(bibRecord);
         bibRecordList.add(bibRecord);
         Mockito.when(bibRecords.getBibRecordList()).thenReturn(bibRecordList);
         Mockito.when(accessionValidationService.validateBoundWithScsbRecordFromIls(Mockito.anyList())).thenReturn(true);
-        Mockito.when(commonUtil.getUpdatedDataResponse(Mockito.anySet(),Mockito.anyList(),Mockito.anyString(),Mockito.anyList(),Mockito.any(),Mockito.anyBoolean(),Mockito.anyInt(),Mockito.any(),Mockito.any())).thenReturn(ScsbCommonConstants.SUCCESS);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        String response=mockSCSBFormatResolver.processXml(getAccessionResponses(),bibRecords,responseMapList,"NYPL",reportDataEntityList,accessionRequest,imsLocationEntity);
-        assertEquals(ScsbCommonConstants.SUCCESS,response);
+        Mockito.when(commonUtil.getUpdatedDataResponse(Mockito.anySet(), Mockito.anyList(), Mockito.anyString(), Mockito.anyList(), Mockito.any(), Mockito.anyBoolean(), Mockito.anyInt(), Mockito.any(), Mockito.any())).thenReturn(ScsbCommonConstants.SUCCESS);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        String response = mockSCSBFormatResolver.processXml(getAccessionResponses(), bibRecords, responseMapList, "NYPL", reportDataEntityList, accessionRequest, imsLocationEntity);
+        assertEquals(ScsbCommonConstants.SUCCESS, response);
     }
 
     @Test
     public void processXml() throws Exception {
-        List<Map<String, String>> responseMapList=new ArrayList<>();
-        List<ReportDataEntity> reportDataEntityList=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
-        List<BibRecord> bibRecordList=new ArrayList<>();
+        List<Map<String, String>> responseMapList = new ArrayList<>();
+        List<ReportDataEntity> reportDataEntityList = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
+        List<BibRecord> bibRecordList = new ArrayList<>();
         bibRecordList.add(bibRecord);
         bibRecordList.add(bibRecord);
         Mockito.when(bibRecords.getBibRecordList()).thenReturn(bibRecordList);
         Mockito.when(accessionValidationService.validateBoundWithScsbRecordFromIls(Mockito.anyList())).thenReturn(false);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        String response=mockSCSBFormatResolver.processXml(getAccessionResponses(),bibRecords,responseMapList,"NYPL",reportDataEntityList,accessionRequest,imsLocationEntity);
-        assertEquals(ScsbConstants.INVALID_BOUNDWITH_RECORD,response);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        String response = mockSCSBFormatResolver.processXml(getAccessionResponses(), bibRecords, responseMapList, "NYPL", reportDataEntityList, accessionRequest, imsLocationEntity);
+        assertEquals(ScsbConstants.INVALID_BOUNDWITH_RECORD, response);
     }
 
     @Test
     public void getItemEntityFromRecord() throws Exception {
-        List<BibRecord> bibRecordList=new ArrayList<>();
+        List<BibRecord> bibRecordList = new ArrayList<>();
         bibRecordList.add(bibRecord);
         Mockito.when(bibRecords.getBibRecordList()).thenReturn(bibRecordList);
-        List<Holdings> holdings=new ArrayList<>();
+        List<Holdings> holdings = new ArrayList<>();
         holdings.add(holdingsRecord);
         Mockito.when(bibRecord.getHoldings()).thenReturn(holdings);
-        List<Holding> holdingList=new ArrayList<>();
+        List<Holding> holdingList = new ArrayList<>();
         holdingList.add(holding);
         Mockito.when(holdingsRecord.getHolding()).thenReturn(holdingList);
-        List<Items> items=new ArrayList<>();
+        List<Items> items = new ArrayList<>();
         items.add(item);
         Mockito.when(holding.getItems()).thenReturn(items);
         Mockito.when(item.getContent()).thenReturn(itemContent);
         Mockito.when(itemContent.getCollection()).thenReturn(itemContentCollection);
-        List<RecordType> itemRecordTypes=new ArrayList<>();
+        List<RecordType> itemRecordTypes = new ArrayList<>();
         itemRecordTypes.add(recordType);
         Mockito.when(itemContentCollection.getRecord()).thenReturn(itemRecordTypes);
-        Mockito.when(marcUtil.getDataFieldValueForRecordType(recordType,"876", null, null, "a")).thenReturn("1");
-        ItemEntity itemEntity1=new ItemEntity();
+        Mockito.when(marcUtil.getDataFieldValueForRecordType(recordType, "876", null, null, "a")).thenReturn("1");
+        ItemEntity itemEntity1 = new ItemEntity();
         itemEntity1.setBarcode("123456");
-        Mockito.when(itemDetailsRepository.findByOwningInstitutionItemIdAndOwningInstitutionId(Mockito.anyString(),Mockito.anyInt())).thenReturn(itemEntity1);
-        ItemEntity itemEntity=mockSCSBFormatResolver.getItemEntityFromRecord(bibRecords,3);
-        assertEquals("123456",itemEntity.getBarcode());
+        Mockito.when(itemDetailsRepository.findByOwningInstitutionItemIdAndOwningInstitutionId(Mockito.anyString(), Mockito.anyInt())).thenReturn(itemEntity1);
+        ItemEntity itemEntity = mockSCSBFormatResolver.getItemEntityFromRecord(bibRecords, 3);
+        assertEquals("123456", itemEntity.getBarcode());
     }
 
     @Test
     public void getOwningInstitutionItemIdFromBibRecord() throws Exception {
-        List<BibRecord> bibRecordList=new ArrayList<>();
+        List<BibRecord> bibRecordList = new ArrayList<>();
         bibRecordList.add(bibRecord);
         Mockito.when(bibRecords.getBibRecordList()).thenReturn(bibRecordList);
-        List<Holdings> holdings=new ArrayList<>();
+        List<Holdings> holdings = new ArrayList<>();
         holdings.add(holdingsRecord);
         Mockito.when(bibRecord.getHoldings()).thenReturn(holdings);
-        List<Holding> holdingList=new ArrayList<>();
+        List<Holding> holdingList = new ArrayList<>();
         holdingList.add(holding);
         Mockito.when(holdingsRecord.getHolding()).thenReturn(holdingList);
-        List<Items> items=new ArrayList<>();
+        List<Items> items = new ArrayList<>();
         Mockito.when(holding.getItems()).thenReturn(items);
-        ItemEntity itemEntity=mockSCSBFormatResolver.getItemEntityFromRecord(bibRecords,3);
+        ItemEntity itemEntity = mockSCSBFormatResolver.getItemEntityFromRecord(bibRecords, 3);
         assertNull(itemEntity);
     }
 
     @Test
     public void unmarshal() throws Exception {
         Mockito.when(commonUtil.getBibRecordsForSCSBFormat(Mockito.anyString())).thenReturn(bibRecords);
-        Object bibRecord=mockSCSBFormatResolver.unmarshal("test");
+        Object bibRecord = mockSCSBFormatResolver.unmarshal("test");
         assertNotNull(bibRecord);
     }
 
     @Test
     public void isFormat() throws Exception {
-        boolean format=mockSCSBFormatResolver.isFormat("SCSB");
+        boolean format = mockSCSBFormatResolver.isFormat("SCSB");
         assertTrue(format);
     }
 
     @Test
     public void getBibData() throws Exception {
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setIlsBibdataApiAuth("test");
         ilsConfigProperties.setIlsBibdataApiEndpoint("test");
         ilsConfigProperties.setIlsBibdataApiParameter("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
         Mockito.when(bibDataFactory.getAuth(Mockito.anyString())).thenReturn(bibDataForAccessionInterface);
-        Mockito.when(bibDataForAccessionInterface.getBibData(Mockito.anyString(),Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenReturn(ScsbCommonConstants.SUCCESS);
-        String getBibData=mockSCSBFormatResolver.getBibData("123456","NA","NYPL");
-        assertEquals(ScsbCommonConstants.SUCCESS,getBibData);
+        Mockito.when(bibDataForAccessionInterface.getBibData(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(ScsbCommonConstants.SUCCESS);
+        String getBibData = mockSCSBFormatResolver.getBibData("123456", "NA", "NYPL");
+        assertEquals(ScsbCommonConstants.SUCCESS, getBibData);
     }
 
     private Set<AccessionResponse> getAccessionResponses() {
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        AccessionResponse accessionResponse=new AccessionResponse();
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        AccessionResponse accessionResponse = new AccessionResponse();
         accessionResponse.setMessage("test");
         accessionResponse.setItemBarcode("123");
         accessionResponses.add(accessionResponse);

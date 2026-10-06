@@ -1,6 +1,6 @@
 package org.recap.camel.accessionReconciliation;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.recap.BaseTestCaseUT;
@@ -23,12 +23,12 @@ public class BarcodeReconciliationRouteBuilderUT extends BaseTestCaseUT {
     String s3AccessionReconciliationProcessedDir = "test";
 
     @Test
-    public void setup(){
-        ReflectionTestUtils.setField(barcodeReconciliationRouteBuilder,"institution",institution);
-        ReflectionTestUtils.setField(barcodeReconciliationRouteBuilder,"imsLocation",imsLocation);
-        ReflectionTestUtils.setField(barcodeReconciliationRouteBuilder,"accessionReconciliationS3Dir",accessionReconciliationS3Dir);
-        ReflectionTestUtils.setField(barcodeReconciliationRouteBuilder,"accessionReconciliationFilePath",accessionReconciliationFilePath);
-        ReflectionTestUtils.setField(barcodeReconciliationRouteBuilder,"s3AccessionReconciliationProcessedDir",s3AccessionReconciliationProcessedDir);
+    public void setup() {
+        ReflectionTestUtils.setField(barcodeReconciliationRouteBuilder, "institution", institution);
+        ReflectionTestUtils.setField(barcodeReconciliationRouteBuilder, "imsLocation", imsLocation);
+        ReflectionTestUtils.setField(barcodeReconciliationRouteBuilder, "accessionReconciliationS3Dir", accessionReconciliationS3Dir);
+        ReflectionTestUtils.setField(barcodeReconciliationRouteBuilder, "accessionReconciliationFilePath", accessionReconciliationFilePath);
+        ReflectionTestUtils.setField(barcodeReconciliationRouteBuilder, "s3AccessionReconciliationProcessedDir", s3AccessionReconciliationProcessedDir);
     }
 
     @Test

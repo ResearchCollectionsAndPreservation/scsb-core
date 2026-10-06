@@ -1,10 +1,10 @@
 
 package org.recap.service.submitcollection;
 
-import junit.framework.TestCase;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcXmlReader;
 import org.marc4j.marc.DataField;
@@ -31,15 +31,13 @@ import org.recap.service.common.RepositoryService;
 import org.recap.service.common.SetupDataService;
 import org.recap.util.CommonUtil;
 import org.recap.util.MarcUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.xml.bind.JAXBException;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -47,7 +45,8 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import static org.junit.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 
 
@@ -129,7 +128,6 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
 
     @Value("${" + PropertyKeyConstants.NONHOLDINGID_INSTITUTION + "}")
     private String nonHoldingIdInstitution;
-
 
 
     private String bibMarcContentForPUL = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -547,7 +545,7 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
             "</record>\n" +
             "</collection>";
 
-    private String bibMarcContentForNYPL1 =  "<collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n" +
+    private String bibMarcContentForNYPL1 = "<collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n" +
             "               <record>\n" +
             "                  <controlfield tag=\"001\">NYPG001000005-B</controlfield>\n" +
             "                  <controlfield tag=\"005\">20001116192418.8</controlfield>\n" +
@@ -610,9 +608,9 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
             "                  </datafield>\n" +
             "                  <leader>00000cam 2200217 i 4500</leader>\n" +
             "               </record>\n" +
-            "            </collection>\n" ;
+            "            </collection>\n";
 
-    private String holdingContentForNYPL1 =             "               <collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n" +
+    private String holdingContentForNYPL1 = "               <collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n" +
             "                  <record>\n" +
             "                     <datafield ind1=\"8\" ind2=\" \" tag=\"852\">\n" +
             "                        <subfield code=\"b\">rcma2</subfield>\n" +
@@ -624,7 +622,7 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
             "                  </record>\n" +
             "               </collection>\n";
 
-    private String updatedContentForNYPL1 ="<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+    private String updatedContentForNYPL1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<bibRecords>\n" +
             "   <bibRecord>\n" +
             "      <bib>\n" +
@@ -823,305 +821,305 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
 
     @Test
     public void processForPUL() throws JAXBException {
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1, "202304", "222420", "1110846", 1, "32101062128309", bibMarcContentForPUL, holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        Mockito.when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",1);
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(),Mockito.anyBoolean())).thenCallRealMethod();
-        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,savedBibliographicEntity);
-        ReflectionTestUtils.setField(repositoryService,"itemDetailsRepository",itemDetailsRepository);
-        ReflectionTestUtils.setField(repositoryService,"reportDetailRepository",reportDetailRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
-        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
-        Mockito.when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"repositoryService",repositoryService);
-        Mockito.when(submitCollectionDAOService.updateBibliographicEntity(any(),any(),any(),any(),anyBoolean(),any(),any())).thenReturn(savedBibliographicEntity);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"submitCollectionReportHelperService",submitCollectionReportHelperService);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"marcUtil",marcUtil);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"bibliographicDetailsRepository",bibliographicDetailsRepository);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"submitCollectionHelperService",submitCollectionHelperService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"repositoryService",repositoryService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"submitCollectionHelperService",submitCollectionHelperService);
-        Map<Integer,String> institutionEntityMap=new HashMap<>();
-        institutionEntityMap.put(1,"PUL");
-        Mockito.when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
-        Mockito.when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
-        Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
-        Map<String,ItemEntity> itemEntityMap = new HashMap<>();
-        ItemEntity itemEntity=savedBibliographicEntity.getItemEntities().get(0);
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 1);
+        Mockito.lenient().when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
+        Mockito.lenient().when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, savedBibliographicEntity);
+        ReflectionTestUtils.setField(repositoryService, "itemDetailsRepository", itemDetailsRepository);
+        ReflectionTestUtils.setField(repositoryService, "reportDetailRepository", reportDetailRepository);
+        Mockito.lenient().when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(), Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
+        Mockito.lenient().when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "repositoryService", repositoryService);
+        Mockito.lenient().when(submitCollectionDAOService.updateBibliographicEntity(any(), any(), any(), any(), anyBoolean(), any(), any())).thenReturn(savedBibliographicEntity);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionReportHelperService", submitCollectionReportHelperService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "marcUtil", marcUtil);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "bibliographicDetailsRepository", bibliographicDetailsRepository);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionHelperService", submitCollectionHelperService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "repositoryService", repositoryService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "submitCollectionHelperService", submitCollectionHelperService);
+        Map<Integer, String> institutionEntityMap = new HashMap<>();
+        institutionEntityMap.put(1, "PUL");
+        Mockito.lenient().when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
+        Mockito.lenient().when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
+        Map<String, Map<String, ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
+        Map<String, ItemEntity> itemEntityMap = new HashMap<>();
+        ItemEntity itemEntity = savedBibliographicEntity.getItemEntities().get(0);
         itemEntity.setUseRestrictions("no");
-        itemEntityMap.put("1",itemEntity);
-        fetchedHoldingItemMap.put("1",itemEntityMap);
-        Mockito.when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
-        ReportEntity savedReportEntity=new ReportEntity();
+        itemEntityMap.put("1", itemEntity);
+        fetchedHoldingItemMap.put("1", itemEntityMap);
+        Mockito.lenient().when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
+        ReportEntity savedReportEntity = new ReportEntity();
         savedReportEntity.setId(1);
         List<Future> futures = new ArrayList<>();
-        Mockito.when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null,executorService,futures);
+        Mockito.lenient().when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("PUL", updatedMarcForPUL, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, null, executorService, futures);
         //assertEquals(ScsbConstants.SUBMIT_COLLECTION_SUCCESS_RECORD,submitCollectionResponseList.get(0).getMessage());
         String updatedBibMarcXML = new String(savedBibliographicEntity.getContent(), StandardCharsets.UTF_8);
         List<Record> bibRecordList = readMarcXml(updatedBibMarcXML);
         assertNotNull(bibRecordList);
-        DataField field912 = (DataField)bibRecordList.get(0).getVariableField("912");
+        DataField field912 = (DataField) bibRecordList.get(0).getVariableField("912");
         assertEquals("19970731060735.8", field912.getSubfield('a').getData());
         HoldingsEntity holdingsEntity = savedBibliographicEntity.getHoldingsEntities().get(0);
-        String updatedHoldingMarcXML = new String(holdingsEntity.getContent(),StandardCharsets.UTF_8);
+        String updatedHoldingMarcXML = new String(holdingsEntity.getContent(), StandardCharsets.UTF_8);
         List<Record> holdingRecordList = readMarcXml(updatedHoldingMarcXML);
-        log.info("updatedHoldingMarcXML-->"+updatedHoldingMarcXML);
-        TestCase.assertNotNull(holdingRecordList);
-        DataField field852 = (DataField)holdingRecordList.get(0).getVariableField("852");
+        log.info("updatedHoldingMarcXML-->" + updatedHoldingMarcXML);
+        Assertions.assertNotNull(holdingRecordList);
+        DataField field852 = (DataField) holdingRecordList.get(0).getVariableField("852");
         assertEquals("K25.xN6", field852.getSubfield('h').getData());
         String callNumber = savedBibliographicEntity.getItemEntities().get(0).getCallNumber();
-        assertEquals("K25 .xN5",callNumber);
+        assertEquals("K25 .xN5", callNumber);
         Integer collectionGroupId = savedBibliographicEntity.getItemEntities().get(0).getCollectionGroupId();
-        assertEquals(Integer.valueOf(1),collectionGroupId);
+        assertEquals(Integer.valueOf(1), collectionGroupId);
     }
 
     @Test
     public void generateSubmitCollectionReportFile() {
-        List<Integer> reportRecordNumberList=new ArrayList<>();
+        List<Integer> reportRecordNumberList = new ArrayList<>();
         reportRecordNumberList.add(1);
         submitCollectionService.generateSubmitCollectionReportFile(reportRecordNumberList);
-        assertTrue(true);
+        Assertions.assertTrue(true);
     }
 
     @Test
-    public void partialIndexData()  {
-        Set<Integer> bibliographicIdList=new HashSet<>();
-        Mockito.doReturn(ScsbCommonConstants.SUCCESS).when(restTemplate).postForObject( ArgumentMatchers.anyString(),
+    public void partialIndexData() {
+        Set<Integer> bibliographicIdList = new HashSet<>();
+        Mockito.doReturn(ScsbCommonConstants.SUCCESS).when(restTemplate).postForObject(ArgumentMatchers.anyString(),
                 any(),
                 ArgumentMatchers.<Class<Map>>any());
-        String partialindex=submitCollectionService.partialIndexData(bibliographicIdList);
-        assertEquals(ScsbCommonConstants.SUCCESS,partialindex);
+        String partialindex = submitCollectionService.partialIndexData(bibliographicIdList);
+        assertEquals(ScsbCommonConstants.SUCCESS, partialindex);
     }
 
     @Test
     public void processForCUL() throws JAXBException {
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1, "202304", "222420", "1110846", 1, "32101062128309", bibMarcContentForPUL, holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        Mockito.when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",1);
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
-        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,savedBibliographicEntity);
-        ReflectionTestUtils.setField(repositoryService,"itemDetailsRepository",itemDetailsRepository);
-        ReflectionTestUtils.setField(repositoryService,"reportDetailRepository",reportDetailRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
-        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
-        Mockito.when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"repositoryService",repositoryService);
-        Mockito.when(submitCollectionDAOService.updateBibliographicEntity(any(),Mockito.anyMap(),Mockito.anyList(), anySet(),Mockito.anyBoolean(), any(), any())).thenReturn(savedBibliographicEntity);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"submitCollectionReportHelperService",submitCollectionReportHelperService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"repositoryService",repositoryService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"submitCollectionHelperService",submitCollectionHelperService);
-        Map<Integer,String> institutionEntityMap=new HashMap<>();
-        institutionEntityMap.put(1,"PUL");
-        Mockito.when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
-        Mockito.when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
-        Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
-        Map<String,ItemEntity> itemEntityMap = new HashMap<>();
-        ItemEntity itemEntity=savedBibliographicEntity.getItemEntities().get(0);
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 1);
+        Mockito.lenient().when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
+        Mockito.lenient().when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, savedBibliographicEntity);
+        ReflectionTestUtils.setField(repositoryService, "itemDetailsRepository", itemDetailsRepository);
+        ReflectionTestUtils.setField(repositoryService, "reportDetailRepository", reportDetailRepository);
+        Mockito.lenient().when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(), Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
+        Mockito.lenient().when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "repositoryService", repositoryService);
+        Mockito.lenient().when(submitCollectionDAOService.updateBibliographicEntity(any(), Mockito.anyMap(), Mockito.anyList(), anySet(), Mockito.anyBoolean(), any(), any())).thenReturn(savedBibliographicEntity);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionReportHelperService", submitCollectionReportHelperService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "repositoryService", repositoryService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "submitCollectionHelperService", submitCollectionHelperService);
+        Map<Integer, String> institutionEntityMap = new HashMap<>();
+        institutionEntityMap.put(1, "PUL");
+        Mockito.lenient().when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
+        Mockito.lenient().when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
+        Map<String, Map<String, ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
+        Map<String, ItemEntity> itemEntityMap = new HashMap<>();
+        ItemEntity itemEntity = savedBibliographicEntity.getItemEntities().get(0);
         itemEntity.setUseRestrictions("no");
-        itemEntityMap.put("1",itemEntity);
-        fetchedHoldingItemMap.put("1",itemEntityMap);
-        Mockito.when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
-        ReportEntity savedReportEntity=new ReportEntity();
+        itemEntityMap.put("1", itemEntity);
+        fetchedHoldingItemMap.put("1", itemEntityMap);
+        Mockito.lenient().when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
+        ReportEntity savedReportEntity = new ReportEntity();
         savedReportEntity.setId(1);
         List<Future> futures = new ArrayList<>();
-        Mockito.when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null,executorService,futures);
+        Mockito.lenient().when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("PUL", updatedMarcForPUL, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, null, executorService, futures);
         assertNotNull(submitCollectionResponseList);
 
     }
 
     @Test
     public void processForPULXMLError() throws JAXBException {
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1, "202304", "222420", "1110846", 1, "32101062128309", bibMarcContentForPUL, holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        Mockito.when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",1);
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
-        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 1);
+        Mockito.lenient().when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
+        Mockito.lenient().when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Error while parsing xml for a barcode in submit collection");
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,savedBibliographicEntity);
-        ReflectionTestUtils.setField(repositoryService,"itemDetailsRepository",itemDetailsRepository);
-        ReflectionTestUtils.setField(repositoryService,"reportDetailRepository",reportDetailRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
-        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
-        Mockito.when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"repositoryService",repositoryService);
-        Mockito.when(submitCollectionDAOService.updateBibliographicEntity(any(),Mockito.anyMap(),Mockito.anyList(), anySet(),Mockito.anyBoolean(), any(), any())).thenCallRealMethod();
-        ReflectionTestUtils.setField(submitCollectionDAOService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"submitCollectionReportHelperService",submitCollectionReportHelperService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"repositoryService",repositoryService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"submitCollectionHelperService",submitCollectionHelperService);
-        Map<Integer,String> institutionEntityMap=new HashMap<>();
-        institutionEntityMap.put(1,"PUL");
-        Mockito.when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
-        Mockito.when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
-        Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
-        Map<String,ItemEntity> itemEntityMap = new HashMap<>();
-        ItemEntity itemEntity=savedBibliographicEntity.getItemEntities().get(0);
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, savedBibliographicEntity);
+        ReflectionTestUtils.setField(repositoryService, "itemDetailsRepository", itemDetailsRepository);
+        ReflectionTestUtils.setField(repositoryService, "reportDetailRepository", reportDetailRepository);
+        Mockito.lenient().when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(), Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
+        Mockito.lenient().when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "repositoryService", repositoryService);
+        Mockito.lenient().when(submitCollectionDAOService.updateBibliographicEntity(any(), Mockito.anyMap(), Mockito.anyList(), anySet(), Mockito.anyBoolean(), any(), any())).thenCallRealMethod();
+        ReflectionTestUtils.setField(submitCollectionDAOService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionReportHelperService", submitCollectionReportHelperService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "repositoryService", repositoryService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "submitCollectionHelperService", submitCollectionHelperService);
+        Map<Integer, String> institutionEntityMap = new HashMap<>();
+        institutionEntityMap.put(1, "PUL");
+        Mockito.lenient().when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
+        Mockito.lenient().when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
+        Map<String, Map<String, ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
+        Map<String, ItemEntity> itemEntityMap = new HashMap<>();
+        ItemEntity itemEntity = savedBibliographicEntity.getItemEntities().get(0);
         itemEntity.setUseRestrictions("no");
-        itemEntityMap.put("1",itemEntity);
-        fetchedHoldingItemMap.put("1",itemEntityMap);
-        Mockito.when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
-        ReportEntity savedReportEntity=new ReportEntity();
+        itemEntityMap.put("1", itemEntity);
+        fetchedHoldingItemMap.put("1", itemEntityMap);
+        Mockito.lenient().when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
+        ReportEntity savedReportEntity = new ReportEntity();
         savedReportEntity.setId(1);
         List<Future> futures = new ArrayList<>();
-        Mockito.when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
-        Mockito.doCallRealMethod().when(submitCollectionReportHelperService).setSubmitCollectionFailureReportForUnexpectedException(any(),Mockito.anyList(),Mockito.anyString(), any());
-        ReflectionTestUtils.setField(marcUtil,"cgdNoProtectionInputLimit",20);
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null,executorService,futures);
-        assertEquals("Failed record - Item not updated - "+"Error while parsing xml for a barcode in submit collection",submitCollectionResponseList.get(0).getMessage());
+        Mockito.lenient().when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
+        Mockito.doCallRealMethod().when(submitCollectionReportHelperService).setSubmitCollectionFailureReportForUnexpectedException(any(), Mockito.anyList(), Mockito.anyString(), any());
+        ReflectionTestUtils.setField(marcUtil, "cgdNoProtectionInputLimit", 20);
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("PUL", updatedMarcForPUL, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, null, executorService, futures);
+        assertEquals("Failed record - Item not updated - " + "Error while parsing xml for a barcode in submit collection", submitCollectionResponseList.get(0).getMessage());
     }
 
     @Test
     public void processForPULXMLUnknownError() throws JAXBException {
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1, "202304", "222420", "1110846", 1, "32101062128309", bibMarcContentForPUL, holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        Mockito.when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",1);
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(),Mockito.anyBoolean())).thenCallRealMethod();
-        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
-        Map responseMap=new HashMap();
-        responseMap.put("errorMessage",null);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,savedBibliographicEntity);
-        ReflectionTestUtils.setField(repositoryService,"itemDetailsRepository",itemDetailsRepository);
-        ReflectionTestUtils.setField(repositoryService,"reportDetailRepository",reportDetailRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
-        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
-        Mockito.when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"repositoryService",repositoryService);
-        Mockito.when(submitCollectionDAOService.updateBibliographicEntity(any(),Mockito.anyMap(),Mockito.anyList(), anySet(),Mockito.anyBoolean(), any(), any())).thenCallRealMethod();
-        ReflectionTestUtils.setField(submitCollectionDAOService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"submitCollectionReportHelperService",submitCollectionReportHelperService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"repositoryService",repositoryService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"submitCollectionHelperService",submitCollectionHelperService);
-        Map<Integer,String> institutionEntityMap=new HashMap<>();
-        institutionEntityMap.put(1,"PUL");
-        Mockito.when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
-        Mockito.when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
-        Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
-        Map<String,ItemEntity> itemEntityMap = new HashMap<>();
-        ItemEntity itemEntity=savedBibliographicEntity.getItemEntities().get(0);
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 1);
+        Mockito.lenient().when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
+        Mockito.lenient().when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
+        Map responseMap = new HashMap();
+        responseMap.put("errorMessage", null);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, savedBibliographicEntity);
+        ReflectionTestUtils.setField(repositoryService, "itemDetailsRepository", itemDetailsRepository);
+        ReflectionTestUtils.setField(repositoryService, "reportDetailRepository", reportDetailRepository);
+        Mockito.lenient().when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(), Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
+        Mockito.lenient().when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "repositoryService", repositoryService);
+        Mockito.lenient().when(submitCollectionDAOService.updateBibliographicEntity(any(), Mockito.anyMap(), Mockito.anyList(), anySet(), Mockito.anyBoolean(), any(), any())).thenCallRealMethod();
+        ReflectionTestUtils.setField(submitCollectionDAOService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionReportHelperService", submitCollectionReportHelperService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "repositoryService", repositoryService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "submitCollectionHelperService", submitCollectionHelperService);
+        Map<Integer, String> institutionEntityMap = new HashMap<>();
+        institutionEntityMap.put(1, "PUL");
+        Mockito.lenient().when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
+        Mockito.lenient().when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
+        Map<String, Map<String, ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
+        Map<String, ItemEntity> itemEntityMap = new HashMap<>();
+        ItemEntity itemEntity = savedBibliographicEntity.getItemEntities().get(0);
         itemEntity.setUseRestrictions("no");
-        itemEntityMap.put("1",itemEntity);
-        fetchedHoldingItemMap.put("1",itemEntityMap);
-        Mockito.when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
-        ReportEntity savedReportEntity=new ReportEntity();
+        itemEntityMap.put("1", itemEntity);
+        fetchedHoldingItemMap.put("1", itemEntityMap);
+        Mockito.lenient().when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
+        ReportEntity savedReportEntity = new ReportEntity();
         savedReportEntity.setId(1);
         List<Future> futures = new ArrayList<>();
-        Mockito.when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
-        Mockito.doCallRealMethod().when(submitCollectionReportHelperService).setSubmitCollectionFailureReportForUnexpectedException(any(),Mockito.anyList(),Mockito.anyString(), any());
-        ReflectionTestUtils.setField(marcUtil,"cgdNoProtectionInputLimit",20);
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null,executorService,futures);
-        assertEquals("Failed record - Item not updated - ",submitCollectionResponseList.get(0).getMessage());
+        Mockito.lenient().when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
+        Mockito.doCallRealMethod().when(submitCollectionReportHelperService).setSubmitCollectionFailureReportForUnexpectedException(any(), Mockito.anyList(), Mockito.anyString(), any());
+        ReflectionTestUtils.setField(marcUtil, "cgdNoProtectionInputLimit", 20);
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("PUL", updatedMarcForPUL, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, null, executorService, futures);
+        assertEquals("Failed record - Item not updated - ", submitCollectionResponseList.get(0).getMessage());
     }
 
     @Test
     public void processForPULException() throws JAXBException {
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1, "202304", "222420", "1110846", 1, "32101062128309", bibMarcContentForPUL, holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        Mockito.when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",1);
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
-        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
-        Map responseMap=new HashMap();
-        responseMap.put("errorMessage",null);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,savedBibliographicEntity);
-        ReflectionTestUtils.setField(repositoryService,"itemDetailsRepository",itemDetailsRepository);
-        ReflectionTestUtils.setField(repositoryService,"reportDetailRepository",reportDetailRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
-        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
-        Mockito.when(marcToBibEntityConverter.convert(any(), any())).thenThrow(NullPointerException.class);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"repositoryService",repositoryService);
-        Mockito.when(submitCollectionDAOService.updateBibliographicEntity(any(),Mockito.anyMap(),Mockito.anyList(), anySet(),Mockito.anyBoolean(), any(), any())).thenCallRealMethod();
-        ReflectionTestUtils.setField(submitCollectionDAOService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"submitCollectionReportHelperService",submitCollectionReportHelperService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"repositoryService",repositoryService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"submitCollectionHelperService",submitCollectionHelperService);
-        Map<Integer,String> institutionEntityMap=new HashMap<>();
-        institutionEntityMap.put(1,"PUL");
-        Mockito.when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
-        Mockito.when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
-        Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
-        Map<String,ItemEntity> itemEntityMap = new HashMap<>();
-        ItemEntity itemEntity=savedBibliographicEntity.getItemEntities().get(0);
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 1);
+        Mockito.lenient().when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
+        Mockito.lenient().when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
+        Map responseMap = new HashMap();
+        responseMap.put("errorMessage", null);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, savedBibliographicEntity);
+        ReflectionTestUtils.setField(repositoryService, "itemDetailsRepository", itemDetailsRepository);
+        ReflectionTestUtils.setField(repositoryService, "reportDetailRepository", reportDetailRepository);
+        Mockito.lenient().when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(), Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
+        Mockito.lenient().when(marcToBibEntityConverter.convert(any(), any())).thenThrow(NullPointerException.class);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "repositoryService", repositoryService);
+        Mockito.lenient().when(submitCollectionDAOService.updateBibliographicEntity(any(), Mockito.anyMap(), Mockito.anyList(), anySet(), Mockito.anyBoolean(), any(), any())).thenCallRealMethod();
+        ReflectionTestUtils.setField(submitCollectionDAOService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionReportHelperService", submitCollectionReportHelperService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "repositoryService", repositoryService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "submitCollectionHelperService", submitCollectionHelperService);
+        Map<Integer, String> institutionEntityMap = new HashMap<>();
+        institutionEntityMap.put(1, "PUL");
+        Mockito.lenient().when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
+        Mockito.lenient().when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
+        Map<String, Map<String, ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
+        Map<String, ItemEntity> itemEntityMap = new HashMap<>();
+        ItemEntity itemEntity = savedBibliographicEntity.getItemEntities().get(0);
         itemEntity.setUseRestrictions("no");
-        itemEntityMap.put("1",itemEntity);
-        fetchedHoldingItemMap.put("1",itemEntityMap);
-        Mockito.when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
-        ReportEntity savedReportEntity=new ReportEntity();
+        itemEntityMap.put("1", itemEntity);
+        fetchedHoldingItemMap.put("1", itemEntityMap);
+        Mockito.lenient().when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
+        ReportEntity savedReportEntity = new ReportEntity();
         savedReportEntity.setId(1);
         List<Future> futures = new ArrayList<>();
-        Mockito.when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
-        Mockito.doCallRealMethod().when(submitCollectionReportHelperService).setSubmitCollectionFailureReportForUnexpectedException(any(),Mockito.anyList(),Mockito.anyString(), any());
-        ReflectionTestUtils.setField(marcUtil,"cgdNoProtectionInputLimit",20);
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null,executorService,futures);
-        assertEquals("Failed record - Item not updated - null",submitCollectionResponseList.get(0).getMessage());
+        Mockito.lenient().when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
+        Mockito.doCallRealMethod().when(submitCollectionReportHelperService).setSubmitCollectionFailureReportForUnexpectedException(any(), Mockito.anyList(), Mockito.anyString(), any());
+        ReflectionTestUtils.setField(marcUtil, "cgdNoProtectionInputLimit", 20);
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("PUL", updatedMarcForPUL, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, null, executorService, futures);
+        assertEquals("Failed record - Item not updated - null", submitCollectionResponseList.get(0).getMessage());
     }
 
     private InstitutionEntity getInstitutionEntity() {
@@ -1134,270 +1132,272 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
 
     @Test
     public void processForPULUpdateIncompleteRecord() throws JAXBException {
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1,"202304","222420","1110846",1,"32101062128309",bibMarcContentForPUL,holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(1, "202304", "222420", "1110846", 1, "32101062128309", bibMarcContentForPUL, holdingMarcContentForPUL, ScsbCommonConstants.INCOMPLETE_STATUS);
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        Mockito.when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",1);
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
-        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,savedBibliographicEntity);
-        ReflectionTestUtils.setField(repositoryService,"itemDetailsRepository",itemDetailsRepository);
-        ReflectionTestUtils.setField(repositoryService,"reportDetailRepository",reportDetailRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
-        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
-        Mockito.when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"repositoryService",repositoryService);
-        Mockito.when(submitCollectionDAOService.updateBibliographicEntity(any(),Mockito.anyMap(),Mockito.anyList(), anySet(),Mockito.anyBoolean(), any(), any())).thenCallRealMethod();
-        ReflectionTestUtils.setField(submitCollectionDAOService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"submitCollectionReportHelperService",submitCollectionReportHelperService);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"marcUtil",marcUtil);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"submitCollectionHelperService",submitCollectionHelperService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"repositoryService",repositoryService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"submitCollectionHelperService",submitCollectionHelperService);
-        Map<Integer,String> institutionEntityMap=new HashMap<>();
-        institutionEntityMap.put(1,"PUL");
-        Mockito.when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
-        Mockito.when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
-        Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
-        Map<String,ItemEntity> itemEntityMap = new HashMap<>();
-        itemEntityMap.put("1",savedBibliographicEntity.getItemEntities().get(0));
-        fetchedHoldingItemMap.put("1",itemEntityMap);
-        Mockito.when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
-        ReportEntity savedReportEntity=new ReportEntity();
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 1);
+        Mockito.lenient().when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
+        Mockito.lenient().when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, savedBibliographicEntity);
+        ReflectionTestUtils.setField(repositoryService, "itemDetailsRepository", itemDetailsRepository);
+        ReflectionTestUtils.setField(repositoryService, "reportDetailRepository", reportDetailRepository);
+        Mockito.lenient().when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(), Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
+        Mockito.lenient().when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "repositoryService", repositoryService);
+        Mockito.lenient().when(submitCollectionDAOService.updateBibliographicEntity(any(), Mockito.anyMap(), Mockito.anyList(), anySet(), Mockito.anyBoolean(), any(), any())).thenCallRealMethod();
+        ReflectionTestUtils.setField(submitCollectionDAOService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionReportHelperService", submitCollectionReportHelperService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "marcUtil", marcUtil);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionHelperService", submitCollectionHelperService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "repositoryService", repositoryService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "submitCollectionHelperService", submitCollectionHelperService);
+        Map<Integer, String> institutionEntityMap = new HashMap<>();
+        institutionEntityMap.put(1, "PUL");
+        Mockito.lenient().when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
+        Mockito.lenient().when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
+        Map<String, Map<String, ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
+        Map<String, ItemEntity> itemEntityMap = new HashMap<>();
+        itemEntityMap.put("1", savedBibliographicEntity.getItemEntities().get(0));
+        fetchedHoldingItemMap.put("1", itemEntityMap);
+        Mockito.lenient().when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
+        ReportEntity savedReportEntity = new ReportEntity();
         savedReportEntity.setId(1);
         List<Future> futures = new ArrayList<>();
-        Mockito.when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"bibliographicDetailsRepository",bibliographicDetailsRepository);
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null,executorService,futures);
+        Mockito.lenient().when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "bibliographicDetailsRepository", bibliographicDetailsRepository);
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("PUL", updatedMarcForPUL, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, null, executorService, futures);
         assertNotNull(submitCollectionResponseList);
     }
 
     @Test
     public void processForPULRejectedRecord() throws JAXBException {
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",1);
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 1);
         List<Future> futures = new ArrayList<>();
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(), Mockito.anyBoolean())).thenReturn(ScsbConstants.SUBMIT_COLLECTION_REJECTION_RECORD);
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, exchange,executorService,futures);
-        assertEquals(ScsbConstants.SUBMIT_COLLECTION_REJECTION_RECORD,submitCollectionResponseList.get(0).getMessage());
+        Mockito.lenient().when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenReturn(ScsbConstants.SUBMIT_COLLECTION_REJECTION_RECORD);
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("PUL", updatedMarcForPUL, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, exchange, executorService, futures);
+        assertEquals(ScsbConstants.SUBMIT_COLLECTION_REJECTION_RECORD, submitCollectionResponseList.get(0).getMessage());
     }
 
     @Test
     public void processException() throws JAXBException {
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",1);
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(), Mockito.anyBoolean())).thenReturn(ScsbConstants.SUBMIT_COLLECTION_INTERNAL_ERROR);
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 1);
+        Mockito.lenient().when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenReturn(ScsbConstants.SUBMIT_COLLECTION_INTERNAL_ERROR);
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
         List<Future> futures = new ArrayList<>();
-        Mockito.doThrow(NullPointerException.class).when(submitCollectionReportHelperService).setSubmitCollectionReportInfoForInvalidXml(Mockito.anyString(),Mockito.anyList(),Mockito.anyString());
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null,executorService,futures);
-        assertEquals(ScsbConstants.SUBMIT_COLLECTION_INTERNAL_ERROR,submitCollectionResponseList.get(0).getMessage());
+        Mockito.lenient().doThrow(NullPointerException.class).when(submitCollectionReportHelperService).setSubmitCollectionReportInfoForInvalidXml(Mockito.anyString(), Mockito.anyList(), Mockito.anyString());
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("PUL", updatedMarcForPUL, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, null, executorService, futures);
+        assertEquals(ScsbConstants.SUBMIT_COLLECTION_INTERNAL_ERROR, submitCollectionResponseList.get(0).getMessage());
     }
 
     @Test
     public void processUnknownInstitution() throws JAXBException {
-         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Set<Integer> processedBibIds = new HashSet<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
         List<Future> futures = new ArrayList<>();
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("PUL",updatedMarcForPUL,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null,executorService,futures);
-        assertEquals("Please provide valid institution code",submitCollectionResponseList.get(0).getMessage());
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("PUL", updatedMarcForPUL, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, null, executorService, futures);
+        assertEquals("Please provide valid institution code", submitCollectionResponseList.get(0).getMessage());
     }
 
     @Test
     public void processForNYPL() throws JAXBException {
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(3,".b100000125","123",".i100000034",1,"33433014514719",bibMarcContentForNYPL1,holdingContentForNYPL1, ScsbCommonConstants.INCOMPLETE_STATUS);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(3, ".b100000125", "123", ".i100000034", 1, "33433014514719", bibMarcContentForNYPL1, holdingContentForNYPL1, ScsbCommonConstants.INCOMPLETE_STATUS);
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        Mockito.when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",1);
-        ReflectionTestUtils.setField(submitCollectionService,"inputLimit",1);
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
-        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,savedBibliographicEntity);
-        ReflectionTestUtils.setField(repositoryService,"itemDetailsRepository",itemDetailsRepository);
-        ReflectionTestUtils.setField(repositoryService,"reportDetailRepository",reportDetailRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
-        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
-        Mockito.when(scsbToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"repositoryService",repositoryService);
-        Mockito.when(submitCollectionDAOService.updateBibliographicEntity(any(),Mockito.anyMap(),Mockito.anyList(), anySet(),Mockito.anyBoolean(), any(), any())).thenCallRealMethod();
-        ReflectionTestUtils.setField(submitCollectionDAOService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"submitCollectionReportHelperService",submitCollectionReportHelperService);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"marcUtil",marcUtil);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"bibliographicDetailsRepository",bibliographicDetailsRepository);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"submitCollectionHelperService",submitCollectionHelperService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"repositoryService",repositoryService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"submitCollectionHelperService",submitCollectionHelperService);
-        Map<Integer,String> institutionEntityMap=new HashMap<>();
-        institutionEntityMap.put(1,"NYPL");
-        Mockito.when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
-        Mockito.when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
-        Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
-        Map<String,ItemEntity> itemEntityMap = new HashMap<>();
-        ItemEntity itemEntity=savedBibliographicEntity.getItemEntities().get(0);
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 1);
+        ReflectionTestUtils.setField(submitCollectionService, "inputLimit", 1);
+        Mockito.lenient().when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
+        Mockito.lenient().when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, savedBibliographicEntity);
+        ReflectionTestUtils.setField(repositoryService, "itemDetailsRepository", itemDetailsRepository);
+        ReflectionTestUtils.setField(repositoryService, "reportDetailRepository", reportDetailRepository);
+        Mockito.lenient().when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(), Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
+        Mockito.lenient().when(scsbToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "repositoryService", repositoryService);
+        Mockito.lenient().when(submitCollectionDAOService.updateBibliographicEntity(any(), Mockito.anyMap(), Mockito.anyList(), anySet(), Mockito.anyBoolean(), any(), any())).thenCallRealMethod();
+        ReflectionTestUtils.setField(submitCollectionDAOService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionReportHelperService", submitCollectionReportHelperService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "marcUtil", marcUtil);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "bibliographicDetailsRepository", bibliographicDetailsRepository);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionHelperService", submitCollectionHelperService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "repositoryService", repositoryService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "submitCollectionHelperService", submitCollectionHelperService);
+        Map<Integer, String> institutionEntityMap = new HashMap<>();
+        institutionEntityMap.put(1, "NYPL");
+        Mockito.lenient().when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
+        Mockito.lenient().when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
+        Map<String, Map<String, ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
+        Map<String, ItemEntity> itemEntityMap = new HashMap<>();
+        ItemEntity itemEntity = savedBibliographicEntity.getItemEntities().get(0);
         itemEntity.setUseRestrictions("no");
-        itemEntityMap.put("1",itemEntity);
-        fetchedHoldingItemMap.put("1",itemEntityMap);
-        Mockito.when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
-        ReportEntity savedReportEntity=new ReportEntity();
+        itemEntityMap.put("1", itemEntity);
+        fetchedHoldingItemMap.put("1", itemEntityMap);
+        Mockito.lenient().when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
+        ReportEntity savedReportEntity = new ReportEntity();
         savedReportEntity.setId(1);
         List<Future> futures = new ArrayList<>();
-        Mockito.when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
-        Mockito.when(commonUtil.extractBibRecords(any())).thenCallRealMethod();
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("NYPL",updatedContentForNYPL1,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null,executorService,futures);
-       // assertEquals(ScsbConstants.SUBMIT_COLLECTION_SUCCESS_RECORD,submitCollectionResponseList.get(0).getMessage());
+        Mockito.lenient().when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
+        Mockito.lenient().when(commonUtil.extractBibRecords(any())).thenCallRealMethod();
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("NYPL", updatedContentForNYPL1, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, null, executorService, futures);
+        // assertEquals(ScsbConstants.SUBMIT_COLLECTION_SUCCESS_RECORD,submitCollectionResponseList.get(0).getMessage());
     }
+
     @Test
     public void processForNYPLBib() throws JAXBException {
-        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(3,".b100000125","123",".i100000034",1,"33433014514719",bibMarcContentForNYPL1,holdingContentForNYPL1, ScsbCommonConstants.INCOMPLETE_STATUS);
+        BibliographicEntity savedBibliographicEntity = getBibliographicEntity(3, ".b100000125", "123", ".i100000034", 1, "33433014514719", bibMarcContentForNYPL1, holdingContentForNYPL1, ScsbCommonConstants.INCOMPLETE_STATUS);
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        Mockito.when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",1);
-        ReflectionTestUtils.setField(submitCollectionService,"inputLimit",1);
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
-        Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,savedBibliographicEntity);
-        ReflectionTestUtils.setField(repositoryService,"itemDetailsRepository",itemDetailsRepository);
-        ReflectionTestUtils.setField(repositoryService,"reportDetailRepository",reportDetailRepository);
-        Mockito.when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
-        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
-        Mockito.when(scsbToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"repositoryService",repositoryService);
-        Mockito.when(submitCollectionDAOService.updateBibliographicEntity(any(),Mockito.anyMap(),Mockito.anyList(), anySet(),Mockito.anyBoolean(), any(), any())).thenReturn(savedBibliographicEntity);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"nonHoldingIdInstitution",nonHoldingIdInstitution);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionDAOService,"submitCollectionReportHelperService",submitCollectionReportHelperService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"repositoryService",repositoryService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionReportHelperService,"submitCollectionHelperService",submitCollectionHelperService);
-        Map<Integer,String> institutionEntityMap=new HashMap<>();
-        institutionEntityMap.put(1,"NYPL");
-        Mockito.when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
-        Mockito.when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
-        Map<String,Map<String,ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
-        Map<String,ItemEntity> itemEntityMap = new HashMap<>();
-        ItemEntity itemEntity=savedBibliographicEntity.getItemEntities().get(0);
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 1);
+        ReflectionTestUtils.setField(submitCollectionService, "inputLimit", 1);
+        Mockito.lenient().when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
+        Mockito.lenient().when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, savedBibliographicEntity);
+        ReflectionTestUtils.setField(repositoryService, "itemDetailsRepository", itemDetailsRepository);
+        ReflectionTestUtils.setField(repositoryService, "reportDetailRepository", reportDetailRepository);
+        Mockito.lenient().when(repositoryService.getItemDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(), Mockito.anyInt())).thenReturn(savedBibliographicEntity.getItemEntities());
+        Mockito.lenient().when(scsbToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "repositoryService", repositoryService);
+        Mockito.lenient().when(submitCollectionDAOService.updateBibliographicEntity(any(), Mockito.anyMap(), Mockito.anyList(), anySet(), Mockito.anyBoolean(), any(), any())).thenReturn(savedBibliographicEntity);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "nonHoldingIdInstitution", nonHoldingIdInstitution);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionReportHelperService", submitCollectionReportHelperService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "repositoryService", repositoryService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionReportHelperService, "submitCollectionHelperService", submitCollectionHelperService);
+        Map<Integer, String> institutionEntityMap = new HashMap<>();
+        institutionEntityMap.put(1, "NYPL");
+        Mockito.lenient().when(setupDataService.getInstitutionIdCodeMap()).thenReturn(institutionEntityMap);
+        Mockito.lenient().when(submitCollectionReportHelperService.buildSubmitCollectionReportInfo(Mockito.anyMap(), any(), any())).thenCallRealMethod();
+        Map<String, Map<String, ItemEntity>> fetchedHoldingItemMap = new HashMap<>();
+        Map<String, ItemEntity> itemEntityMap = new HashMap<>();
+        ItemEntity itemEntity = savedBibliographicEntity.getItemEntities().get(0);
         itemEntity.setUseRestrictions("no");
-        itemEntityMap.put("1",itemEntity);
-        fetchedHoldingItemMap.put("1",itemEntityMap);
-        Mockito.when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);
-        ReportEntity savedReportEntity=new ReportEntity();
+        itemEntityMap.put("1", itemEntity);
+        fetchedHoldingItemMap.put("1", itemEntityMap);
+        Mockito.lenient().when(submitCollectionHelperService.getHoldingItemIdMap(any())).thenReturn(fetchedHoldingItemMap);;
+        ReportEntity savedReportEntity = new ReportEntity();
         savedReportEntity.setId(1);
         List<Future> futures = new ArrayList<>();
-        Mockito.when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
-        Mockito.when(commonUtil.extractBibRecords(any())).thenCallRealMethod();
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("NYPL",updatedContentForNYPL1,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, null,executorService,futures);
+        Mockito.lenient().when(reportDetailRepository.save(any())).thenReturn(savedReportEntity);
+        Mockito.lenient().when(commonUtil.extractBibRecords(any())).thenCallRealMethod();
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("NYPL", updatedContentForNYPL1, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, null, executorService, futures);
         assertNotNull(submitCollectionResponseList);
     }
 
     @Test
     public void processForNYPLLimitExceeded() throws JAXBException {
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        Mockito.when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",0);
-        ReflectionTestUtils.setField(submitCollectionService,"inputLimit",0);
-        Mockito.when(commonUtil.extractBibRecords(any())).thenReturn(bibRecords);
-        List<BibRecord> bibRecordList=new ArrayList<>();
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 0);
+        ReflectionTestUtils.setField(submitCollectionService, "inputLimit", 0);
+        Mockito.lenient().when(commonUtil.extractBibRecords(any())).thenReturn(bibRecords);
+        List<BibRecord> bibRecordList = new ArrayList<>();
         bibRecordList.add(bibRecord);
         List<Future> futures = new ArrayList<>();
-        Mockito.when(bibRecords.getBibRecordList()).thenReturn(bibRecordList);
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("NYPL",updatedContentForNYPL1,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, exchange,executorService,futures);
+        Mockito.lenient().when(bibRecords.getBibRecordList()).thenReturn(bibRecordList);
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("NYPL", updatedContentForNYPL1, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, exchange, executorService, futures);
         assertTrue(submitCollectionResponseList.get(0).getMessage().contains(ScsbConstants.SUBMIT_COLLECTION_LIMIT_EXCEED_MESSAGE));
     }
 
     @Test
     public void processForNYPLJAXBException() throws JAXBException {
         Set<Integer> processedBibIds = new HashSet<>();
-        Map<String,String> idMapToRemoveIndex = new HashMap<>();
-        Map<String,String> bibIdMapToRemoveIndex = new HashMap<>();
+        Map<String, String> idMapToRemoveIndex = new HashMap<>();
+        Map<String, String> bibIdMapToRemoveIndex = new HashMap<>();
         List<Integer> reportRecordNumList = new ArrayList<>();
-        Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        ReflectionTestUtils.setField(repositoryService,"institutionDetailsRepository",institutionDetailsRepository);
-        Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
-        Mockito.when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
-        Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",0);
-        ReflectionTestUtils.setField(submitCollectionService,"inputLimit",0);
-        Mockito.when(commonUtil.extractBibRecords(any())).thenThrow(JAXBException.class);
+        Mockito.lenient().when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
+        ReflectionTestUtils.setField(repositoryService, "institutionDetailsRepository", institutionDetailsRepository);
+        Mockito.lenient().when(repositoryService.getInstitutionDetailsRepository()).thenCallRealMethod();
+        Mockito.lenient().when(repositoryService.getReportDetailRepository()).thenCallRealMethod();
+        Mockito.lenient().when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 0);
+        ReflectionTestUtils.setField(submitCollectionService, "inputLimit", 0);
+        Mockito.lenient().when(commonUtil.extractBibRecords(any())).thenThrow(JAXBException.class);
         List<Future> futures = new ArrayList<>();
-        List<SubmitCollectionResponse>  submitCollectionResponseList = submitCollectionService.process("NYPL",updatedContentForNYPL1,processedBibIds,Arrays.asList(idMapToRemoveIndex),Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST,reportRecordNumList, true,false,null, exchange,executorService,futures);
-        assertEquals(ScsbConstants.INVALID_SCSB_XML_FORMAT_MESSAGE,submitCollectionResponseList.get(0).getMessage());
+        List<SubmitCollectionResponse> submitCollectionResponseList = submitCollectionService.process("NYPL", updatedContentForNYPL1, processedBibIds, Arrays.asList(idMapToRemoveIndex), Arrays.asList(bibIdMapToRemoveIndex), ScsbConstants.REST, reportRecordNumList, true, false, null, exchange, executorService, futures);
+        assertEquals(ScsbConstants.INVALID_SCSB_XML_FORMAT_MESSAGE, submitCollectionResponseList.get(0).getMessage());
     }
+
     @Test
     public void removeSolrIndex() throws JAXBException {
-        List<Map<String,String> >idMapToRemoveIndexList=new ArrayList<>();
-        Map<String,String> response=new HashMap<>();
+        List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
+        Map<String, String> response = new HashMap<>();
         idMapToRemoveIndexList.add(response);
         submitCollectionService.removeSolrIndex(idMapToRemoveIndexList);
         submitCollectionService.removeBibFromSolrIndex(idMapToRemoveIndexList);
-        Set<Integer> bibliographicIdList=new HashSet<>();
+        Set<Integer> bibliographicIdList = new HashSet<>();
         bibliographicIdList.add(1);
-        String index=submitCollectionService.indexData(bibliographicIdList);
-        String indexDataUsingOwningInstBibId=submitCollectionService.indexDataUsingOwningInstBibId(new ArrayList<>(),1);
+        String index = submitCollectionService.indexData(bibliographicIdList);
+        String indexDataUsingOwningInstBibId = submitCollectionService.indexDataUsingOwningInstBibId(new ArrayList<>(), 1);
         assertNull(index);
         assertNull(indexDataUsingOwningInstBibId);
     }
 
     private BibliographicEntity getBibliographicEntity(Integer owningInstitutionId, String owningInstitutionBibId, String owningInstitutionHoldingsId,
-                                                       String owningInstitutionItemId, Integer itemAvailabilityStatusId, String itemBarcode, String bibMarcContent , String holdingMarcContent, String catalogingStatus){
+                                                       String owningInstitutionItemId, Integer itemAvailabilityStatusId, String itemBarcode, String bibMarcContent, String holdingMarcContent, String catalogingStatus) {
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setId(1);
         bibliographicEntity.setContent(bibMarcContent.getBytes());
@@ -1439,7 +1439,6 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
         List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity));
 
 
-
         holdingsEntity.setBibliographicEntities(bibliographicEntitylist);
         holdingsEntity.setItemEntities(itemEntitylist);
         bibliographicEntity.setHoldingsEntities(holdingsEntitylist);
@@ -1449,6 +1448,7 @@ public class SubmitCollectionServiceUT extends BaseTestCaseUT {
 
         return bibliographicEntity;
     }
+
     private List<Record> readMarcXml(String marcXmlString) {
         List<Record> recordList = new ArrayList<>();
         InputStream in = new ByteArrayInputStream(marcXmlString.getBytes());

@@ -1,7 +1,7 @@
 package org.recap.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.*;
 import org.recap.BaseTestCaseUT;
@@ -42,7 +42,7 @@ public class RestTemplateConfigUT extends BaseTestCaseUT {
     @Test
     public void getForString() {
         Mockito.when(restTemplateBuilder.build()).thenReturn(restTemplate);
-        ReflectionTestUtils.setField(restTemplateConfig,"restTemplate",restTemplate);
+        ReflectionTestUtils.setField(restTemplateConfig, "restTemplate", restTemplate);
 //        ReflectionTestUtils.setField(restTemplateConfig,"objectMapper",objectMapper);
         ResponseEntity<String> responseEntity = new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK);
         Mockito.doReturn(responseEntity).when(restTemplate).exchange(
@@ -51,9 +51,10 @@ public class RestTemplateConfigUT extends BaseTestCaseUT {
                 ArgumentMatchers.any(),
                 ArgumentMatchers.<Class<String>>any(),
                 ArgumentMatchers.<Class>any());
-        try{
-        String response= restTemplateConfig.getForString(ScsbCommonConstants.PRINCETON,"url");
-        assertTrue(response.contains(ScsbCommonConstants.SUCCESS));}catch (Exception e){
+        try {
+            String response = restTemplateConfig.getForString(ScsbCommonConstants.PRINCETON, "url");
+            assertTrue(response.contains(ScsbCommonConstants.SUCCESS));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -61,7 +62,7 @@ public class RestTemplateConfigUT extends BaseTestCaseUT {
     @Test
     public void getForStringHttpClientErrorException() {
         Mockito.when(restTemplateBuilder.build()).thenReturn(restTemplate);
-        ReflectionTestUtils.setField(restTemplateConfig,"restTemplate",restTemplate);
+        ReflectionTestUtils.setField(restTemplateConfig, "restTemplate", restTemplate);
 //        ReflectionTestUtils.setField(restTemplateConfig,"objectMapper",objectMapper);
         ResponseEntity<String> responseEntity = new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK);
         Mockito.doThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND)).when(restTemplate).exchange(
@@ -71,14 +72,16 @@ public class RestTemplateConfigUT extends BaseTestCaseUT {
                 ArgumentMatchers.<Class<String>>any(),
                 ArgumentMatchers.<Class>any());
         try {
-            String response= restTemplateConfig.getForString(ScsbCommonConstants.PRINCETON,"url");
-        }catch (RuntimeException exception){}
+            String response = restTemplateConfig.getForString(ScsbCommonConstants.PRINCETON, "url");
+        } catch (RuntimeException exception) {
+        }
 
     }
+
     @Test
     public void getForStringException() {
         Mockito.when(restTemplateBuilder.build()).thenReturn(restTemplate);
-        ReflectionTestUtils.setField(restTemplateConfig,"restTemplate",restTemplate);
+        ReflectionTestUtils.setField(restTemplateConfig, "restTemplate", restTemplate);
 //        ReflectionTestUtils.setField(restTemplateConfig,"objectMapper",objectMapper);
         ResponseEntity<String> responseEntity = new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK);
         Mockito.doThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST)).when(restTemplate).exchange(
@@ -88,14 +91,15 @@ public class RestTemplateConfigUT extends BaseTestCaseUT {
                 ArgumentMatchers.<Class<String>>any(),
                 ArgumentMatchers.<Class>any());
         try {
-            String response= restTemplateConfig.getForString(ScsbCommonConstants.PRINCETON,"url");
-        }catch (RuntimeException exception){}
+            String response = restTemplateConfig.getForString(ScsbCommonConstants.PRINCETON, "url");
+        } catch (RuntimeException exception) {
+        }
 
     }
 
     @Test
     public void getClientHttpRequestFactory() {
-        SimpleClientHttpRequestFactory clientHttpRequestFactory=restTemplateConfig.getClientHttpRequestFactory();
+        SimpleClientHttpRequestFactory clientHttpRequestFactory = restTemplateConfig.getClientHttpRequestFactory();
         assertNotNull(clientHttpRequestFactory);
     }
 }

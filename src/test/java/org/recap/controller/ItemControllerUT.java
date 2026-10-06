@@ -1,6 +1,6 @@
 package org.recap.controller;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -16,8 +16,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 /**
@@ -41,7 +41,7 @@ public class ItemControllerUT extends BaseTestCaseUT {
         Mockito.when(itemDetailsRepository.findByBarcodeInAndComplete(Mockito.anyList(), Mockito.anyBoolean())).thenReturn(saveBibSingleHoldingsMultipleItem().getItemEntities());
         List<ItemEntity> itemEntityList = itemController.findByBarcodeIn("00009,00010");
         assertNotNull(itemEntityList);
-        assertEquals(2,itemEntityList.size());
+        assertEquals(2, itemEntityList.size());
     }
 
     public BibliographicEntity saveBibSingleHoldingsMultipleItem() throws Exception {

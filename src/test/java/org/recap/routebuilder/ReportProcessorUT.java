@@ -2,7 +2,7 @@ package org.recap.routebuilder;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -10,7 +10,8 @@ import org.recap.BaseTestCaseUT;
 import org.recap.model.jpa.ReportEntity;
 import org.recap.repository.jpa.ReportDetailRepository;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class ReportProcessorUT extends BaseTestCaseUT {
 

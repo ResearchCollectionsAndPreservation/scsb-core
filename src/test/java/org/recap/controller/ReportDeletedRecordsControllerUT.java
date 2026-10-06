@@ -1,6 +1,6 @@
 package org.recap.controller;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -9,8 +9,8 @@ import org.recap.ScsbConstants;
 import org.recap.service.deletedrecords.DeletedRecordsService;
 import org.springframework.http.ResponseEntity;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Created by hemalathas on 13/7/17.
@@ -24,7 +24,7 @@ public class ReportDeletedRecordsControllerUT extends BaseTestCaseUT {
     DeletedRecordsService deletedRecordsService;
 
     @Test
-    public void deletedRecordsSuccess(){
+    public void deletedRecordsSuccess() {
         Mockito.when(deletedRecordsService.deletedRecords()).thenReturn(true);
         ResponseEntity responseEntity = reportDeletedRecordsController.deletedRecords();
         assertNotNull(responseEntity);
@@ -32,7 +32,7 @@ public class ReportDeletedRecordsControllerUT extends BaseTestCaseUT {
     }
 
     @Test
-    public void deletedRecordsFailure(){
+    public void deletedRecordsFailure() {
         Mockito.when(deletedRecordsService.deletedRecords()).thenReturn(false);
         ResponseEntity responseEntity = reportDeletedRecordsController.deletedRecords();
         assertNotNull(responseEntity);

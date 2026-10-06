@@ -1,9 +1,9 @@
 package org.recap.model.csv;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.recap.BaseTestCaseUT;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Created by hemalathas on 13/7/17.
@@ -11,7 +11,7 @@ import static org.junit.Assert.assertNotNull;
 public class SubmitCollectionReportRecordUT extends BaseTestCaseUT {
 
     @Test
-    public void testSubmitCollectionReportRecord(){
+    public void testSubmitCollectionReportRecord() {
         SubmitCollectionReportRecord submitCollectionReportRecord = new SubmitCollectionReportRecord();
         submitCollectionReportRecord.setOwningInstitution("PUL");
         submitCollectionReportRecord.setCustomerCode("PB");

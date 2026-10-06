@@ -1,7 +1,7 @@
 package org.recap.util;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.marc4j.marc.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -22,6 +22,7 @@ import org.marc4j.marc.Record;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
+
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -35,7 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Created by pvsubrah on 6/15/16.
@@ -412,7 +413,7 @@ public class MarcUtilUT extends BaseTestCaseUT {
         subFields.add(subfieldatafieldType);
         Mockito.when(dataFieldType.getSubfield()).thenReturn(subFields);
         Mockito.when(subfieldatafieldType.getCode()).thenReturn("code");
-        Mockito.when(dataFieldType.getInd1()).thenReturn("Ind1");
+        Mockito.lenient().when(dataFieldType.getInd1()).thenReturn("Ind1");;
         Mockito.when(marcRecord.getDatafield()).thenReturn(dataFields);
         String isSubFieldExist = marcUtil.getInd1ForRecordType(marcRecord, "", "");
         assertNull(isSubFieldExist);

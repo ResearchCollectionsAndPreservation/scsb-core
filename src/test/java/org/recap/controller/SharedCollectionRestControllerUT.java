@@ -2,13 +2,12 @@ package org.recap.controller;
 
 import org.apache.camel.Exchange;
 import org.apache.commons.collections.map.HashedMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.recap.BaseTestCaseUT;
 import org.recap.ScsbCommonConstants;
-import org.recap.ScsbConstants;
 import org.recap.converter.MarcToBibEntityConverter;
 import org.recap.model.accession.AccessionModelRequest;
 import org.recap.model.accession.AccessionRequest;
@@ -46,9 +45,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 
 /**
@@ -211,7 +209,7 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
             "</collection>";
 
     @Test
-    public void submitCollectiontest() throws Exception{
+    public void submitCollectiontest() throws Exception {
         SubmitCollectionResponse submitCollectionResponse = new SubmitCollectionResponse();
         submitCollectionResponse.setItemBarcode("32101068878931");
         submitCollectionResponse.setMessage("ExceptionRecord");
@@ -219,11 +217,11 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         String institution = "PUL";
         boolean isCGDProtection = true;
         Map map = new HashMap();
-        map.put(1,"PUL");
-        Map<String,Object> requestParameters = new HashedMap();
-        requestParameters.put(ScsbCommonConstants.INPUT_RECORDS,updatedMarcXml);
-        requestParameters.put(ScsbCommonConstants.INSTITUTION,"PUL");
-        requestParameters.put(ScsbCommonConstants.IS_CGD_PROTECTED,"true");
+        map.put(1, "PUL");
+        Map<String, Object> requestParameters = new HashedMap();
+        requestParameters.put(ScsbCommonConstants.INPUT_RECORDS, updatedMarcXml);
+        requestParameters.put(ScsbCommonConstants.INSTITUTION, "PUL");
+        requestParameters.put(ScsbCommonConstants.IS_CGD_PROTECTED, "true");
         List<Integer> reportRecordNumberList = new ArrayList<>();
         Set<Integer> processedBibIdSet = new HashSet<>();
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();//Added to remove dummy record in solr
@@ -240,26 +238,26 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenReturn(institutionDetailsRepository);
         Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(getInstitutionEntity());
         Mockito.when(validationService.validateInstitution(Mockito.anyString())).thenReturn(true);
-        Mockito.when(submitCollectionBatchService.processMarc(Mockito.anyString(),Mockito.anySet(),Mockito.anyMap(),Mockito.anyList(),Mockito.anyList(),Mockito.anyBoolean(),Mockito.anyBoolean(),Mockito.any(),Mockito.anySet(),Mockito.any(),Mockito.anyList())).thenCallRealMethod();
+        Mockito.when(submitCollectionBatchService.processMarc(Mockito.anyString(), Mockito.anySet(), Mockito.anyMap(), Mockito.anyList(), Mockito.anyList(), Mockito.anyBoolean(), Mockito.anyBoolean(), Mockito.any(), Mockito.anySet(), Mockito.any(), Mockito.anyList())).thenCallRealMethod();
         Mockito.when(submitCollectionBatchService.getMarcUtil()).thenReturn(marcUtil);
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
+        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
         Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
-        ReflectionTestUtils.setField(marcUtil,"inputLimit",2);
-        ReflectionTestUtils.setField(submitCollectionBatchService,"partitionSize",5000);
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,getBibliographicEntityMultiVolume("456"));
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 2);
+        ReflectionTestUtils.setField(submitCollectionBatchService, "partitionSize", 5000);
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, getBibliographicEntityMultiVolume("456"));
         List<BibliographicEntity> updatedBibliographicEntityList = new ArrayList<>();
-        BibliographicEntity bibliographicEntity=getBibliographicEntities("456");
+        BibliographicEntity bibliographicEntity = getBibliographicEntities("456");
         bibliographicEntity.setId(null);
         updatedBibliographicEntityList.add(bibliographicEntity);
-        ReflectionTestUtils.setField(submitCollectionBatchService,"marcToBibEntityConverter",marcToBibEntityConverter);
-        ReflectionTestUtils.setField(submitCollectionBatchService,"submitCollectionDAOService",submitCollectionDAOService);
-        Mockito.when(marcToBibEntityConverter.convert(Mockito.any(),Mockito.any())).thenReturn(responseMap);
-        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anySet(),Mockito.any(),Mockito.anyList())).thenReturn(updatedBibliographicEntityList);
+        ReflectionTestUtils.setField(submitCollectionBatchService, "marcToBibEntityConverter", marcToBibEntityConverter);
+        ReflectionTestUtils.setField(submitCollectionBatchService, "submitCollectionDAOService", submitCollectionDAOService);
+        Mockito.when(marcToBibEntityConverter.convert(Mockito.any(), Mockito.any())).thenReturn(responseMap);
+        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForBoundWith(Mockito.anyList(), Mockito.anyInt(), Mockito.anyMap(), Mockito.anySet(), Mockito.anyList(), Mockito.anyList(), Mockito.anySet(), Mockito.any(), Mockito.anyList())).thenReturn(updatedBibliographicEntityList);
         Mockito.when(submitCollectionBatchService.getConverter(Mockito.anyString())).thenCallRealMethod();
-        ReflectionTestUtils.setField(submitCollectionBatchService,"marcToBibEntityConverter",marcToBibEntityConverter);
+        ReflectionTestUtils.setField(submitCollectionBatchService, "marcToBibEntityConverter", marcToBibEntityConverter);
         Mockito.when(submitCollectionBatchService.getMarcToBibEntityConverter()).thenCallRealMethod();
         Mockito.when(submitCollectionBatchService.getSubmitCollectionDAOService()).thenCallRealMethod();
 
@@ -268,7 +266,7 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
     }
 
     @Test
-    public void submitCollectionException() throws Exception{
+    public void submitCollectionException() throws Exception {
         SubmitCollectionResponse submitCollectionResponse = new SubmitCollectionResponse();
         submitCollectionResponse.setItemBarcode("32101068878931");
         submitCollectionResponse.setMessage("ExceptionRecord");
@@ -278,11 +276,11 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         List<Future> futures = new ArrayList<>();
         Map map = new HashMap();
-        map.put(1,"PUL");
-        Map<String,Object> requestParameters = new HashedMap();
-        requestParameters.put(ScsbCommonConstants.INPUT_RECORDS,updatedMarcXml);
-        requestParameters.put(ScsbCommonConstants.INSTITUTION,"PUL");
-        requestParameters.put(ScsbCommonConstants.IS_CGD_PROTECTED,"true");
+        map.put(1, "PUL");
+        Map<String, Object> requestParameters = new HashedMap();
+        requestParameters.put(ScsbCommonConstants.INPUT_RECORDS, updatedMarcXml);
+        requestParameters.put(ScsbCommonConstants.INSTITUTION, "PUL");
+        requestParameters.put(ScsbCommonConstants.IS_CGD_PROTECTED, "true");
         List<Integer> reportRecordNumberList = new ArrayList<>();
         Set<Integer> processedBibIdSet = new HashSet<>();
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();//Added to remove dummy record in solr
@@ -297,24 +295,24 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
     }
 
     @Test
-    public void accessionBatch() throws Exception{
-        AccessionModelRequest accessionModelRequest=new AccessionModelRequest();
+    public void accessionBatch() throws Exception {
+        AccessionModelRequest accessionModelRequest = new AccessionModelRequest();
         ResponseEntity response = sharedCollectionRestController.accessionBatch(accessionModelRequest);
-        assertEquals(HttpStatus.OK,response.getStatusCode());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
-    public void accession() throws Exception{
-        AccessionModelRequest accessionModelRequest=new AccessionModelRequest();
+    public void accession() throws Exception {
+        AccessionModelRequest accessionModelRequest = new AccessionModelRequest();
         accessionModelRequest.setAccessionRequests(getAccessionRequests());
-        ReflectionTestUtils.setField(sharedCollectionRestController,"inputLimit",10);
-        ResponseEntity response = sharedCollectionRestController.accession(accessionModelRequest,exchange);
-        assertEquals(HttpStatus.OK,response.getStatusCode());
+        ReflectionTestUtils.setField(sharedCollectionRestController, "inputLimit", 10);
+        ResponseEntity response = sharedCollectionRestController.accession(accessionModelRequest, exchange);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
-    public void accessionExceedLimit() throws Exception{
-        List<AccessionRequest> accessionRequestList=new ArrayList<>();
+    public void accessionExceedLimit() throws Exception {
+        List<AccessionRequest> accessionRequestList = new ArrayList<>();
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("32101095533293");
@@ -322,35 +320,36 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         accessionRequest1.setCustomerCode("PA");
         accessionRequest1.setItemBarcode("32101095533294");
         accessionRequestList.add(accessionRequest1);
-        AccessionModelRequest accessionModelRequest=new AccessionModelRequest();
+        AccessionModelRequest accessionModelRequest = new AccessionModelRequest();
         accessionModelRequest.setAccessionRequests(accessionRequestList);
-        ReflectionTestUtils.setField(sharedCollectionRestController,"inputLimit",0);
-        ResponseEntity response = sharedCollectionRestController.accession(accessionModelRequest,exchange);
-        assertEquals(HttpStatus.OK,response.getStatusCode());
+        ReflectionTestUtils.setField(sharedCollectionRestController, "inputLimit", 0);
+        ResponseEntity response = sharedCollectionRestController.accession(accessionModelRequest, exchange);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
-    public void ongoingAccessionJobNoPending() throws Exception{
+    public void ongoingAccessionJobNoPending() throws Exception {
         String response = sharedCollectionRestController.ongoingAccessionJob(exchange);
-        assertEquals(ScsbCommonConstants.ACCESSION_NO_PENDING_REQUESTS,response);
+        assertEquals(ScsbCommonConstants.ACCESSION_NO_PENDING_REQUESTS, response);
     }
 
     @Test
-    public void ongoingAccessionJobFailure() throws Exception{
+    public void ongoingAccessionJobFailure() throws Exception {
         Mockito.when(bulkAccessionService.getAccessionRequest(Mockito.anyList())).thenReturn(getAccessionRequests());
         String response = sharedCollectionRestController.ongoingAccessionJob(exchange);
-        assertEquals(ScsbCommonConstants.FAILURE,response);
+        assertEquals(ScsbCommonConstants.FAILURE, response);
     }
 
     @Test
-    public void collectFuturesAndProcess(){
+    public void collectFuturesAndProcess() {
         List<Future> futures = new ArrayList<>();
         Set<Integer> bibIds = new HashSet<>();
         bibIds.add(1);
         Mockito.when(submitCollectionBatchService.indexData(any())).thenReturn("test");
         Mockito.when(commonUtil.collectFuturesAndUpdateMAQualifier(futures)).thenReturn(bibIds);
-        ReflectionTestUtils.invokeMethod(sharedCollectionRestController,"collectFuturesAndProcess",futures);
+        ReflectionTestUtils.invokeMethod(sharedCollectionRestController, "collectFuturesAndProcess", futures);
     }
+
     private List<AccessionRequest> getAccessionRequests() {
         List<AccessionRequest> accessionRequestList = new ArrayList<>();
         AccessionRequest accessionRequest = new AccessionRequest();
@@ -367,13 +366,14 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         institutionEntity.setInstitutionCode("PUL");
         return institutionEntity;
     }
-    private BibliographicEntity getBibliographicEntityMultiVolume(String owningInstitutionBibId){
-        BibliographicEntity bibliographicEntity = getBibliographicEntity(1,owningInstitutionBibId);
+
+    private BibliographicEntity getBibliographicEntityMultiVolume(String owningInstitutionBibId) {
+        BibliographicEntity bibliographicEntity = getBibliographicEntity(1, owningInstitutionBibId);
         HoldingsEntity holdingsEntity = getHoldingsEntity();
         ItemEntity itemEntity = getItemEntity("843617540");
         List<BibliographicEntity> bibliographicEntitylist = new LinkedList(Arrays.asList(bibliographicEntity));
         List<HoldingsEntity> holdingsEntitylist = new LinkedList(Arrays.asList(holdingsEntity));
-        List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity,getItemEntity("78547557")));
+        List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity, getItemEntity("78547557")));
         holdingsEntity.setBibliographicEntities(bibliographicEntitylist);
         holdingsEntity.setItemEntities(itemEntitylist);
         bibliographicEntity.setHoldingsEntities(holdingsEntitylist);
@@ -382,6 +382,7 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         itemEntity.setBibliographicEntities(bibliographicEntitylist);
         return bibliographicEntity;
     }
+
     private HoldingsEntity getHoldingsEntity() {
         HoldingsEntity holdingsEntity = new HoldingsEntity();
         holdingsEntity.setCreatedDate(new Date());
@@ -391,7 +392,7 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         holdingsEntity.setOwningInstitutionId(1);
         holdingsEntity.setOwningInstitutionHoldingsId("34567");
         holdingsEntity.setDeleted(false);
-        return  holdingsEntity;
+        return holdingsEntity;
     }
 
     private ItemEntity getItemEntity(String OwningInstitutionItemId) {
@@ -415,8 +416,8 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         return itemEntity;
     }
 
-    private BibliographicEntity getBibliographicEntities(String owningInstitutionBibId){
-        BibliographicEntity bibliographicEntity = getBibliographicEntity(1,owningInstitutionBibId);
+    private BibliographicEntity getBibliographicEntities(String owningInstitutionBibId) {
+        BibliographicEntity bibliographicEntity = getBibliographicEntity(1, owningInstitutionBibId);
         HoldingsEntity holdingsEntity = getHoldingsEntity();
         ItemEntity itemEntity = getItemEntity("843617540");
         List<BibliographicEntity> bibliographicEntitylist = new LinkedList(Arrays.asList(bibliographicEntity));
@@ -431,7 +432,7 @@ public class SharedCollectionRestControllerUT extends BaseTestCaseUT {
         return bibliographicEntity;
     }
 
-    private BibliographicEntity getBibliographicEntity(int bibliographicId,String owningInstitutionBibId) {
+    private BibliographicEntity getBibliographicEntity(int bibliographicId, String owningInstitutionBibId) {
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setId(bibliographicId);
         bibliographicEntity.setContent("Test".getBytes());

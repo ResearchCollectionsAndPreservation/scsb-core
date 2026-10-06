@@ -1,6 +1,6 @@
 package org.recap.controllerit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.recap.ScsbCommonConstants;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.jpa.HoldingsEntity;
@@ -12,17 +12,18 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class ItemControllerIT extends BaseControllerUT{
+public class ItemControllerIT extends BaseControllerUT {
 
     @Autowired
     BibliographicDetailsRepository bibliographicDetailsRepository;
@@ -31,7 +32,7 @@ public class ItemControllerIT extends BaseControllerUT{
     private EntityManager entityManager;
 
     @Test
-    public void findByBarcodeInAndComplete() throws Exception{
+    public void findByBarcodeInAndComplete() throws Exception {
         try {
             BibliographicEntity bibliographicEntity = getBibliographicEntity();
             MvcResult mvcResult = this.mockMvc.perform(get("/item/findByBarcodeIn")
@@ -43,7 +44,7 @@ public class ItemControllerIT extends BaseControllerUT{
             assertTrue(result.contains("32101086866140"));
             int status = mvcResult.getResponse().getStatus();
             assertTrue(status == 200);
-        }catch (ObjectOptimisticLockingFailureException e) {
+        } catch (ObjectOptimisticLockingFailureException e) {
             e.printStackTrace();
         }
 

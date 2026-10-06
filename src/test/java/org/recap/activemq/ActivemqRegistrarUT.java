@@ -1,13 +1,13 @@
 package org.recap.activemq;
 
 import org.apache.camel.CamelContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.recap.BaseTestCaseUT;
 
 import jakarta.jms.JMSException;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ActivemqRegistrarUT extends BaseTestCaseUT {
 
@@ -19,7 +19,7 @@ public class ActivemqRegistrarUT extends BaseTestCaseUT {
 
     @Test
     public void getActivemqRegistrar() throws JMSException {
-        ActivemqRegistrar activemqRegistrar = new ActivemqRegistrar(camelContext,defaultBrokerURL);
+        ActivemqRegistrar activemqRegistrar = new ActivemqRegistrar(camelContext, defaultBrokerURL);
         assertNotNull(activemqRegistrar);
     }
 }

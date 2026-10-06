@@ -2,7 +2,8 @@ package org.recap.service.accession;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcXmlReader;
 import org.marc4j.marc.Record;
@@ -23,8 +24,8 @@ import org.recap.util.AccessionUtil;
 import org.recap.util.MarcUtil;
 
 
-
 import jakarta.xml.bind.JAXBException;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -38,11 +39,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 /**
  * Created by premkb on 3/6/17.
@@ -78,31 +76,31 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
     OwnerCodeEntity ownerCodeEntity;
 
     @Test
-    public void validateBarcodeOrCustomerCode(){
+    public void validateBarcodeOrCustomerCode() {
         Mockito.when(accessionUtil.getOwningInstitution(Mockito.anyString(), Mockito.anyString())).thenReturn("").thenReturn("PUL");
-        AccessionValidationService.AccessionValidationResponse invalidBarcodeLength=accessionValidationService.validateBarcodeOrCustomerCode("12345123451234512345123451234512345123451234512345","PA","RECAP");
-        assertEquals(ScsbConstants.INVALID_BARCODE_LENGTH,invalidBarcodeLength.getMessage());
-        assertNull(invalidBarcodeLength.getOwningInstitution());
+        AccessionValidationService.AccessionValidationResponse invalidBarcodeLength = accessionValidationService.validateBarcodeOrCustomerCode("12345123451234512345123451234512345123451234512345", "PA", "RECAP");
+        assertEquals(ScsbConstants.INVALID_BARCODE_LENGTH, invalidBarcodeLength.getMessage());
+        Assertions.assertNull(invalidBarcodeLength.getOwningInstitution());
         assertFalse(invalidBarcodeLength.isValid());
 
-        AccessionValidationService.AccessionValidationResponse blankBarcode=accessionValidationService.validateBarcodeOrCustomerCode("","PA", "RECAP");
-        assertEquals(ScsbConstants.ITEM_BARCODE_EMPTY,blankBarcode.getMessage());
+        AccessionValidationService.AccessionValidationResponse blankBarcode = accessionValidationService.validateBarcodeOrCustomerCode("", "PA", "RECAP");
+        assertEquals(ScsbConstants.ITEM_BARCODE_EMPTY, blankBarcode.getMessage());
         assertNull(blankBarcode.getOwningInstitution());
         assertFalse(blankBarcode.isValid());
 
-        AccessionValidationService.AccessionValidationResponse customerCode=accessionValidationService.validateBarcodeOrCustomerCode("123456","PA", "RECAP");
-        assertEquals(ScsbCommonConstants.CUSTOMER_CODE_DOESNOT_EXIST,customerCode.getMessage());
+        AccessionValidationService.AccessionValidationResponse customerCode = accessionValidationService.validateBarcodeOrCustomerCode("123456", "PA", "RECAP");
+        assertEquals(ScsbCommonConstants.CUSTOMER_CODE_DOESNOT_EXIST, customerCode.getMessage());
         assertNull(customerCode.getOwningInstitution());
         assertFalse(customerCode.isValid());
 
-        AccessionValidationService.AccessionValidationResponse customerCodeEmpty=accessionValidationService.validateBarcodeOrCustomerCode("123456","","RECAP");
-        assertEquals(ScsbConstants.CUSTOMER_CODE_EMPTY,customerCodeEmpty.getMessage());
+        AccessionValidationService.AccessionValidationResponse customerCodeEmpty = accessionValidationService.validateBarcodeOrCustomerCode("123456", "", "RECAP");
+        assertEquals(ScsbConstants.CUSTOMER_CODE_EMPTY, customerCodeEmpty.getMessage());
         assertNull(customerCodeEmpty.getOwningInstitution());
         assertFalse(customerCodeEmpty.isValid());
 
-        AccessionValidationService.AccessionValidationResponse response=accessionValidationService.validateBarcodeOrCustomerCode("123456","PA", "RECAP");
-        assertEquals("",response.getMessage());
-        assertEquals("PUL",response.getOwningInstitution());
+        AccessionValidationService.AccessionValidationResponse response = accessionValidationService.validateBarcodeOrCustomerCode("123456", "PA", "RECAP");
+        assertEquals("", response.getMessage());
+        assertEquals("PUL", response.getOwningInstitution());
         assertTrue(response.isValid());
     }
 
@@ -111,15 +109,15 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
         File bibContentFile = getXmlContent("ValidBoundWithMarc.xml");
         String marcXmlString = FileUtils.readFileToString(bibContentFile, "UTF-8");
         List<Record> records = readMarcXml(marcXmlString);
-        AccessionRequest accessionRequest=new AccessionRequest();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setItemBarcode("32101075852200");
         accessionRequest.setCustomerCode("PA");
         Mockito.when(ownerCodeDetailsRepository.findByOwnerCode(Mockito.anyString())).thenReturn(ownerCodeEntity);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
         imsLocationEntity.setId(1);
         Mockito.when(ownerCodeEntity.getInstitutionId()).thenReturn(1);
-        Mockito.when(ownerCodeDetailsRepository.findByOwnerCodeAndImsLocationId(Mockito.anyString(),Mockito.anyInt())).thenReturn(ownerCodeEntity);
-        boolean isValidBoundWithRecord = accessionValidationService.validateBoundWithMarcRecordFromIls(records,accessionRequest,imsLocationEntity);
+        Mockito.when(ownerCodeDetailsRepository.findByOwnerCodeAndImsLocationId(Mockito.anyString(), Mockito.anyInt())).thenReturn(ownerCodeEntity);
+        boolean isValidBoundWithRecord = accessionValidationService.validateBoundWithMarcRecordFromIls(records, accessionRequest, imsLocationEntity);
         assertTrue(isValidBoundWithRecord);
     }
 
@@ -128,19 +126,19 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
         File bibContentFile = getXmlContent("InvalidBoundWithMarc.xml");
         String marcXmlString = FileUtils.readFileToString(bibContentFile, "UTF-8");
         List<Record> records = readMarcXml(marcXmlString);
-        AccessionRequest accessionRequest=new AccessionRequest();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setItemBarcode("32101075852200");
         accessionRequest.setCustomerCode("PA");
         OwnerCodeEntity ownerCodeEntity = getOwnerCodeEntity();
-        HoldingsEntity holdingsEntity=new HoldingsEntity();
-        BibliographicEntity bibliographicEntity =   getBibliographicEntity("",marcXmlString);
+        HoldingsEntity holdingsEntity = new HoldingsEntity();
+        BibliographicEntity bibliographicEntity = getBibliographicEntity("", marcXmlString);
         holdingsEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
         Mockito.when(ownerCodeDetailsRepository.findByOwnerCode(Mockito.anyString())).thenReturn(ownerCodeEntity);
-        Mockito.when(holdingsDetailsRepository.findByOwningInstitutionHoldingsIdAndOwningInstitutionId(Mockito.anyString(),Mockito.anyInt())).thenReturn(holdingsEntity);
-        Mockito.when(marcUtil.getDataFieldValue(records.get(0),"876","","","0")).thenReturn("1");
+        Mockito.when(holdingsDetailsRepository.findByOwningInstitutionHoldingsIdAndOwningInstitutionId(Mockito.anyString(), Mockito.anyInt())).thenReturn(holdingsEntity);
+        Mockito.when(marcUtil.getDataFieldValue(records.get(0), "876", "", "", "0")).thenReturn("1");
         ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
         imsLocationEntity.setId(1);
-        boolean isValidBoundWithRecord = accessionValidationService.validateBoundWithMarcRecordFromIls(records,accessionRequest,imsLocationEntity);
+        boolean isValidBoundWithRecord = accessionValidationService.validateBoundWithMarcRecordFromIls(records, accessionRequest, imsLocationEntity);
         assertFalse(isValidBoundWithRecord);
     }
 
@@ -163,90 +161,91 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
         boolean isValidBoundWithRecord = accessionValidationService.validateBoundWithScsbRecordFromIls(bibRecordList);
         assertFalse(isValidBoundWithRecord);
     }
+
     @Test
     public void validateValidHoldingRecord() throws Exception {
-        BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem("32456723441256","PA","24252","PUL","9919400","74534419");
+        BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem("32456723441256", "PA", "24252", "PUL", "9919400", "74534419");
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("32101095533293");
         StringBuilder errorMessage = new StringBuilder();
         OwnerCodeEntity ownerCodeEntity = getOwnerCodeEntity();
         Mockito.when(ownerCodeDetailsRepository.findByOwnerCode(Mockito.anyString())).thenReturn(ownerCodeEntity);
-        Mockito.when(holdingsDetailsRepository.findByOwningInstitutionHoldingsIdAndOwningInstitutionId(Mockito.anyString(),Mockito.anyInt())).thenReturn(bibliographicEntity.getHoldingsEntities().get(0));
-        boolean isValid = accessionValidationService.validateItemAndHolding(bibliographicEntity,false,false,errorMessage);
+        Mockito.when(holdingsDetailsRepository.findByOwningInstitutionHoldingsIdAndOwningInstitutionId(Mockito.anyString(), Mockito.anyInt())).thenReturn(bibliographicEntity.getHoldingsEntities().get(0));
+        boolean isValid = accessionValidationService.validateItemAndHolding(bibliographicEntity, false, false, errorMessage);
         assertTrue(isValid);
     }
 
     @Test
     public void validateInvalidHoldingRecordBoundwith() throws Exception {
-        BibliographicEntity bibliographicEntity = saveMultiBibSingleHoldingsSingleItem("32456723441256","CU","24252","PUL","9919401","7453441");
+        BibliographicEntity bibliographicEntity = saveMultiBibSingleHoldingsSingleItem("32456723441256", "CU", "24252", "PUL", "9919401", "7453441");
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("32101095533293");
         StringBuilder errorMessage = new StringBuilder();
-        Mockito.when(holdingsDetailsRepository.findByOwningInstitutionHoldingsIdAndOwningInstitutionId(Mockito.anyString(),Mockito.anyInt())).thenReturn(bibliographicEntity.getHoldingsEntities().get(0));
-        boolean isValid = accessionValidationService.validateHolding(bibliographicEntity,false,false,errorMessage);
+        Mockito.when(holdingsDetailsRepository.findByOwningInstitutionHoldingsIdAndOwningInstitutionId(Mockito.anyString(), Mockito.anyInt())).thenReturn(bibliographicEntity.getHoldingsEntities().get(0));
+        boolean isValid = accessionValidationService.validateHolding(bibliographicEntity, false, false, errorMessage);
         assertTrue(isValid);
     }
 
     @Test
     public void validateInvalidHoldingRecordNonBoundwith() throws Exception {
-        BibliographicEntity bibliographicEntity = saveBibHoldingsItems("32456723441256","PA","24252","PUL","9919401","6224132","7453441");
-        BibliographicEntity bibliographicEntity1 = saveBibHoldingsItems("32456723441256","PA","24252","PUL","99194011","6224132","7453441");
+        BibliographicEntity bibliographicEntity = saveBibHoldingsItems("32456723441256", "PA", "24252", "PUL", "9919401", "6224132", "7453441");
+        BibliographicEntity bibliographicEntity1 = saveBibHoldingsItems("32456723441256", "PA", "24252", "PUL", "99194011", "6224132", "7453441");
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("32101075852200");
         StringBuilder errorMessage = new StringBuilder();
-        Mockito.when(holdingsDetailsRepository.findByOwningInstitutionHoldingsIdAndOwningInstitutionId(Mockito.anyString(),Mockito.anyInt())).thenReturn(bibliographicEntity1.getHoldingsEntities().get(0));
-        boolean isValid = accessionValidationService.validateHolding(bibliographicEntity,true,true,errorMessage);
+        Mockito.when(holdingsDetailsRepository.findByOwningInstitutionHoldingsIdAndOwningInstitutionId(Mockito.anyString(), Mockito.anyInt())).thenReturn(bibliographicEntity1.getHoldingsEntities().get(0));
+        boolean isValid = accessionValidationService.validateHolding(bibliographicEntity, true, true, errorMessage);
         assertFalse(isValid);
     }
 
     @Test
     public void validateInvalidItemRecord() throws Exception {
-        BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem("32456723441256","PA","24252","PUL","991940","74534419");
+        BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem("32456723441256", "PA", "24252", "PUL", "991940", "74534419");
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("32101095533293");
         StringBuilder errorMessage = new StringBuilder();
-        Mockito.when(itemDetailsRepository.findByOwningInstitutionItemIdAndOwningInstitutionId(Mockito.anyString(),Mockito.anyInt())).thenReturn(bibliographicEntity.getItemEntities().get(0));
-        boolean isValid = accessionValidationService.validateItem(bibliographicEntity,false,false,errorMessage);
+        Mockito.when(itemDetailsRepository.findByOwningInstitutionItemIdAndOwningInstitutionId(Mockito.anyString(), Mockito.anyInt())).thenReturn(bibliographicEntity.getItemEntities().get(0));
+        boolean isValid = accessionValidationService.validateItem(bibliographicEntity, false, false, errorMessage);
         assertFalse(isValid);
-     }
+    }
 
     @Test
     public void validatevalidItemRecord() throws Exception {
-        BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem("32456723441256","PA","24252","PUL","9919400","7453441");
+        BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem("32456723441256", "PA", "24252", "PUL", "9919400", "7453441");
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("32101095533293");
         StringBuilder errorMessage = new StringBuilder();
-        boolean isValid = accessionValidationService.validateItem(bibliographicEntity,false,false,errorMessage);
+        boolean isValid = accessionValidationService.validateItem(bibliographicEntity, false, false, errorMessage);
         assertTrue(isValid);
     }
 
     @Test
     public void validateImsLocationCode() throws Exception {
-        Mockito.when(imsLocationDetailsRepository.findByImsLocationCode("RECAP")).thenReturn(TestUtil.getImsLocationEntity(1,"RECAP","RECAP"));
-        AccessionValidationService.AccessionValidationResponse accessionValidationResponse= accessionValidationService.validateImsLocationCode("RECAP");
+        Mockito.when(imsLocationDetailsRepository.findByImsLocationCode("RECAP")).thenReturn(TestUtil.getImsLocationEntity(1, "RECAP", "RECAP"));
+        AccessionValidationService.AccessionValidationResponse accessionValidationResponse = accessionValidationService.validateImsLocationCode("RECAP");
         assertNotNull(accessionValidationResponse.getImsLocationEntity());
-        assertEquals("RECAP",accessionValidationResponse.getImsLocationEntity().getImsLocationCode());
+        assertEquals("RECAP", accessionValidationResponse.getImsLocationEntity().getImsLocationCode());
     }
 
     @Test
     public void validateInvalidImsLocationCode() throws Exception {
-        AccessionValidationService.AccessionValidationResponse accessionValidationResponse= accessionValidationService.validateImsLocationCode("test");
-        assertEquals(ScsbConstants.INVALID_IMS_LOCACTION_CODE,accessionValidationResponse.getMessage());
+        AccessionValidationService.AccessionValidationResponse accessionValidationResponse = accessionValidationService.validateImsLocationCode("test");
+        assertEquals(ScsbConstants.INVALID_IMS_LOCACTION_CODE, accessionValidationResponse.getMessage());
     }
 
     @Test
     public void validateBlankImsLocationCode() throws Exception {
-        AccessionValidationService.AccessionValidationResponse accessionValidationResponse= accessionValidationService.validateImsLocationCode("");
-        assertEquals(ScsbConstants.IMS_LOCACTION_CODE_IS_BLANK,accessionValidationResponse.getMessage());
+        AccessionValidationService.AccessionValidationResponse accessionValidationResponse = accessionValidationService.validateImsLocationCode("");
+        assertEquals(ScsbConstants.IMS_LOCACTION_CODE_IS_BLANK, accessionValidationResponse.getMessage());
     }
 
     private OwnerCodeEntity getOwnerCodeEntity() {
-        OwnerCodeEntity ownerCodeEntity=new OwnerCodeEntity();
+        OwnerCodeEntity ownerCodeEntity = new OwnerCodeEntity();
         ownerCodeEntity.setOwnerCode("PA");
         ownerCodeEntity.setDescription("PRINCETON");
         ownerCodeEntity.setInstitutionId(1);
@@ -254,7 +253,7 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
     }
 
     private InstitutionEntity getInstitutionEntity() {
-        InstitutionEntity institutionEntity=new InstitutionEntity();
+        InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setInstitutionCode("CUL");
         institutionEntity.setInstitutionName("Columbia");
         institutionEntity.setId(2);
@@ -284,7 +283,7 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
         return bibRecords.getBibRecordList();
     }
 
-    public BibliographicEntity saveBibHoldingsItems( String itemBarcode, String customerCode, String callnumber, String institution, String owningInstBibId, String owningInstHoldingId, String owningInstItemId) throws Exception {
+    public BibliographicEntity saveBibHoldingsItems(String itemBarcode, String customerCode, String callnumber, String institution, String owningInstBibId, String owningInstHoldingId, String owningInstItemId) throws Exception {
         File bibContentFile = getBibContentFile(institution);
         File holdingsContentFile = getHoldingsContentFile(institution);
         String sourceBibContent = FileUtils.readFileToString(bibContentFile, "UTF-8");
@@ -310,7 +309,7 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
         holdingsEntity.setOwningInstitutionHoldingsId(String.valueOf(owningInstHoldingId));
         List<HoldingsEntity> holdingsEntitylist = new LinkedList(Arrays.asList(holdingsEntity));
 
-        ItemEntity itemEntity = getItemEntity(itemBarcode,customerCode,callnumber,owningInstItemId);
+        ItemEntity itemEntity = getItemEntity(itemBarcode, customerCode, callnumber, owningInstItemId);
         List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity));
 
         holdingsEntity.setBibliographicEntities(bibliographicEntitylist);
@@ -323,7 +322,7 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
 
     }
 
-    public BibliographicEntity saveBibSingleHoldingsSingleItem(String itemBarcode, String customerCode, String callnumber, String institution,String owningInstBibId, String owningInstItemId) throws Exception {
+    public BibliographicEntity saveBibSingleHoldingsSingleItem(String itemBarcode, String customerCode, String callnumber, String institution, String owningInstBibId, String owningInstItemId) throws Exception {
         File bibContentFile = getBibContentFile(institution);
         File holdingsContentFile = getHoldingsContentFile(institution);
         String sourceBibContent = FileUtils.readFileToString(bibContentFile, "UTF-8");
@@ -344,7 +343,7 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
         List<HoldingsEntity> holdingsEntitylist = new LinkedList(Arrays.asList(holdingsEntity));
 
 
-        ItemEntity itemEntity = getItemEntity(itemBarcode,customerCode,callnumber,owningInstItemId);
+        ItemEntity itemEntity = getItemEntity(itemBarcode, customerCode, callnumber, owningInstItemId);
         List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity));
 
 
@@ -359,7 +358,7 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
 
     }
 
-    public BibliographicEntity saveMultiBibSingleHoldingsSingleItem(String itemBarcode, String customerCode, String callnumber, String institution,String owningInstBibId, String owningInstItemId) throws Exception {
+    public BibliographicEntity saveMultiBibSingleHoldingsSingleItem(String itemBarcode, String customerCode, String callnumber, String institution, String owningInstBibId, String owningInstItemId) throws Exception {
         File bibContentFile = getBibContentFile(institution);
         File holdingsContentFile = getHoldingsContentFile(institution);
         String sourceBibContent = FileUtils.readFileToString(bibContentFile, "UTF-8");
@@ -384,7 +383,7 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
         List<HoldingsEntity> holdingsEntitylist = new LinkedList(Arrays.asList(holdingsEntity));
 
 
-        ItemEntity itemEntity = getItemEntity(itemBarcode,customerCode,callnumber,owningInstItemId);
+        ItemEntity itemEntity = getItemEntity(itemBarcode, customerCode, callnumber, owningInstItemId);
         List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity));
 
 
@@ -411,7 +410,7 @@ public class AccessionValidationServiceUT extends BaseTestCaseUT {
         return bibliographicEntity;
     }
 
-    public ItemEntity getItemEntity(String itemBarcode,String customerCode,String callnumber,String owningInstItemId){
+    public ItemEntity getItemEntity(String itemBarcode, String customerCode, String callnumber, String owningInstItemId) {
         Random random = new Random();
         ItemEntity itemEntity = new ItemEntity();
         itemEntity.setLastUpdatedDate(new Date());

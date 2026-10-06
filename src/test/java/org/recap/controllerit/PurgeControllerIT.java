@@ -1,6 +1,6 @@
 package org.recap.controllerit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.recap.ScsbCommonConstants;
 import org.recap.model.jpa.BibliographicEntity;
 import org.recap.model.jpa.HoldingsEntity;
@@ -19,16 +19,17 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class PurgeControllerIT extends BaseControllerUT{
+public class PurgeControllerIT extends BaseControllerUT {
 
     @Autowired
     BibliographicDetailsRepository bibliographicDetailsRepository;
@@ -49,10 +50,10 @@ public class PurgeControllerIT extends BaseControllerUT{
     InstitutionDetailsRepository institutionDetailsRepository;
 
     @Test
-    public void testPurgeEmailAddress() throws Exception{
-        RequestItemEntity requestItemEntity=createRequestItem();
+    public void testPurgeEmailAddress() throws Exception {
+        RequestItemEntity requestItemEntity = createRequestItem();
         MvcResult mvcResult = this.mockMvc.perform(get("/purge/purgeEmailAddress")
-        ).andExpect(status().isOk())
+                ).andExpect(status().isOk())
                 .andReturn();
         String result = mvcResult.getResponse().getContentAsString();
         assertNotNull(result);
@@ -62,10 +63,10 @@ public class PurgeControllerIT extends BaseControllerUT{
     }
 
     @Test
-    public void testPurgeExceptionRequests() throws Exception{
-        RequestItemEntity requestItemEntity=createRequestItem();
+    public void testPurgeExceptionRequests() throws Exception {
+        RequestItemEntity requestItemEntity = createRequestItem();
         MvcResult mvcResult = this.mockMvc.perform(get("/purge/purgeExceptionRequests")
-        ).andExpect(status().isOk())
+                ).andExpect(status().isOk())
                 .andReturn();
         String result = mvcResult.getResponse().getContentAsString();
         assertNotNull(result);
@@ -75,10 +76,10 @@ public class PurgeControllerIT extends BaseControllerUT{
     }
 
     @Test
-    public void testPurgeAccessionRequests() throws Exception{
-        RequestItemEntity requestItemEntity=createRequestItem();
+    public void testPurgeAccessionRequests() throws Exception {
+        RequestItemEntity requestItemEntity = createRequestItem();
         MvcResult mvcResult = this.mockMvc.perform(get("/purge/purgeAccessionRequests")
-        ).andExpect(status().isOk())
+                ).andExpect(status().isOk())
                 .andReturn();
         String result = mvcResult.getResponse().getContentAsString();
         assertNotNull(result);
@@ -87,7 +88,7 @@ public class PurgeControllerIT extends BaseControllerUT{
         assertTrue(result.contains(ScsbCommonConstants.SUCCESS));
     }
 
-    private RequestItemEntity createRequestItem(){
+    private RequestItemEntity createRequestItem() {
         InstitutionEntity institutionEntity = institutionDetailsRepository.findByInstitutionCode("PUL");
 
         BibliographicEntity bibliographicEntity = saveBibSingleHoldingsSingleItem();
@@ -116,7 +117,7 @@ public class PurgeControllerIT extends BaseControllerUT{
         return requestItemEntity;
     }
 
-    private BibliographicEntity saveBibSingleHoldingsSingleItem(){
+    private BibliographicEntity saveBibSingleHoldingsSingleItem() {
         Random random = new Random();
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setContent("mock Content".getBytes());

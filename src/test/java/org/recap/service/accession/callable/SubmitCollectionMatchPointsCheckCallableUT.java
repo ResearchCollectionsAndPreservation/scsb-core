@@ -1,7 +1,7 @@
 package org.recap.service.accession.callable;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -15,7 +15,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 
@@ -42,7 +42,7 @@ public class SubmitCollectionMatchPointsCheckCallableUT extends BaseTestCaseUT {
     Map<Integer, String> collectionGroupIdCodeMap = new HashMap<>();
     Map<Integer, String> itemStatusIdCodeMap = new HashMap<>();
 
-    @Before
+    @BeforeEach
     public void setup() {
         ReflectionTestUtils.setField(submitCollectionMatchPointsCheckCallable, "fetchedBibId", fetchedBibId);
         ReflectionTestUtils.setField(submitCollectionMatchPointsCheckCallable, "fetchedBibMAQualifier", fetchedBibMAQualifier);
@@ -119,25 +119,25 @@ public class SubmitCollectionMatchPointsCheckCallableUT extends BaseTestCaseUT {
     }
 
     @Test
-    public void setBibIdsByMatchingIdToMap(){
+    public void setBibIdsByMatchingIdToMap() {
         int maQualifier = ScsbCommonConstants.MA_QUALIFIER_1;
         Set<Integer> bibIds = new HashSet<>();
         bibIds.add(1);
         Map<Integer, Set<Integer>> responseMap = new HashMap<>();
-        responseMap.put(1,bibIds);
+        responseMap.put(1, bibIds);
         Mockito.when(bibliographicDetailsRepository.findIdByMatchingIdentity(any())).thenReturn(bibIds);
-        ReflectionTestUtils.invokeMethod(submitCollectionMatchPointsCheckCallable,"setBibIdsByMatchingIdToMap",maQualifier,responseMap,bibIds);
+        ReflectionTestUtils.invokeMethod(submitCollectionMatchPointsCheckCallable, "setBibIdsByMatchingIdToMap", maQualifier, responseMap, bibIds);
     }
 
     @Test
-    public void setBibIdsByMatchingIdToMapMA_QUALIFIER_2(){
+    public void setBibIdsByMatchingIdToMapMA_QUALIFIER_2() {
         int maQualifier = ScsbCommonConstants.MA_QUALIFIER_2;
         Set<Integer> bibIds = new HashSet<>();
         bibIds.add(1);
         Map<Integer, Set<Integer>> responseMap = new HashMap<>();
-        responseMap.put(2,bibIds);
+        responseMap.put(2, bibIds);
         ReflectionTestUtils.setField(submitCollectionMatchPointsCheckCallable, "fetchedBibMAQualifier", 0);
         Mockito.when(bibliographicDetailsRepository.findIdByMatchingIdentity(any())).thenReturn(bibIds);
-        ReflectionTestUtils.invokeMethod(submitCollectionMatchPointsCheckCallable,"setBibIdsByMatchingIdToMap",maQualifier,responseMap,bibIds);
+        ReflectionTestUtils.invokeMethod(submitCollectionMatchPointsCheckCallable, "setBibIdsByMatchingIdToMap", maQualifier, responseMap, bibIds);
     }
 }

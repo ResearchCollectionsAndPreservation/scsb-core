@@ -1,7 +1,7 @@
 package org.recap.service;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -25,7 +25,7 @@ public class SolrDocIndexServiceUT extends BaseTestCaseUT {
     @Value("${" + PropertyKeyConstants.SCSB_SOLR_DOC_URL + "}")
     private String scsbSolrDocUrl;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         ReflectionTestUtils.setField(solrDocIndexService, "scsbSolrDocUrl", scsbSolrDocUrl);
     }

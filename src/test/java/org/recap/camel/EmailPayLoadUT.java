@@ -1,11 +1,11 @@
 package org.recap.camel;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.recap.BaseTestCaseUT;
 
 public class EmailPayLoadUT extends BaseTestCaseUT {
     @Test
-    public  void testEmailPayLoad(){
+    public void testEmailPayLoad() {
         EmailPayLoad emailPayLoad = new EmailPayLoad();
         emailPayLoad.setItemBarcode("123456");
         emailPayLoad.setCustomerCode("PA");

@@ -2,13 +2,14 @@ package org.recap.service.accession;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.recap.BaseTestCaseUT;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AccessionJobProcessorUT extends BaseTestCaseUT {
 
@@ -28,7 +29,7 @@ public class AccessionJobProcessorUT extends BaseTestCaseUT {
     public void testcaughtException() throws Exception {
         Mockito.when(exchange.getProperty(Exchange.EXCEPTION_CAUGHT)).thenReturn(exception);
         accessionJobProcessor.caughtException(exchange);
-        assertTrue(true);
+        Assertions.assertTrue(true);
     }
 
     @Test

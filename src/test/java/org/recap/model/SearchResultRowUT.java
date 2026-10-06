@@ -1,6 +1,6 @@
 package org.recap.model;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.recap.BaseTestCaseUT;
 import org.recap.model.jpa.SearchItemResultRow;
 import org.recap.model.jpa.SearchResultRow;
@@ -8,8 +8,9 @@ import org.recap.model.jpa.SearchResultRow;
 import java.util.Arrays;
 import java.util.Date;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * Created by hemalathas on 14/3/17.
@@ -17,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 public class SearchResultRowUT extends BaseTestCaseUT {
 
     @Test
-    public void testSearchResultRow(){
+    public void testSearchResultRow() {
         SearchResultRow searchResultRow = new SearchResultRow();
         searchResultRow.setBarcode("36598741256398");
         searchResultRow.setSearchItemResultRows(Arrays.asList(new SearchItemResultRow()));

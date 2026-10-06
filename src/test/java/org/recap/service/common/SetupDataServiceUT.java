@@ -1,7 +1,7 @@
 package org.recap.service.common;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -19,8 +19,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Created by premkb on 18/6/17.
@@ -43,90 +43,91 @@ public class SetupDataServiceUT extends BaseTestCaseUT {
     @Mock
     CollectionGroupDetailsRepository collectionGroupDetailsRepository;
 
-    @Before
-    public  void setup(){
+    @BeforeEach
+    public void setup() {
         MockitoAnnotations.initMocks(this);
     }
+
     @Test
-    public void getItemStatusIdCodeMap(){
+    public void getItemStatusIdCodeMap() {
         ItemStatusEntity itemStatusEntity = getItemStatusEntity();
         Mockito.when(repositoryService.getItemStatusDetailsRepository()).thenReturn(itemStatusDetailsRepository);
         Mockito.when(repositoryService.getItemStatusDetailsRepository().findAll()).thenReturn(Arrays.asList(itemStatusEntity));
-        Map<Integer,String> itemStatusIdCodeMap = setupDataService.getItemStatusIdCodeMap();
+        Map<Integer, String> itemStatusIdCodeMap = setupDataService.getItemStatusIdCodeMap();
         assertNotNull(itemStatusIdCodeMap);
         String itemStatusCode = itemStatusIdCodeMap.get(1);
-        assertEquals(ScsbCommonConstants.AVAILABLE,itemStatusCode);
+        assertEquals(ScsbCommonConstants.AVAILABLE, itemStatusCode);
     }
 
     @Test
-    public void getItemStatusIdCodeMapException(){
+    public void getItemStatusIdCodeMapException() {
         Mockito.when(repositoryService.getItemStatusDetailsRepository()).thenReturn(itemStatusDetailsRepository);
         Mockito.when(repositoryService.getItemStatusDetailsRepository().findAll()).thenThrow(NullPointerException.class);
-        Map<Integer,String> itemStatusIdCodeMap = setupDataService.getItemStatusIdCodeMap();
+        Map<Integer, String> itemStatusIdCodeMap = setupDataService.getItemStatusIdCodeMap();
         assertNotNull(itemStatusIdCodeMap);
     }
 
     @Test
-    public void getItemStatusCodeIdMap(){
+    public void getItemStatusCodeIdMap() {
         ItemStatusEntity itemStatusEntity = getItemStatusEntity();
         Mockito.when(repositoryService.getItemStatusDetailsRepository()).thenReturn(itemStatusDetailsRepository);
         Mockito.when(repositoryService.getItemStatusDetailsRepository().findAll()).thenReturn(Arrays.asList(itemStatusEntity));
-        Map<String,Integer> itemStatusCodeIdMap = setupDataService.getItemStatusCodeIdMap();
+        Map<String, Integer> itemStatusCodeIdMap = setupDataService.getItemStatusCodeIdMap();
         assertNotNull(itemStatusCodeIdMap);
         Integer itemStatusId = itemStatusCodeIdMap.get(ScsbCommonConstants.AVAILABLE);
-        assertEquals(Integer.valueOf(1),itemStatusId);
+        assertEquals(Integer.valueOf(1), itemStatusId);
     }
 
     @Test
-    public void getItemStatusCodeIdMapException(){
+    public void getItemStatusCodeIdMapException() {
         Mockito.when(repositoryService.getItemStatusDetailsRepository()).thenReturn(itemStatusDetailsRepository);
         Mockito.when(repositoryService.getItemStatusDetailsRepository().findAll()).thenThrow(NullPointerException.class);
-        Map<String,Integer> itemStatusCodeIdMap = setupDataService.getItemStatusCodeIdMap();
+        Map<String, Integer> itemStatusCodeIdMap = setupDataService.getItemStatusCodeIdMap();
         assertNotNull(itemStatusCodeIdMap);
     }
 
 
     @Test
-    public void getInstitutionIdCodeMap(){
+    public void getInstitutionIdCodeMap() {
         InstitutionEntity institutionEntity = getInstitutionEntity();
         Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenReturn(mockInstitutionDetailsRepository);
         Mockito.when(repositoryService.getInstitutionDetailsRepository().findAll()).thenReturn(Arrays.asList(institutionEntity));
-        Map<Integer,String> institutionEntityMap = setupDataService.getInstitutionIdCodeMap();
+        Map<Integer, String> institutionEntityMap = setupDataService.getInstitutionIdCodeMap();
         assertNotNull(institutionEntityMap);
         String itemStatusCode = institutionEntityMap.get(1);
-        assertEquals(ScsbCommonConstants.PRINCETON,itemStatusCode);
+        assertEquals(ScsbCommonConstants.PRINCETON, itemStatusCode);
     }
 
     @Test
-    public void getInstitutionIdCodeMapException(){
+    public void getInstitutionIdCodeMapException() {
         Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenReturn(mockInstitutionDetailsRepository);
         Mockito.when(repositoryService.getInstitutionDetailsRepository().findAll()).thenThrow(NullPointerException.class);
-        Map<Integer,String> institutionEntityMap = setupDataService.getInstitutionIdCodeMap();
+        Map<Integer, String> institutionEntityMap = setupDataService.getInstitutionIdCodeMap();
         assertNotNull(institutionEntityMap);
     }
 
 
     @Test
-    public void getInstitutionCodeIdMap(){
+    public void getInstitutionCodeIdMap() {
         InstitutionEntity institutionEntity = getInstitutionEntity();
         Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenReturn(mockInstitutionDetailsRepository);
         Mockito.when(repositoryService.getInstitutionDetailsRepository().findAll()).thenReturn(Arrays.asList(institutionEntity));
-        Map<String,Integer> institutionEntityMapId = setupDataService.getInstitutionCodeIdMap();
+        Map<String, Integer> institutionEntityMapId = setupDataService.getInstitutionCodeIdMap();
         assertNotNull(institutionEntityMapId);
         Integer itemStatusId = institutionEntityMapId.get(ScsbCommonConstants.PRINCETON);
-        assertEquals(Integer.valueOf(1),itemStatusId);
+        assertEquals(Integer.valueOf(1), itemStatusId);
     }
 
     @Test
-    public void getInstitutionCodeIdMapException(){
+    public void getInstitutionCodeIdMapException() {
         Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenReturn(mockInstitutionDetailsRepository);
         Mockito.when(repositoryService.getInstitutionDetailsRepository().findAll()).thenThrow(NullPointerException.class);
-        Map<String,Integer> institutionEntityMapId = setupDataService.getInstitutionCodeIdMap();
+        Map<String, Integer> institutionEntityMapId = setupDataService.getInstitutionCodeIdMap();
         assertNotNull(institutionEntityMapId);
     }
 
     @Test
-    public void getCollectionGroupIdCodeMap(){
+    public void getCollectionGroupIdCodeMap() {
         CollectionGroupEntity collectionGroupEntity = getCollectionGroupEntity();
         Mockito.when(repositoryService.getCollectionGroupDetailsRepository()).thenReturn(collectionGroupDetailsRepository);
         Mockito.when(repositoryService.getCollectionGroupDetailsRepository().findAll()).thenReturn(Arrays.asList(collectionGroupEntity));
@@ -135,27 +136,27 @@ public class SetupDataServiceUT extends BaseTestCaseUT {
     }
 
     @Test
-    public void getCollectionGroupIdCodeMapException(){
+    public void getCollectionGroupIdCodeMapException() {
         Mockito.when(repositoryService.getCollectionGroupDetailsRepository()).thenReturn(collectionGroupDetailsRepository);
         Mockito.when(repositoryService.getCollectionGroupDetailsRepository().findAll()).thenThrow(NullPointerException.class);
-        Map<Integer,String> collectionGroupMap = setupDataService.getCollectionGroupIdCodeMap();
+        Map<Integer, String> collectionGroupMap = setupDataService.getCollectionGroupIdCodeMap();
         assertNotNull(collectionGroupMap);
     }
 
     @Test
-    public void getCollectionGroupMap(){
+    public void getCollectionGroupMap() {
         CollectionGroupEntity collectionGroupEntity = getCollectionGroupEntity();
         Mockito.when(repositoryService.getCollectionGroupDetailsRepository()).thenReturn(collectionGroupDetailsRepository);
         Mockito.when(repositoryService.getCollectionGroupDetailsRepository().findAll()).thenReturn(Arrays.asList(collectionGroupEntity));
-        Map<String,Integer> collectionGroupMap = setupDataService.getCollectionGroupMap();
+        Map<String, Integer> collectionGroupMap = setupDataService.getCollectionGroupMap();
         assertNotNull(collectionGroupMap);
     }
 
     @Test
-    public void getCollectionGroupMapException(){
+    public void getCollectionGroupMapException() {
         Mockito.when(repositoryService.getCollectionGroupDetailsRepository()).thenReturn(collectionGroupDetailsRepository);
         Mockito.when(repositoryService.getCollectionGroupDetailsRepository().findAll()).thenThrow(NullPointerException.class);
-        Map<String,Integer> collectionGroupMap = setupDataService.getCollectionGroupMap();
+        Map<String, Integer> collectionGroupMap = setupDataService.getCollectionGroupMap();
         assertNotNull(collectionGroupMap);
     }
 
@@ -175,6 +176,7 @@ public class SetupDataServiceUT extends BaseTestCaseUT {
         itemStatusEntity.setStatusDescription("SUCCESS");
         return itemStatusEntity;
     }
+
     private InstitutionEntity getInstitutionEntity() {
         InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setId(1);

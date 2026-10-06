@@ -1,6 +1,7 @@
 package org.recap.converter;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.recap.BaseTestCaseUT;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -14,11 +15,12 @@ public class XmlToBibEntityConverterFactoryUT extends BaseTestCaseUT {
     XmlToBibEntityConverterFactory xmlToBibEntityConverterFactory;
 
     @Test
-    public void getConverter(){
+    public void getConverter() {
         List<AccessionXmlConverterAbstract> accessionXmlConverterAbstractList = new ArrayList<>();
-        ReflectionTestUtils.setField(xmlToBibEntityConverterFactory,"accessionXmlConverterAbstractList",accessionXmlConverterAbstractList);
+        ReflectionTestUtils.setField(xmlToBibEntityConverterFactory, "accessionXmlConverterAbstractList", accessionXmlConverterAbstractList);
         try {
             xmlToBibEntityConverterFactory.getConverter("test");
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
     }
 }

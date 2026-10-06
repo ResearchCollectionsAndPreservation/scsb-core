@@ -2,25 +2,22 @@ package org.recap.routebuilder;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.recap.controller.SharedCollectionRestController;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * @author Charan Raj C created on 02/11/23
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
 public class AccessionJobRouteBuilderUT {
-
-    @InjectMocks
-    AccessionJobRouteBuilder routeBuilder;
 
     private CamelContext camelContext;
 
@@ -30,18 +27,14 @@ public class AccessionJobRouteBuilderUT {
     @Mock
     SharedCollectionRestController sharedCollectionRestController;
 
-    @Before
+    @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         camelContext = new DefaultCamelContext();
     }
 
     @Test
-    public void accessionJobRouteTest(){
-        try {
-            Mockito.when(new AccessionJobRouteBuilder(camelContext, applicationContext,sharedCollectionRestController)).thenThrow(RuntimeException.class);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+    public void accessionJobRouteTest() {
+        new AccessionJobRouteBuilder(camelContext, applicationContext, sharedCollectionRestController);
     }
 }

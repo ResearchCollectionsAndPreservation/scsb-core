@@ -1,6 +1,7 @@
 package org.recap.util;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.marc4j.marc.Record;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -16,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Created by hemalathas on 23/3/17.

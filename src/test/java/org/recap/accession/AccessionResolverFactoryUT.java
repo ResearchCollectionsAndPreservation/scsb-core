@@ -1,6 +1,6 @@
 package org.recap.accession;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.recap.BaseTestCaseUT;
 import org.recap.service.accession.AccessionResolverAbstract;
@@ -16,11 +16,12 @@ public class AccessionResolverFactoryUT extends BaseTestCaseUT {
     AccessionResolverFactory accessionResolverFactory;
 
     @Test
-    public void getFormatResolver(){
+    public void getFormatResolver() {
         List<AccessionResolverAbstract> accessionResolverAbstractList = new ArrayList<>();
-        ReflectionTestUtils.setField(accessionResolverFactory,"accessionResolverAbstractList",accessionResolverAbstractList);
+        ReflectionTestUtils.setField(accessionResolverFactory, "accessionResolverAbstractList", accessionResolverAbstractList);
         try {
             accessionResolverFactory.getFormatResolver("test");
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
     }
 }

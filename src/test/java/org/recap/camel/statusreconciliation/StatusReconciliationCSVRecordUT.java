@@ -1,7 +1,7 @@
 package org.recap.camel.statusreconciliation;
 
 import org.apache.commons.lang3.time.DateUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.recap.BaseTestCaseUT;
 import org.recap.model.csv.StatusReconciliationCSVRecord;
 import org.recap.model.csv.StatusReconciliationErrorCSVRecord;
@@ -9,7 +9,8 @@ import org.recap.model.csv.StatusReconciliationErrorCSVRecord;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 
 /**
  * Created by hemalathas on 13/7/17.
@@ -17,7 +18,7 @@ import static org.junit.Assert.assertNotNull;
 public class StatusReconciliationCSVRecordUT extends BaseTestCaseUT {
 
     @Test
-    public void testStatusReconciliationCSVRecord(){
+    public void testStatusReconciliationCSVRecord() {
         StatusReconciliationCSVRecord statusReconciliationCSVRecord = new StatusReconciliationCSVRecord();
         StatusReconciliationErrorCSVRecord statusReconciliationErrorCSVRecord = new StatusReconciliationErrorCSVRecord();
         statusReconciliationCSVRecord.setBarcode("33245645454584");

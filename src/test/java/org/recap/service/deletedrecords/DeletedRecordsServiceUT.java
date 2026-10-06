@@ -1,6 +1,6 @@
 package org.recap.service.deletedrecords;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -9,8 +9,9 @@ import org.recap.ScsbConstants;
 import org.recap.repository.jpa.DeletedRecordsRepository;
 import org.recap.service.EmailService;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * Created by sudhishk on 5/6/17.
@@ -27,7 +28,7 @@ public class DeletedRecordsServiceUT extends BaseTestCaseUT {
     private EmailService emailService;
 
     @Test
-    public void testdeletedRecords(){
+    public void testdeletedRecords() {
         Long lCountDeleted = 12345678910L;
         Mockito.when(deletedRecordsRepository.countByDeletedReportedStatus(ScsbConstants.DELETED_STATUS_NOT_REPORTED)).thenReturn(lCountDeleted);
         Mockito.when(deletedRecordsRepository.updateDeletedReportedStatus(ScsbConstants.DELETED_STATUS_REPORTED, ScsbConstants.DELETED_STATUS_NOT_REPORTED)).thenReturn(1);
@@ -37,7 +38,7 @@ public class DeletedRecordsServiceUT extends BaseTestCaseUT {
     }
 
     @Test
-    public void testdeletedRecordsEmpty(){
+    public void testdeletedRecordsEmpty() {
         Long lCountDeleted = 0l;
         Mockito.when(deletedRecordsRepository.countByDeletedReportedStatus(ScsbConstants.DELETED_STATUS_NOT_REPORTED)).thenReturn(lCountDeleted);
         Mockito.when(deletedRecordsRepository.updateDeletedReportedStatus(ScsbConstants.DELETED_STATUS_REPORTED, ScsbConstants.DELETED_STATUS_NOT_REPORTED)).thenReturn(1);
@@ -47,7 +48,7 @@ public class DeletedRecordsServiceUT extends BaseTestCaseUT {
     }
 
     @Test
-    public void testdeletedRecordsException(){
+    public void testdeletedRecordsException() {
         Long lCountDeleted = 0l;
         Mockito.when(deletedRecordsRepository.countByDeletedReportedStatus(ScsbConstants.DELETED_STATUS_NOT_REPORTED)).thenThrow(NullPointerException.class);
         Mockito.when(deletedRecordsRepository.updateDeletedReportedStatus(ScsbConstants.DELETED_STATUS_REPORTED, ScsbConstants.DELETED_STATUS_NOT_REPORTED)).thenReturn(1);

@@ -1,7 +1,7 @@
 package org.recap.converter;
 
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -31,6 +31,7 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.JAXBIntrospector;
 import jakarta.xml.bind.Unmarshaller;
+
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -45,8 +46,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * Created by premkb on 15/12/16.
@@ -224,30 +226,31 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCaseUT {
             "</holdings>\n" +
             "</bibRecord>\n" +
             "</bibRecords>\n";
+
     @Test
     public void convert() throws Exception {
         BibRecords bibRecords = getBibRecords();
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("NA");
         accessionRequest.setItemBarcode("33433002031718");
-        Map collectionGroupMap=new HashMap();
-        collectionGroupMap.put("Shared",1);
-        Map<String, Object> holdingsMap=new HashMap<>();
-        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0));
+        Map collectionGroupMap = new HashMap();
+        collectionGroupMap.put("Shared", 1);
+        Map<String, Object> holdingsMap = new HashMap<>();
+        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186").getHoldingsEntities().get(0));
         Mockito.when(commonUtil.getInstitutionEntityMap()).thenReturn(getMap());
         Mockito.when(marcUtil.isSubFieldExists(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0), "245")).thenReturn(true);
-        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(3,".b100000186")).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186")));
-        Mockito.when(marcUtil.getInd1ForRecordType(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0),"852","h")).thenReturn("In Library Use");
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(3, ".b100000186")).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186")));
+        Mockito.when(marcUtil.getInd1ForRecordType(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0), "852", "h")).thenReturn("In Library Use");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "p")).thenReturn("33433002031718");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "a")).thenReturn(".i100000046");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "900", null, null, "a")).thenReturn("Shared");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "t")).thenReturn("1");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "h")).thenReturn("In Library Use");
         Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
-        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.anyString(),Mockito.anyString())).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0)));
-        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.any(),Mockito.any(),Mockito.any())).thenReturn(holdingsMap);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Map map = scsbToBibEntityConverter.convert(bibRecords.getBibRecordList().get(0), "NYPL",accessionRequest,imsLocationEntity);
+        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString())).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186").getHoldingsEntities().get(0)));
+        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(holdingsMap);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Map map = scsbToBibEntityConverter.convert(bibRecords.getBibRecordList().get(0), "NYPL", accessionRequest, imsLocationEntity);
         assertNotNull(map);
         BibliographicEntity bibliographicEntity = (BibliographicEntity) map.get("bibliographicEntity");
         assertNotNull(bibliographicEntity);
@@ -265,14 +268,14 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCaseUT {
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("NA");
         accessionRequest.setItemBarcode("33433002031718");
-        Map collectionGroupMap=new HashMap();
-        collectionGroupMap.put("Shared",1);
-        Map<String, Object> holdingsMap=new HashMap<>();
-        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0));
+        Map collectionGroupMap = new HashMap();
+        collectionGroupMap.put("Shared", 1);
+        Map<String, Object> holdingsMap = new HashMap<>();
+        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186").getHoldingsEntities().get(0));
         Mockito.when(commonUtil.getInstitutionEntityMap()).thenReturn(getMap());
         Mockito.when(marcUtil.isSubFieldExists(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0), "245")).thenReturn(true);
-        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(3,".b100000186")).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186")));
-        Mockito.when(marcUtil.getInd1ForRecordType(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0),"852","h")).thenReturn("In Library Use");
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(3, ".b100000186")).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186")));
+        Mockito.when(marcUtil.getInd1ForRecordType(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0), "852", "h")).thenReturn("In Library Use");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "p")).thenReturn("33433002031718");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "a")).thenReturn("");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "900", null, null, "a")).thenReturn("");
@@ -280,11 +283,11 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCaseUT {
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "h")).thenReturn(null);
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "k")).thenReturn("itemLibrary");
         Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
-        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.anyString(),Mockito.anyString())).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0)));
-        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.any(),Mockito.any(),Mockito.any())).thenReturn(holdingsMap);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString())).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186").getHoldingsEntities().get(0)));
+        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(holdingsMap);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
 
-        Map map = scsbToBibEntityConverter.convert(bibRecords.getBibRecordList().get(0), "NYPL",accessionRequest,imsLocationEntity);
+        Map map = scsbToBibEntityConverter.convert(bibRecords.getBibRecordList().get(0), "NYPL", accessionRequest, imsLocationEntity);
         assertNotNull(map);
     }
 
@@ -293,25 +296,25 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCaseUT {
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("NA");
         accessionRequest.setItemBarcode("33433002031718");
-        Map collectionGroupMap=new HashMap();
-        collectionGroupMap.put("Shared",1);
-        Map<String, Object> holdingsMap=new HashMap<>();
-        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0));
+        Map collectionGroupMap = new HashMap();
+        collectionGroupMap.put("Shared", 1);
+        Map<String, Object> holdingsMap = new HashMap<>();
+        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186").getHoldingsEntities().get(0));
         Mockito.when(commonUtil.getInstitutionEntityMap()).thenReturn(getMap());
-        List<Holdings> holdingsList=new ArrayList<>();
+        List<Holdings> holdingsList = new ArrayList<>();
         holdingsList.add(holdings);
         Mockito.when(bibRecord.getHoldings()).thenReturn(holdingsList);
         Mockito.when(bib.getOwningInstitutionBibId()).thenReturn(".b100000186");
         Mockito.when(bib.getContent()).thenReturn(bibContent);
         Mockito.when(bibContent.getCollection()).thenReturn(bibContentCollection);
         Mockito.when(bibRecord.getBib()).thenReturn(bib);
-        List<RecordType> record=new ArrayList<>();
+        List<RecordType> record = new ArrayList<>();
         record.add(recordType);
         Mockito.when(bibContentCollection.getRecord()).thenReturn(record);
         Mockito.when(bibContentCollection.serialize(Mockito.any())).thenReturn("bibXmlContent");
         Mockito.when(marcUtil.isSubFieldExists(recordType, "245")).thenReturn(true);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Map map = scsbToBibEntityConverter.convert(bibRecord, "NYPL",accessionRequest,imsLocationEntity);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Map map = scsbToBibEntityConverter.convert(bibRecord, "NYPL", accessionRequest, imsLocationEntity);
         assertNotNull(map);
     }
 
@@ -320,12 +323,12 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCaseUT {
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("NA");
         accessionRequest.setItemBarcode("33433002031718");
-        Map collectionGroupMap=new HashMap();
-        collectionGroupMap.put("Shared",1);
-        Map<String, Object> holdingsMap=new HashMap<>();
-        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0));
+        Map collectionGroupMap = new HashMap();
+        collectionGroupMap.put("Shared", 1);
+        Map<String, Object> holdingsMap = new HashMap<>();
+        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186").getHoldingsEntities().get(0));
         Mockito.when(commonUtil.getInstitutionEntityMap()).thenReturn(getMap());
-        List<Holdings> holdingsList=new ArrayList<>();
+        List<Holdings> holdingsList = new ArrayList<>();
         holdingsList.add(holdings);
         Mockito.when(holdings.getHolding()).thenReturn(null);
         Mockito.when(bibRecord.getHoldings()).thenReturn(holdingsList);
@@ -333,15 +336,15 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCaseUT {
         Mockito.when(bib.getContent()).thenReturn(bibContent);
         Mockito.when(bibContent.getCollection()).thenReturn(bibContentCollection);
         Mockito.when(bibRecord.getBib()).thenReturn(bib);
-        List<RecordType> record=new ArrayList<>();
+        List<RecordType> record = new ArrayList<>();
         record.add(recordType);
         Mockito.when(bibContentCollection.getRecord()).thenReturn(record);
         Mockito.when(bibContentCollection.serialize(Mockito.any())).thenReturn("bibXmlContent");
         Mockito.when(marcUtil.isSubFieldExists(recordType, "245")).thenReturn(true);
         Mockito.when(recordType.getLeader()).thenReturn(leader);
         Mockito.when(leader.getValue()).thenReturn("00777cam a2200229 i 4500");
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Map map = scsbToBibEntityConverter.convert(bibRecord, "NYPL",accessionRequest,imsLocationEntity);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Map map = scsbToBibEntityConverter.convert(bibRecord, "NYPL", accessionRequest, imsLocationEntity);
         assertNotNull(map);
     }
 
@@ -351,24 +354,24 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCaseUT {
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("NA");
         accessionRequest.setItemBarcode("");
-        Map collectionGroupMap=new HashMap();
-        collectionGroupMap.put("Shared",1);
-        Map<String, Object> holdingsMap=new HashMap<>();
-        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0));
+        Map collectionGroupMap = new HashMap();
+        collectionGroupMap.put("Shared", 1);
+        Map<String, Object> holdingsMap = new HashMap<>();
+        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186").getHoldingsEntities().get(0));
         Mockito.when(commonUtil.getInstitutionEntityMap()).thenReturn(getMap());
         Mockito.when(marcUtil.isSubFieldExists(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0), "245")).thenReturn(true);
-        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(3,".b100000186")).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186")));
-        Mockito.when(marcUtil.getInd1ForRecordType(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0),"852","h")).thenReturn("In Library Use");
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(3, ".b100000186")).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186")));
+        Mockito.when(marcUtil.getInd1ForRecordType(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0), "852", "h")).thenReturn("In Library Use");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "p")).thenReturn("");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "a")).thenReturn("");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "900", null, null, "a")).thenReturn("");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "t")).thenReturn("1");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "h")).thenReturn(null);
         Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
-        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.anyString(),Mockito.anyString())).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0)));
-        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.any(),Mockito.any(),Mockito.any())).thenReturn(holdingsMap);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Map map = scsbToBibEntityConverter.convert(bibRecords.getBibRecordList().get(0), "NYPL",accessionRequest,imsLocationEntity);
+        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString())).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186").getHoldingsEntities().get(0)));
+        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(holdingsMap);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Map map = scsbToBibEntityConverter.convert(bibRecords.getBibRecordList().get(0), "NYPL", accessionRequest, imsLocationEntity);
         assertNotNull(map);
     }
 
@@ -378,43 +381,43 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCaseUT {
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("NA");
         accessionRequest.setItemBarcode("33433002031718");
-        Map collectionGroupMap=new HashMap();
-        collectionGroupMap.put("Shared",1);
-        Map<String, Object> holdingsMap=new HashMap<>();
-        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0));
+        Map collectionGroupMap = new HashMap();
+        collectionGroupMap.put("Shared", 1);
+        Map<String, Object> holdingsMap = new HashMap<>();
+        holdingsMap.put("holdingsEntity", saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186").getHoldingsEntities().get(0));
         Mockito.when(commonUtil.getInstitutionEntityMap()).thenReturn(getMap());
         Mockito.when(marcUtil.isSubFieldExists(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0), "245")).thenReturn(true);
-        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(3,".b100000186")).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186")));
-        Mockito.when(marcUtil.getInd1ForRecordType(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0),"852","h")).thenReturn("In Library Use");
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(3, ".b100000186")).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186")));
+        Mockito.when(marcUtil.getInd1ForRecordType(bibRecords.getBibRecordList().get(0).getBib().getContent().getCollection().getRecord().get(0), "852", "h")).thenReturn("In Library Use");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "p")).thenReturn("");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "a")).thenReturn("");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "900", null, null, "a")).thenReturn("");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "t")).thenReturn("1");
         Mockito.when(marcUtil.getDataFieldValueForRecordType(bibRecords.getBibRecordList().get(0).getHoldings().get(0).getHolding().get(0).getItems().get(0).getContent().getCollection().getRecord().get(0), "876", null, null, "h")).thenReturn(null);
         Mockito.when(commonUtil.getCollectionGroupMap()).thenReturn(collectionGroupMap);
-        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(),Mockito.any(),Mockito.any(),Mockito.anyString(),Mockito.anyString())).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718","NA","NYPL",".b100000186").getHoldingsEntities().get(0)));
-        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.any(),Mockito.any(),Mockito.any())).thenReturn(holdingsMap);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Map map = scsbToBibEntityConverter.convert(bibRecords.getBibRecordList().get(0), "NYPL",accessionRequest,imsLocationEntity);
+        Mockito.when(commonUtil.buildHoldingsEntity(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString())).thenReturn((saveBibSingleHoldingsSingleItem("33433002031718", "NA", "NYPL", ".b100000186").getHoldingsEntities().get(0)));
+        Mockito.when(commonUtil.addHoldingsEntityToMap(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(holdingsMap);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Map map = scsbToBibEntityConverter.convert(bibRecords.getBibRecordList().get(0), "NYPL", accessionRequest, imsLocationEntity);
         assertNotNull(map);
     }
 
     private Map getMap() {
-        Map institutionEntityMap  = new HashMap();
-        institutionEntityMap.put("NYPL",3);
+        Map institutionEntityMap = new HashMap();
+        institutionEntityMap.put("NYPL", 3);
         return institutionEntityMap;
     }
 
     @Test
     public void getMarcUtil() throws Exception {
-        ReflectionTestUtils.setField(scsbToBibEntityConverter,"marcUtil",null);
-        MarcUtil marcUtil=scsbToBibEntityConverter.getMarcUtil();
+        ReflectionTestUtils.setField(scsbToBibEntityConverter, "marcUtil", null);
+        MarcUtil marcUtil = scsbToBibEntityConverter.getMarcUtil();
         assertNotNull(marcUtil);
     }
 
     @Test
     public void isFormat() throws Exception {
-        boolean format=scsbToBibEntityConverter.isFormat("SCSB");
+        boolean format = scsbToBibEntityConverter.isFormat("SCSB");
         assertTrue(format);
     }
 
@@ -423,23 +426,23 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCaseUT {
         AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("NA");
         accessionRequest.setItemBarcode("33433002031718");
-        Bib bib=new Bib();
+        Bib bib = new Bib();
         bib.setOwningInstitutionBibId("");
-        ContentType contentType=new ContentType();
+        ContentType contentType = new ContentType();
         contentType.setCollection(collectionType);
         Mockito.when(collectionType.serialize(Mockito.any())).thenReturn("");
         bib.setContent(contentType);
         Mockito.when(bibRecord.getBib()).thenReturn(bib);
-        RecordType recordType=new RecordType();
-        LeaderFieldType leaderFieldType=new LeaderFieldType();
+        RecordType recordType = new RecordType();
+        LeaderFieldType leaderFieldType = new LeaderFieldType();
         leaderFieldType.setValue("00777cam a2200229 i 45001");
         recordType.setLeader(leaderFieldType);
-        List<RecordType> recordTypes=new ArrayList<>();
+        List<RecordType> recordTypes = new ArrayList<>();
         recordTypes.add(recordType);
         Mockito.when(collectionType.getRecord()).thenReturn(recordTypes);
-        Mockito.when(marcUtil.isSubFieldExists(Mockito.any(RecordType.class),Mockito.anyString())).thenReturn(false);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Map map = scsbToBibEntityConverter.convert(bibRecord, "NYPL",accessionRequest,imsLocationEntity);
+        Mockito.when(marcUtil.isSubFieldExists(Mockito.any(RecordType.class), Mockito.anyString())).thenReturn(false);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Map map = scsbToBibEntityConverter.convert(bibRecord, "NYPL", accessionRequest, imsLocationEntity);
         assertNotNull(map);
     }
 
@@ -450,11 +453,11 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCaseUT {
         InputStream stream = new ByteArrayInputStream(scsbXmlContent.getBytes(StandardCharsets.UTF_8));
         XMLStreamReader xsr = xif.createXMLStreamReader(stream);
         Unmarshaller um = context.createUnmarshaller();
-        BibRecords   bibRecords = (BibRecords) JAXBIntrospector.getValue(um.unmarshal(xsr));
+        BibRecords bibRecords = (BibRecords) JAXBIntrospector.getValue(um.unmarshal(xsr));
         return bibRecords;
     }
 
-    public BibliographicEntity saveBibSingleHoldingsSingleItem(String itemBarcode, String customerCode, String institution,String owningInstBibId) throws Exception {
+    public BibliographicEntity saveBibSingleHoldingsSingleItem(String itemBarcode, String customerCode, String institution, String owningInstBibId) throws Exception {
 
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setContent("sourceBibContent".getBytes());
@@ -486,7 +489,8 @@ public class AccessionSCSBToBibEntityConverterUT extends BaseTestCaseUT {
         itemEntity.setCreatedDate(new Date());
         itemEntity.setCreatedBy("tst");
         itemEntity.setLastUpdatedBy("tst");
-        itemEntity.setItemAvailabilityStatusId(1);itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
+        itemEntity.setItemAvailabilityStatusId(1);
+        itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
         List<ItemEntity> itemEntitylist = new LinkedList(Arrays.asList(itemEntity));
         holdingsEntity.setItemEntities(itemEntitylist);

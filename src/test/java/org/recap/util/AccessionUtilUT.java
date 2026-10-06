@@ -1,8 +1,7 @@
 package org.recap.util;
 
 import org.apache.camel.ProducerTemplate;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.marc4j.marc.Leader;
 import org.marc4j.marc.Record;
 import org.mockito.InjectMocks;
@@ -35,10 +34,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 
-public class AccessionUtilUT extends BaseTestCaseUT{
+public class AccessionUtilUT extends BaseTestCaseUT {
 
     @InjectMocks
     AccessionUtil accessionUtil;
@@ -114,81 +113,81 @@ public class AccessionUtilUT extends BaseTestCaseUT{
 
 
     @Test
-    public void processAndValidateBibliographicEntitysuccessBibCount(){
-        StringBuilder errorMessage=new StringBuilder();
-        Mockito.when(marcUtil.getControlFieldValue(any(),Mockito.anyString())).thenReturn("111");
+    public void processAndValidateBibliographicEntitysuccessBibCount() {
+        StringBuilder errorMessage = new StringBuilder();
+        Mockito.when(marcUtil.getControlFieldValue(any(), Mockito.anyString())).thenReturn("111");
         Mockito.when(marcUtil.writeMarcXml(any())).thenReturn("test");
-        Mockito.when(marcUtil.isSubFieldExists(any(Record.class),Mockito.anyString())).thenReturn(true);
+        Mockito.when(marcUtil.isSubFieldExists(any(Record.class), Mockito.anyString())).thenReturn(true);
         Mockito.when(bibRecord.getLeader()).thenReturn(leader);
         Mockito.when(leader.toString()).thenReturn("01750cam a2200493 i 4500");
-        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(Mockito.anyInt(),Mockito.anyString())).thenReturn(null);
-        Map<String, Object> map=accessionUtil.processAndValidateBibliographicEntity(bibRecord,1,new Date(),errorMessage);
-        assertEquals(1,map.get(ScsbCommonConstants.SUCCESS_BIB_COUNT));
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(Mockito.anyInt(), Mockito.anyString())).thenReturn(null);
+        Map<String, Object> map = accessionUtil.processAndValidateBibliographicEntity(bibRecord, 1, new Date(), errorMessage);
+        assertEquals(1, map.get(ScsbCommonConstants.SUCCESS_BIB_COUNT));
     }
 
     @Test
-    public void processAndValidateBibliographicEntityexitsBibCount(){
-        StringBuilder errorMessage=new StringBuilder();
-        Mockito.when(marcUtil.getControlFieldValue(any(),Mockito.anyString())).thenReturn("111");
+    public void processAndValidateBibliographicEntityexitsBibCount() {
+        StringBuilder errorMessage = new StringBuilder();
+        Mockito.when(marcUtil.getControlFieldValue(any(), Mockito.anyString())).thenReturn("111");
         Mockito.when(marcUtil.writeMarcXml(any())).thenReturn("test");
-        Mockito.when(marcUtil.isSubFieldExists(any(Record.class),Mockito.anyString())).thenReturn(true);
+        Mockito.when(marcUtil.isSubFieldExists(any(Record.class), Mockito.anyString())).thenReturn(true);
         Mockito.when(bibRecord.getLeader()).thenReturn(leader);
         Mockito.when(leader.toString()).thenReturn("01750cam a2200493 i 4500");
-        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(Mockito.anyInt(),Mockito.anyString())).thenReturn(new BibliographicEntity());
-        Map<String, Object> map=accessionUtil.processAndValidateBibliographicEntity(bibRecord,1,new Date(),errorMessage);
-        assertEquals(1,map.get(ScsbCommonConstants.EXIST_BIB_COUNT));
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(Mockito.anyInt(), Mockito.anyString())).thenReturn(new BibliographicEntity());
+        Map<String, Object> map = accessionUtil.processAndValidateBibliographicEntity(bibRecord, 1, new Date(), errorMessage);
+        assertEquals(1, map.get(ScsbCommonConstants.EXIST_BIB_COUNT));
     }
 
     @Test
-    public void testLeaderValue(){
-        StringBuilder errorMessage=new StringBuilder();
-        Mockito.when(marcUtil.getControlFieldValue(any(),Mockito.anyString())).thenReturn("111");
+    public void testLeaderValue() {
+        StringBuilder errorMessage = new StringBuilder();
+        Mockito.when(marcUtil.getControlFieldValue(any(), Mockito.anyString())).thenReturn("111");
         Mockito.when(marcUtil.writeMarcXml(any())).thenReturn("test");
-        Mockito.when(marcUtil.isSubFieldExists(any(Record.class),Mockito.anyString())).thenReturn(true);
+        Mockito.when(marcUtil.isSubFieldExists(any(Record.class), Mockito.anyString())).thenReturn(true);
         Mockito.when(bibRecord.getLeader()).thenReturn(leader);
         Mockito.when(leader.toString()).thenReturn("01750cam a2200493 i 4500 ");
-        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(Mockito.anyInt(),Mockito.anyString())).thenReturn(new BibliographicEntity());
-        Map<String, Object> map=accessionUtil.processAndValidateBibliographicEntity(bibRecord,1,new Date(),errorMessage);
-        assertEquals(1,map.get(ScsbCommonConstants.EXIST_BIB_COUNT));
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibIdAndIsDeletedFalse(Mockito.anyInt(), Mockito.anyString())).thenReturn(new BibliographicEntity());
+        Map<String, Object> map = accessionUtil.processAndValidateBibliographicEntity(bibRecord, 1, new Date(), errorMessage);
+        assertEquals(1, map.get(ScsbCommonConstants.EXIST_BIB_COUNT));
     }
 
     @Test
-    public void processAndValidateBibliographicEntityexitsBibCountfailedBibCount(){
-        ReflectionTestUtils.setField(accessionUtil,"restTemplate",null);
+    public void processAndValidateBibliographicEntityexitsBibCountfailedBibCount() {
+        ReflectionTestUtils.setField(accessionUtil, "restTemplate", null);
         accessionUtil.getRestTemplate();
-        StringBuilder errorMessage=new StringBuilder();
-        Map<String, Object> map=accessionUtil.processAndValidateBibliographicEntity(bibRecord,null,new Date(),errorMessage);
-        assertEquals(1,map.get(ScsbCommonConstants.FAILED_BIB_COUNT));
+        StringBuilder errorMessage = new StringBuilder();
+        Map<String, Object> map = accessionUtil.processAndValidateBibliographicEntity(bibRecord, null, new Date(), errorMessage);
+        assertEquals(1, map.get(ScsbCommonConstants.FAILED_BIB_COUNT));
     }
 
     @Test
     public void getOwningInstitution() throws Exception {
         Mockito.when(imsLocationEntity.getId()).thenReturn(1);
         Mockito.when(imsLocationDetailsRepository.findByImsLocationCode(Mockito.anyString())).thenReturn(imsLocationEntity);
-        Mockito.when(ownerCodeDetailsRepository.findByOwnerCodeAndImsLocationId(Mockito.anyString(),Mockito.anyInt())).thenReturn(ownerCodeEntity);
+        Mockito.when(ownerCodeDetailsRepository.findByOwnerCodeAndImsLocationId(Mockito.anyString(), Mockito.anyInt())).thenReturn(ownerCodeEntity);
         Mockito.when(ownerCodeEntity.getInstitutionEntity()).thenReturn(institutionEntity);
         Mockito.when(institutionEntity.getInstitutionCode()).thenReturn(ScsbCommonConstants.PRINCETON);
-        String owningInstitution=accessionUtil.getOwningInstitution("PA", "RECAP");
-        assertEquals(ScsbCommonConstants.PRINCETON,owningInstitution);
+        String owningInstitution = accessionUtil.getOwningInstitution("PA", "RECAP");
+        assertEquals(ScsbCommonConstants.PRINCETON, owningInstitution);
     }
 
     @Test
     public void getOwningInstitutionException() throws Exception {
-        Mockito.when(ownerCodeDetailsRepository.findByOwnerCode(Mockito.anyString())).thenThrow(NullPointerException.class);
-        String owningInstitution=accessionUtil.getOwningInstitution("PA", "RECAP");
+        Mockito.lenient().when(ownerCodeDetailsRepository.findByOwnerCode(Mockito.anyString())).thenThrow(NullPointerException.class);
+        String owningInstitution = accessionUtil.getOwningInstitution("PA", "RECAP");
         assertNull(owningInstitution);
     }
 
     @Test
-    public void createReportDataEntityList(){
+    public void createReportDataEntityList() {
         Mockito.when(accessionRequest.getCustomerCode()).thenReturn("PA");
         Mockito.when(accessionRequest.getItemBarcode()).thenReturn("123456");
-        List<ReportDataEntity> reportDataEntityList=accessionUtil.createReportDataEntityList(accessionRequest,"");
+        List<ReportDataEntity> reportDataEntityList = accessionUtil.createReportDataEntityList(accessionRequest, "");
         assertNotNull(reportDataEntityList);
     }
 
     private OwnerCodeEntity getOwnerCodeEntity() {
-        OwnerCodeEntity ownerCodeEntity=new OwnerCodeEntity();
+        OwnerCodeEntity ownerCodeEntity = new OwnerCodeEntity();
         ownerCodeEntity.setId(1);
         ownerCodeEntity.setInstitutionId(1);
         ownerCodeEntity.setDescription("Princeton");
@@ -199,41 +198,42 @@ public class AccessionUtilUT extends BaseTestCaseUT{
         ownerCodeEntity.compareTo(ownerCodeEntity);
         ownerCodeEntity.equals(new OwnerCodeEntity());
         ownerCodeEntity.equals(ownerCodeEntity);
-        OwnerCodeEntity ownerCodeEntity1=new OwnerCodeEntity();
+        OwnerCodeEntity ownerCodeEntity1 = new OwnerCodeEntity();
         ownerCodeEntity1.setId(1);
         ownerCodeEntity1.setOwnerCode("CU");
         ownerCodeEntity.equals(ownerCodeEntity1);
-        OwnerCodeEntity ownerCodeEntity2=new OwnerCodeEntity();
+        OwnerCodeEntity ownerCodeEntity2 = new OwnerCodeEntity();
         ownerCodeEntity2.setId(1);
         ownerCodeEntity2.setOwnerCode("PUL");
         ownerCodeEntity2.setDescription("Columbia");
         ownerCodeEntity.equals(ownerCodeEntity2);
-        OwnerCodeEntity ownerCodeEntity3=new OwnerCodeEntity();
+        OwnerCodeEntity ownerCodeEntity3 = new OwnerCodeEntity();
         ownerCodeEntity3.setId(1);
         ownerCodeEntity3.setOwnerCode("PUL");
         ownerCodeEntity3.setDescription("Princeton");
         ownerCodeEntity.setInstitutionId(8);
         ownerCodeEntity.equals(ownerCodeEntity3);
-        boolean code= ownerCodeEntity.equals(null);
+        boolean code = ownerCodeEntity.equals(null);
         ownerCodeEntity.equals(OwnerCodeEntity.class);
         assertFalse(code);
-        InstitutionEntity institutionEntity=TestUtil.getInstitutionEntity(1,"PUL","princeton");
+        InstitutionEntity institutionEntity = TestUtil.getInstitutionEntity(1, "PUL", "princeton");
         ownerCodeEntity.setInstitutionEntity(institutionEntity);
         return ownerCodeEntity;
     }
+
     @Test
     public void reAccessionItem() throws Exception {
         Map<Integer, String> collection = new HashMap<>();
-        List<ItemEntity> itemEntityList=new ArrayList<>();
+        List<ItemEntity> itemEntityList = new ArrayList<>();
         itemEntityList.add(getBibliographicEntity1().getItemEntities().get(0));
-        List<ReportDataEntity> reportDataEntities=new ArrayList<>();
-        ReportDataEntity reportDataEntity=new ReportDataEntity();
+        List<ReportDataEntity> reportDataEntities = new ArrayList<>();
+        ReportDataEntity reportDataEntity = new ReportDataEntity();
         reportDataEntities.add(reportDataEntity);
         Mockito.when(setupDataService.getCollectionGroupIdCodeMap()).thenReturn(collection);
-        accessionUtil.saveReportEntity("",reportDataEntities);
-       // Mockito.doReturn(ScsbCommonConstants.SHARED_CGD).when(setupDataService).getCollectionGroupIdCodeMap().get(0);
-        String message=accessionUtil.reAccessionItem(itemEntityList);
-        String messageIndexed=accessionUtil.indexReaccessionedItem(itemEntityList);
+        accessionUtil.saveReportEntity("", reportDataEntities);
+        // Mockito.doReturn(ScsbCommonConstants.SHARED_CGD).when(setupDataService).getCollectionGroupIdCodeMap().get(0);
+        String message = accessionUtil.reAccessionItem(itemEntityList);
+        String messageIndexed = accessionUtil.indexReaccessionedItem(itemEntityList);
         assertNotNull(message);
         assertNotNull(messageIndexed);
     }
@@ -241,244 +241,245 @@ public class AccessionUtilUT extends BaseTestCaseUT{
 
     @Test
     public void reAccessionItemException() throws Exception {
-        List<ItemEntity> itemEntityList=new ArrayList<>();
+        List<ItemEntity> itemEntityList = new ArrayList<>();
         itemEntityList.add(getBibliographicEntity1().getItemEntities().get(0));
         Mockito.when(itemDetailsRepository.saveAll(Mockito.anyCollection())).thenThrow(NullPointerException.class);
-        String message=accessionUtil.reAccessionItem(itemEntityList);
-        String messageIndexed=accessionUtil.indexReaccessionedItem(null);
-        assertEquals( ScsbCommonConstants.FAILURE,message);
-        assertEquals( ScsbCommonConstants.FAILURE,messageIndexed);
+        String message = accessionUtil.reAccessionItem(itemEntityList);
+        String messageIndexed = accessionUtil.indexReaccessionedItem(null);
+        assertEquals(ScsbCommonConstants.FAILURE, message);
+        assertEquals(ScsbCommonConstants.FAILURE, messageIndexed);
     }
 
     @Test
-    public void createDummyRecordIfAny(){
-        List<ReportDataEntity> reportDataEntityList=new ArrayList<>();
-        ReportDataEntity reportDataEntity=new ReportDataEntity();
+    public void createDummyRecordIfAny() {
+        List<ReportDataEntity> reportDataEntityList = new ArrayList<>();
+        ReportDataEntity reportDataEntity = new ReportDataEntity();
         reportDataEntityList.add(reportDataEntity);
-        AccessionRequest accessionRequest=new AccessionRequest();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setCustomerCode("PA");
         accessionRequest.setItemBarcode("12345");
-        List<ItemEntity> itemEntityList=new ArrayList<>();
-        ItemEntity itemEntity=new ItemEntity();
+        List<ItemEntity> itemEntityList = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
         itemEntityList.add(itemEntity);
         Mockito.when(itemDetailsRepository.findByBarcodeIn(Mockito.anyList())).thenReturn(itemEntityList);
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(getInstitutionEntities());
-        BibliographicEntity bibliographicEntity=new BibliographicEntity();
+        BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setId(1);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Mockito.when(dummyDataService.createDummyDataAsIncomplete(Mockito.anyInt(),Mockito.anyString(),Mockito.anyString(), any())).thenReturn(bibliographicEntity);
-        Mockito.when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
-        String message=accessionUtil.createDummyRecordIfAny(ScsbConstants.INVALID_MARC_XML_ERROR_MSG,"PUL",reportDataEntityList,accessionRequest,imsLocationEntity);
-        assertNotNull(ScsbConstants.ACCESSION_DUMMY_RECORD,message);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Mockito.when(dummyDataService.createDummyDataAsIncomplete(Mockito.anyInt(), Mockito.anyString(), Mockito.anyString(), any())).thenReturn(bibliographicEntity);
+        Mockito.lenient().when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
+        String message = accessionUtil.createDummyRecordIfAny(ScsbConstants.INVALID_MARC_XML_ERROR_MSG, "PUL", reportDataEntityList, accessionRequest, imsLocationEntity);
+        assertNotNull(ScsbConstants.ACCESSION_DUMMY_RECORD, message);
     }
 
     @Test
-    public void createDummyRecordIfAnyAlreadyAccessioned(){
-        List<ReportDataEntity> reportDataEntityList=new ArrayList<>();
-        ReportDataEntity reportDataEntity=new ReportDataEntity();
+    public void createDummyRecordIfAnyAlreadyAccessioned() {
+        List<ReportDataEntity> reportDataEntityList = new ArrayList<>();
+        ReportDataEntity reportDataEntity = new ReportDataEntity();
         reportDataEntityList.add(reportDataEntity);
-        AccessionRequest accessionRequest=new AccessionRequest();
-        List<ItemEntity> itemEntityList=new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
+        List<ItemEntity> itemEntityList = new ArrayList<>();
         itemEntityList.add(getBibliographicEntity().getItemEntities().get(0));
         Mockito.when(itemDetailsRepository.findByBarcodeIn(Mockito.anyList())).thenReturn(itemEntityList);
-        Mockito.when(institutionDetailsRepository.findAll()).thenReturn(getInstitutionEntities());
-        BibliographicEntity bibliographicEntity=new BibliographicEntity();
+        Mockito.lenient().when(institutionDetailsRepository.findAll()).thenReturn(getInstitutionEntities());
+        BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setId(1);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Mockito.when(dummyDataService.createDummyDataAsIncomplete(null,null,null,imsLocationEntity)).thenReturn(bibliographicEntity);
-        Mockito.when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
-        String message=accessionUtil.createDummyRecordIfAny(ScsbConstants.INVALID_MARC_XML_ERROR_MSG,"",reportDataEntityList,accessionRequest,imsLocationEntity);
-        assertNotNull(ScsbConstants.ITEM_BARCODE_ALREADY_ACCESSIONED_MSG,message);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Mockito.lenient().when(dummyDataService.createDummyDataAsIncomplete(null, null, null, imsLocationEntity)).thenReturn(bibliographicEntity);
+        Mockito.lenient().when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
+        String message = accessionUtil.createDummyRecordIfAny(ScsbConstants.INVALID_MARC_XML_ERROR_MSG, "", reportDataEntityList, accessionRequest, imsLocationEntity);
+        assertNotNull(ScsbConstants.ITEM_BARCODE_ALREADY_ACCESSIONED_MSG, message);
     }
 
     @Test
-    public void getInstitutionEntityMap(){
-        List<ReportDataEntity> reportDataEntityList=new ArrayList<>();
-        ReportDataEntity reportDataEntity=new ReportDataEntity();
+    public void getInstitutionEntityMap() {
+        List<ReportDataEntity> reportDataEntityList = new ArrayList<>();
+        ReportDataEntity reportDataEntity = new ReportDataEntity();
         reportDataEntityList.add(reportDataEntity);
-        AccessionRequest accessionRequest=new AccessionRequest();
-        List<ItemEntity> itemEntityList=new ArrayList<>();
-        ItemEntity itemEntity=new ItemEntity();
+        AccessionRequest accessionRequest = new AccessionRequest();
+        List<ItemEntity> itemEntityList = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
         itemEntityList.add(itemEntity);
         Mockito.when(itemDetailsRepository.findByBarcodeIn(Mockito.anyList())).thenReturn(itemEntityList);
         Mockito.when(institutionDetailsRepository.findAll()).thenThrow(NullPointerException.class);
-        BibliographicEntity bibliographicEntity=new BibliographicEntity();
+        BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setId(1);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Mockito.when(dummyDataService.createDummyDataAsIncomplete(null,null,null,imsLocationEntity)).thenReturn(bibliographicEntity);
-        Mockito.when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
-        String message=accessionUtil.createDummyRecordIfAny(ScsbConstants.INVALID_MARC_XML_ERROR_MSG,"",reportDataEntityList,accessionRequest,imsLocationEntity);
-        assertNotNull(ScsbConstants.ACCESSION_DUMMY_RECORD,message);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Mockito.when(dummyDataService.createDummyDataAsIncomplete(null, null, null, imsLocationEntity)).thenReturn(bibliographicEntity);
+        Mockito.lenient().when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
+        String message = accessionUtil.createDummyRecordIfAny(ScsbConstants.INVALID_MARC_XML_ERROR_MSG, "", reportDataEntityList, accessionRequest, imsLocationEntity);
+        assertNotNull(ScsbConstants.ACCESSION_DUMMY_RECORD, message);
     }
 
     @Test
-    public void updateDataFailed(){
-        List<Map<String, String>> responseMapList=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void updateDataFailed() {
+        List<Map<String, String>> responseMapList = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         Mockito.when(xmlToBibEntityConverterFactory.getConverter(Mockito.anyString())).thenReturn(converter);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
-        String response=accessionUtil.updateData(bibRecord,"",responseMapList,accessionRequest,true,true,imsLocationEntity);
-        assertEquals(ScsbConstants.FAILED,response);
+        String response = accessionUtil.updateData(bibRecord, "", responseMapList, accessionRequest, true, true, imsLocationEntity);
+        assertEquals(ScsbConstants.FAILED, response);
     }
 
     @Test
-    public void updateDataSuccess(){
-        List<Map<String, String>> responseMapList=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void updateDataSuccess() {
+        List<Map<String, String>> responseMapList = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         Mockito.when(xmlToBibEntityConverterFactory.getConverter(Mockito.anyString())).thenReturn(converter);
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,getBibliographicEntity());
-        Mockito.when(converter.convert(any(),Mockito.anyString(), any(), any())).thenReturn(responseMap);
-        Mockito.when(accessionValidationService.validateItemAndHolding(any(),Mockito.anyBoolean(),Mockito.anyBoolean(), any())).thenReturn(true);
-        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(),Mockito.anyString())).thenReturn(getBibliographicEntity());
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, getBibliographicEntity());
+        Mockito.when(converter.convert(any(), Mockito.anyString(), any(), any())).thenReturn(responseMap);
+        Mockito.when(accessionValidationService.validateItemAndHolding(any(), Mockito.anyBoolean(), Mockito.anyBoolean(), any())).thenReturn(true);
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(), Mockito.anyString())).thenReturn(getBibliographicEntity());
         Mockito.when(bibliographicRepositoryDAO.saveOrUpdate(any())).thenReturn(getBibliographicEntity());
-        Mockito.when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        Mockito.lenient().when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
-        String response=accessionUtil.updateData(bibRecord,"",responseMapList,accessionRequest,true,true,imsLocationEntity);
-        assertEquals(ScsbCommonConstants.SUCCESS,response);
+        String response = accessionUtil.updateData(bibRecord, "", responseMapList, accessionRequest, true, true, imsLocationEntity);
+        assertEquals(ScsbCommonConstants.SUCCESS, response);
     }
 
     @Test
-    public void updateDataAccesionException(){
-        List<Map<String, String>> responseMapList=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void updateDataAccesionException() {
+        List<Map<String, String>> responseMapList = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         Mockito.when(xmlToBibEntityConverterFactory.getConverter(Mockito.anyString())).thenReturn(converter);
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,getBibliographicEntity());
-        Mockito.when(converter.convert(any(),Mockito.anyString(), any(), any())).thenReturn(responseMap);
-        Mockito.when(accessionValidationService.validateItemAndHolding(any(),Mockito.anyBoolean(),Mockito.anyBoolean(), any())).thenReturn(true);
-        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(),Mockito.anyString())).thenReturn(getBibliographicEntity());
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, getBibliographicEntity());
+        Mockito.when(converter.convert(any(), Mockito.anyString(), any(), any())).thenReturn(responseMap);
+        Mockito.when(accessionValidationService.validateItemAndHolding(any(), Mockito.anyBoolean(), Mockito.anyBoolean(), any())).thenReturn(true);
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(), Mockito.anyString())).thenReturn(getBibliographicEntity());
         Mockito.when(bibliographicRepositoryDAO.saveOrUpdate(any())).thenThrow(NullPointerException.class);
-        Mockito.when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        Mockito.lenient().when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
-        String response=accessionUtil.updateData(bibRecord,"",responseMapList,accessionRequest,true,true,imsLocationEntity);
+        String response = accessionUtil.updateData(bibRecord, "", responseMapList, accessionRequest, true, true, imsLocationEntity);
         assertNull(response);
     }
+
     @Test
     public void updateDataForBoundwith() throws Exception {
         BibliographicEntity bibliographicEntity = getBibliographicEntity();
         bibliographicEntity.setMaQualifier(1);
-        Map<Integer,String> collection = new HashMap<>();
-        List<Map<String, String>> responseMapList=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+        Map<Integer, String> collection = new HashMap<>();
+        List<Map<String, String>> responseMapList = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         Mockito.when(xmlToBibEntityConverterFactory.getConverter(Mockito.anyString())).thenReturn(converter);
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,bibliographicEntity);
-        Mockito.when(converter.convert(any(),Mockito.anyString(), any(), any())).thenReturn(responseMap);
-        Mockito.when(accessionValidationService.validateItemAndHolding(any(),Mockito.anyBoolean(),Mockito.anyBoolean(), any())).thenReturn(true);
-        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(),Mockito.anyString())).thenReturn(bibliographicEntity);
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, bibliographicEntity);
+        Mockito.when(converter.convert(any(), Mockito.anyString(), any(), any())).thenReturn(responseMap);
+        Mockito.when(accessionValidationService.validateItemAndHolding(any(), Mockito.anyBoolean(), Mockito.anyBoolean(), any())).thenReturn(true);
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(), Mockito.anyString())).thenReturn(bibliographicEntity);
         Mockito.when(bibliographicRepositoryDAO.saveOrUpdate(any())).thenReturn(bibliographicEntity);
-        Mockito.when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        Mockito.lenient().when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         Mockito.when(setupDataService.getCollectionGroupIdCodeMap()).thenReturn(collection);
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
-        String response=accessionUtil.updateData(bibRecord,"",responseMapList,accessionRequest,true,true,imsLocationEntity);
+        String response = accessionUtil.updateData(bibRecord, "", responseMapList, accessionRequest, true, true, imsLocationEntity);
         assertNotNull(response);
     }
 
     @Test
     public void updateDataIncomplete() throws Exception {
-        List<Map<String, String>> responseMapList=new ArrayList<>();
+        List<Map<String, String>> responseMapList = new ArrayList<>();
         BibliographicEntity bibliographicEntity = getBibliographicEntity();
         bibliographicEntity.setMaQualifier(1);
 
-        AccessionRequest accessionRequest=new AccessionRequest();
+        AccessionRequest accessionRequest = new AccessionRequest();
         Mockito.when(xmlToBibEntityConverterFactory.getConverter(Mockito.anyString())).thenReturn(converter);
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,bibliographicEntity);
-        responseMap.put(ScsbConstants.INCOMPLETE_RESPONSE,"test");
-        Mockito.when(converter.convert(any(),Mockito.anyString(), any(), any())).thenReturn(responseMap);
-        Mockito.when(accessionValidationService.validateItemAndHolding(any(),Mockito.anyBoolean(),Mockito.anyBoolean(), any())).thenReturn(true);
-        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(),Mockito.anyString())).thenReturn(bibliographicEntity);
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, bibliographicEntity);
+        responseMap.put(ScsbConstants.INCOMPLETE_RESPONSE, "test");
+        Mockito.when(converter.convert(any(), Mockito.anyString(), any(), any())).thenReturn(responseMap);
+        Mockito.when(accessionValidationService.validateItemAndHolding(any(), Mockito.anyBoolean(), Mockito.anyBoolean(), any())).thenReturn(true);
+        Mockito.when(bibliographicDetailsRepository.findByOwningInstitutionIdAndOwningInstitutionBibId(Mockito.anyInt(), Mockito.anyString())).thenReturn(bibliographicEntity);
         Mockito.when(bibliographicRepositoryDAO.saveOrUpdate(any())).thenReturn(bibliographicEntity);
-        Mockito.when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        Mockito.lenient().when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
-        String response=accessionUtil.updateData(bibRecord,"",responseMapList,accessionRequest,true,true,imsLocationEntity);
-        assertEquals(ScsbConstants.SUCCESS_INCOMPLETE_RECORD,response);
+        String response = accessionUtil.updateData(bibRecord, "", responseMapList, accessionRequest, true, true, imsLocationEntity);
+        assertEquals(ScsbConstants.SUCCESS_INCOMPLETE_RECORD, response);
     }
 
     @Test
     public void update() throws Exception {
-        List<Map<String, String>> responseMapList=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+        List<Map<String, String>> responseMapList = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         Mockito.when(xmlToBibEntityConverterFactory.getConverter(Mockito.anyString())).thenReturn(converter);
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,getBibliographicEntity());
-        Mockito.when(converter.convert(any(),Mockito.anyString(), any(), any())).thenReturn(responseMap);
-        Mockito.when(accessionValidationService.validateItemAndHolding(any(),Mockito.anyBoolean(),Mockito.anyBoolean(), any())).thenReturn(false);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, getBibliographicEntity());
+        Mockito.when(converter.convert(any(), Mockito.anyString(), any(), any())).thenReturn(responseMap);
+        Mockito.when(accessionValidationService.validateItemAndHolding(any(), Mockito.anyBoolean(), Mockito.anyBoolean(), any())).thenReturn(false);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
-        String response=accessionUtil.updateData(bibRecord,"",responseMapList,accessionRequest,true,true,imsLocationEntity);
-        assertEquals("",response);
+        String response = accessionUtil.updateData(bibRecord, "", responseMapList, accessionRequest, true, true, imsLocationEntity);
+        assertEquals("", response);
     }
 
     @Test
-    public void updatedDataSuccessNonExistBib(){
-        List<Map<String, String>> responseMapList=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void updatedDataSuccessNonExistBib() {
+        List<Map<String, String>> responseMapList = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         Mockito.when(xmlToBibEntityConverterFactory.getConverter(Mockito.anyString())).thenReturn(converter);
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,getBibliographicEntity());
-        Mockito.when(converter.convert(any(),Mockito.anyString(), any(), any())).thenReturn(responseMap);
-        Mockito.when(accessionValidationService.validateItemAndHolding(any(),Mockito.anyBoolean(),Mockito.anyBoolean(), any())).thenReturn(true);
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, getBibliographicEntity());
+        Mockito.when(converter.convert(any(), Mockito.anyString(), any(), any())).thenReturn(responseMap);
+        Mockito.when(accessionValidationService.validateItemAndHolding(any(), Mockito.anyBoolean(), Mockito.anyBoolean(), any())).thenReturn(true);
         Mockito.when(bibliographicRepositoryDAO.saveOrUpdate(any())).thenReturn(getBibliographicEntity());
-        Mockito.when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        Mockito.lenient().when(restTemplate.postForEntity(Mockito.anyString(), any(), any())).thenReturn(new ResponseEntity<>(ScsbCommonConstants.SUCCESS, HttpStatus.OK));
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
-        String response=accessionUtil.updateData(bibRecord,"",responseMapList,accessionRequest,true,true,imsLocationEntity);
-        assertEquals(ScsbCommonConstants.SUCCESS,response);
+        String response = accessionUtil.updateData(bibRecord, "", responseMapList, accessionRequest, true, true, imsLocationEntity);
+        assertEquals(ScsbCommonConstants.SUCCESS, response);
     }
 
     @Test
-    public void updateDataFailedWithMessage(){
-        List<Map<String, String>> responseMapList=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void updateDataFailedWithMessage() {
+        List<Map<String, String>> responseMapList = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         Mockito.when(xmlToBibEntityConverterFactory.getConverter(Mockito.anyString())).thenReturn(converter);
-        Map responseMap=new HashMap();
-        StringBuilder stringBuilder=new StringBuilder();
+        Map responseMap = new HashMap();
+        StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("test");
-        responseMap.put("errorMessage",stringBuilder);
-        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY,getBibliographicEntity());
-        Mockito.when(converter.convert(any(),Mockito.anyString(), any(), any())).thenReturn(responseMap);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        responseMap.put("errorMessage", stringBuilder);
+        responseMap.put(ScsbCommonConstants.BIBLIOGRAPHICENTITY, getBibliographicEntity());
+        Mockito.when(converter.convert(any(), Mockito.anyString(), any(), any())).thenReturn(responseMap);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
-        String response=accessionUtil.updateData(bibRecord,"",responseMapList,accessionRequest,true,true,imsLocationEntity);
-        assertEquals(ScsbConstants.FAILED + ScsbCommonConstants.HYPHEN + stringBuilder.toString(),response);
+        String response = accessionUtil.updateData(bibRecord, "", responseMapList, accessionRequest, true, true, imsLocationEntity);
+        assertEquals(ScsbConstants.FAILED + ScsbCommonConstants.HYPHEN + stringBuilder.toString(), response);
     }
 
-    private BibliographicEntity getBibliographicEntity(){
+    private BibliographicEntity getBibliographicEntity() {
 
         BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setId(123456);
@@ -516,7 +517,7 @@ public class AccessionUtilUT extends BaseTestCaseUT{
         itemEntity.setCreatedDate(new Date());
         itemEntity.setCreatedBy("tst");
         itemEntity.setLastUpdatedBy("tst");
-        itemEntity.setCatalogingStatus( ScsbCommonConstants.COMPLETE_STATUS);
+        itemEntity.setCatalogingStatus(ScsbCommonConstants.COMPLETE_STATUS);
         assertTrue(itemEntity.isComplete());
         itemEntity.setItemAvailabilityStatusId(1);
         itemEntity.setDeleted(false);
@@ -592,7 +593,7 @@ public class AccessionUtilUT extends BaseTestCaseUT{
 
     private List<InstitutionEntity> getInstitutionEntities() {
         List<InstitutionEntity> institutionEntities = new ArrayList<>();
-        InstitutionEntity institutionEntity= TestUtil.getInstitutionEntity(1,"PUL","Princeton");
+        InstitutionEntity institutionEntity = TestUtil.getInstitutionEntity(1, "PUL", "Princeton");
         institutionEntities.add(institutionEntity);
         return institutionEntities;
     }

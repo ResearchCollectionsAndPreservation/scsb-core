@@ -1,12 +1,13 @@
 package org.recap.camel.submitcollection.processor;
 
 import org.apache.camel.ProducerTemplate;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.recap.BaseTestCaseUT;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class SubmitCollectionNotificationProcessorUT extends BaseTestCaseUT {
     @InjectMocks
@@ -15,7 +16,7 @@ public class SubmitCollectionNotificationProcessorUT extends BaseTestCaseUT {
     private ProducerTemplate producer;
 
     @Test
-    public void testSubmitCollectionNotificationProcessor(){
+    public void testSubmitCollectionNotificationProcessor() {
         submitCollectionNotificationProcessor.sendSubmitCollectionNotification();
         assertTrue(true);
     }

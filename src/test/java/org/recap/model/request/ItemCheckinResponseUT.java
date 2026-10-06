@@ -1,19 +1,19 @@
 package org.recap.model.request;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.recap.BaseTestCaseUT;
 import org.recap.ScsbCommonConstants;
 
 import java.util.Arrays;
 import java.util.Date;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ItemCheckinResponseUT extends BaseTestCaseUT {
 
     @Test
     public void test() throws Exception {
-        ItemCheckinResponse itemCheckinResponse=new ItemCheckinResponse();
+        ItemCheckinResponse itemCheckinResponse = new ItemCheckinResponse();
         itemCheckinResponse.setItemBarcode("123456");
         itemCheckinResponse.setItemOwningInstitution("PUL");
         itemCheckinResponse.setAlert(true);
@@ -25,7 +25,7 @@ public class ItemCheckinResponseUT extends BaseTestCaseUT {
         itemCheckinResponse.setAlertType("alert");
         itemCheckinResponse.setInstitutionID("1");
         itemCheckinResponse.setHoldPatronId("4");
-        itemCheckinResponse.setItemBarcodes(Arrays.asList("123456","234567"));
+        itemCheckinResponse.setItemBarcodes(Arrays.asList("123456", "234567"));
         itemCheckinResponse.setLCCN("58475");
         itemCheckinResponse.setScreenMessage(ScsbCommonConstants.SUCCESS);
         itemCheckinResponse.setProcessed(true);

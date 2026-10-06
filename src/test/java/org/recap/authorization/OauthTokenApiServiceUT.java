@@ -1,6 +1,6 @@
 package org.recap.authorization;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.recap.BaseTestCaseUT;
 import org.recap.service.authorization.OauthTokenApiService;
@@ -14,9 +14,10 @@ public class OauthTokenApiServiceUT extends BaseTestCaseUT {
     public void generateAccessToken() throws Exception {
         String oauthTokenApiUrl = "test";
         String operatorUserId = "test";
-        String operatorPassword ="test";
+        String operatorPassword = "test";
         try {
-            oauthTokenApiService.generateAccessToken(oauthTokenApiUrl,operatorUserId,operatorPassword);
-        }catch (Exception e){}
+            oauthTokenApiService.generateAccessToken(oauthTokenApiUrl, operatorUserId, operatorPassword);
+        } catch (Exception e) {
+        }
     }
 }

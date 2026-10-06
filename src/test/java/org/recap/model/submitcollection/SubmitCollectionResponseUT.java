@@ -1,13 +1,13 @@
 package org.recap.model.submitcollection;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SubmitCollectionResponseUT {
 
     @Test
-    public void getSubmitCollectionResponse(){
+    public void getSubmitCollectionResponse() {
         SubmitCollectionResponse submitCollectionResponse = new SubmitCollectionResponse();
         submitCollectionResponse.setItemBarcode("123445");
         submitCollectionResponse.setMessage("Success");

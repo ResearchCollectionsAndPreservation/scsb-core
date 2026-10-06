@@ -1,6 +1,6 @@
 package org.recap.service.accession.callable;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -13,7 +13,7 @@ import org.recap.util.AccessionProcessService;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
@@ -32,16 +32,16 @@ public class BibDataCallableUT extends BaseTestCaseUT {
         bibDataCallable.setAccessionRequest(new AccessionRequest());
         bibDataCallable.setOwningInstitution("PUL");
         bibDataCallable.setWriteToReport(true);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
         bibDataCallable.setImsLocationEntity(imsLocationEntity);
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        AccessionResponse accessionResponse=new AccessionResponse();
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        AccessionResponse accessionResponse = new AccessionResponse();
         accessionResponse.setMessage("test");
         accessionResponse.setItemBarcode("123");
         accessionResponses.add(accessionResponse);
-        Mockito.when(accessionProcessService.processRecords(Mockito.anySet(),Mockito.anyList(),Mockito.any(),Mockito.anyList(),Mockito.anyString(),Mockito.anyBoolean(),Mockito.any())).thenReturn(accessionResponses);
-        Object object= bibDataCallable.call();
-        assertEquals(accessionResponses,object);
+        Mockito.when(accessionProcessService.processRecords(Mockito.anySet(), Mockito.anyList(), Mockito.any(), Mockito.anyList(), Mockito.anyString(), Mockito.anyBoolean(), Mockito.any())).thenReturn(accessionResponses);
+        Object object = bibDataCallable.call();
+        assertEquals(accessionResponses, object);
     }
 
 }

@@ -1,9 +1,9 @@
 package org.recap.service.accession.callable;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.recap.BaseTestCaseUT;
 import org.recap.TestUtil;
 import org.recap.model.accession.AccessionRequest;
@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 public class AccessionResolverAbstractUT extends BaseTestCaseUT {
 
@@ -27,8 +27,8 @@ public class AccessionResolverAbstractUT extends BaseTestCaseUT {
 
     @Test
     public void isAccessionProcess() throws Exception {
-        Mockito.when(itemEntity.getInstitutionEntity()).thenReturn(TestUtil.getInstitutionEntity(1,"PUL","PUL"));
-        AccessionResolverAbstract accessionResolverAbstract= new AccessionResolverAbstract() {
+        Mockito.when(itemEntity.getInstitutionEntity()).thenReturn(TestUtil.getInstitutionEntity(1, "PUL", "PUL"));
+        AccessionResolverAbstract accessionResolverAbstract = new AccessionResolverAbstract() {
             @Override
             public boolean isFormat(String format) {
                 return false;
@@ -54,14 +54,14 @@ public class AccessionResolverAbstractUT extends BaseTestCaseUT {
                 return null;
             }
         };
-        boolean isAccessionProcess=accessionResolverAbstract.isAccessionProcess(itemEntity,"PUL");
-        assertFalse(isAccessionProcess);
+        boolean isAccessionProcess = accessionResolverAbstract.isAccessionProcess(itemEntity, "PUL");
+        Assertions.assertFalse(isAccessionProcess);
     }
 
     @Test
     public void isAccessionProcessMismatchOwningInst() throws Exception {
-        Mockito.when(itemEntity.getInstitutionEntity()).thenReturn(TestUtil.getInstitutionEntity(1,"PUL","PUL"));
-        AccessionResolverAbstract accessionResolverAbstract= new AccessionResolverAbstract() {
+        Mockito.when(itemEntity.getInstitutionEntity()).thenReturn(TestUtil.getInstitutionEntity(1, "PUL", "PUL"));
+        AccessionResolverAbstract accessionResolverAbstract = new AccessionResolverAbstract() {
             @Override
             public boolean isFormat(String format) {
                 return false;
@@ -87,14 +87,14 @@ public class AccessionResolverAbstractUT extends BaseTestCaseUT {
                 return null;
             }
         };
-        boolean isAccessionProcess=accessionResolverAbstract.isAccessionProcess(itemEntity,"CUL");
-        assertTrue(isAccessionProcess);
+        boolean isAccessionProcess = accessionResolverAbstract.isAccessionProcess(itemEntity, "CUL");
+        Assertions.assertTrue(isAccessionProcess);
     }
 
 
     @Test
     public void isAccessionProcessNullItemEntity() throws Exception {
-        AccessionResolverAbstract accessionResolverAbstract= new AccessionResolverAbstract() {
+        AccessionResolverAbstract accessionResolverAbstract = new AccessionResolverAbstract() {
             @Override
             public boolean isFormat(String format) {
                 return false;
@@ -120,7 +120,7 @@ public class AccessionResolverAbstractUT extends BaseTestCaseUT {
                 return null;
             }
         };
-        boolean isAccessionProcess=accessionResolverAbstract.isAccessionProcess(null,"PUL");
+        boolean isAccessionProcess = accessionResolverAbstract.isAccessionProcess(null, "PUL");
         assertTrue(isAccessionProcess);
     }
 

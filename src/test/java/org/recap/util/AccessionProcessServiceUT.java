@@ -1,6 +1,6 @@
 package org.recap.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -24,8 +24,8 @@ import org.springframework.web.client.RestClientException;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class AccessionProcessServiceUT extends BaseTestCaseUT {
 
@@ -66,316 +66,317 @@ public class AccessionProcessServiceUT extends BaseTestCaseUT {
     Exception ex;
 
     @Test
-    public void callCheckinException(){
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        List<Map<String, String>> responseMaps=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void callCheckinException() {
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        List<Map<String, String>> responseMaps = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setItemBarcode("12345");
         accessionRequest.setCustomerCode("PA");
-        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
-        List<ItemEntity> itemEntities=new ArrayList<>();
-        ItemEntity itemEntity=new ItemEntity();
+        List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
         itemEntity.setDeleted(true);
         itemEntity.setBarcode("12345");
-        InstitutionEntity institutionEntity=new InstitutionEntity();
+        InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setInstitutionCode("PUL");
         itemEntity.setInstitutionEntity(institutionEntity);
         itemEntities.add(itemEntity);
-        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
+        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(), Mockito.anyString())).thenReturn(itemEntities);
         Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
         Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        Mockito.doCallRealMethod().when(accessionUtil).setAccessionResponse(Mockito.anySet(),Mockito.anyString(),Mockito.anyString());
-        ReflectionTestUtils.setField(accessionUtil,"itemChangeLogDetailsRepository",itemChangeLogDetailsRepository);
-        Mockito.doCallRealMethod().when(accessionUtil).saveItemChangeLogEntity(Mockito.anyString(),Mockito.anyString(),Mockito.anyList());
+        Mockito.doCallRealMethod().when(accessionUtil).setAccessionResponse(Mockito.anySet(), Mockito.anyString(), Mockito.anyString());
+        ReflectionTestUtils.setField(accessionUtil, "itemChangeLogDetailsRepository", itemChangeLogDetailsRepository);
+        Mockito.doCallRealMethod().when(accessionUtil).saveItemChangeLogEntity(Mockito.anyString(), Mockito.anyString(), Mockito.anyList());
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenThrow(NullPointerException.class);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
-        assertEquals(accessionResponses,accessionResponse);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Object accessionResponse = accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, "PUL", true, imsLocationEntity);
+        assertEquals(accessionResponses, accessionResponse);
     }
 
     @Test
-    public void callCheckinRestClientException(){
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        List<Map<String, String>> responseMaps=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void callCheckinRestClientException() {
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        List<Map<String, String>> responseMaps = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setItemBarcode("12345");
         accessionRequest.setCustomerCode("PA");
-        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
-        List<ItemEntity> itemEntities=new ArrayList<>();
-        ItemEntity itemEntity=new ItemEntity();
+        List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
         itemEntity.setDeleted(true);
         itemEntity.setBarcode("12345");
-        InstitutionEntity institutionEntity=new InstitutionEntity();
+        InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setInstitutionCode("PUL");
         itemEntity.setInstitutionEntity(institutionEntity);
         itemEntities.add(itemEntity);
-        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
+        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(), Mockito.anyString())).thenReturn(itemEntities);
         Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
         Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        Mockito.doCallRealMethod().when(accessionUtil).setAccessionResponse(Mockito.anySet(),Mockito.anyString(),Mockito.anyString());
-        ReflectionTestUtils.setField(accessionUtil,"itemChangeLogDetailsRepository",itemChangeLogDetailsRepository);
-        Mockito.doCallRealMethod().when(accessionUtil).saveItemChangeLogEntity(Mockito.anyString(),Mockito.anyString(),Mockito.anyList());
+        Mockito.doCallRealMethod().when(accessionUtil).setAccessionResponse(Mockito.anySet(), Mockito.anyString(), Mockito.anyString());
+        ReflectionTestUtils.setField(accessionUtil, "itemChangeLogDetailsRepository", itemChangeLogDetailsRepository);
+        Mockito.doCallRealMethod().when(accessionUtil).saveItemChangeLogEntity(Mockito.anyString(), Mockito.anyString(), Mockito.anyList());
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenThrow(RestClientException.class);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
-        assertEquals(accessionResponses,accessionResponse);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Object accessionResponse = accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, "PUL", true, imsLocationEntity);
+        assertEquals(accessionResponses, accessionResponse);
     }
 
     @Test
-    public void processRecordsAlreadyAccessioned(){
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        List<Map<String, String>> responseMaps=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void processRecordsAlreadyAccessioned() {
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        List<Map<String, String>> responseMaps = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setItemBarcode("12345");
         accessionRequest.setCustomerCode("PA");
-        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
-        List<ItemEntity> itemEntities=new ArrayList<>();
-        ItemEntity itemEntity=new ItemEntity();
+        List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
         itemEntity.setBarcode("12345");
-        InstitutionEntity institutionEntity=new InstitutionEntity();
+        InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setInstitutionCode("PUL");
         itemEntity.setInstitutionEntity(institutionEntity);
-        BibliographicEntity bibliographicEntity=new BibliographicEntity();
+        BibliographicEntity bibliographicEntity = new BibliographicEntity();
         bibliographicEntity.setOwningInstitutionBibId("111");
         itemEntity.setBibliographicEntities(Arrays.asList(bibliographicEntity));
-        HoldingsEntity holdingsEntity=new HoldingsEntity();
+        HoldingsEntity holdingsEntity = new HoldingsEntity();
         holdingsEntity.setOwningInstitutionHoldingsId("222");
         itemEntity.setHoldingsEntities(Arrays.asList(holdingsEntity));
         itemEntities.add(itemEntity);
-        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
-        Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
-        assertEquals(accessionResponses,accessionResponse);
+        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(), Mockito.anyString())).thenReturn(itemEntities);
+        Mockito.lenient().when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        Mockito.lenient().when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Object accessionResponse = accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, "PUL", true, imsLocationEntity);
+        assertEquals(accessionResponses, accessionResponse);
     }
 
     @Test
-    public void processRecordsAccessioned(){
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        List<Map<String, String>> responseMaps=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void processRecordsAccessioned() {
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        List<Map<String, String>> responseMaps = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setItemBarcode("12345");
         accessionRequest.setCustomerCode("PA");
-        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
-        List<ItemEntity> itemEntities=new ArrayList<>();
-        ItemEntity itemEntity=new ItemEntity();
+        List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
         itemEntity.setBarcode("12345");
-        InstitutionEntity institutionEntity=new InstitutionEntity();
+        InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setInstitutionCode("PUL");
         itemEntity.setInstitutionEntity(institutionEntity);
         itemEntities.add(itemEntity);
-        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
-        Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
-        assertEquals(accessionResponses,accessionResponse);
+        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(), Mockito.anyString())).thenReturn(itemEntities);
+        Mockito.lenient().when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        Mockito.lenient().when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Object accessionResponse = accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, "PUL", true, imsLocationEntity);
+        assertEquals(accessionResponses, accessionResponse);
     }
 
     @Test
-    public void processRecordsAccession(){
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        List<Map<String, String>> responseMaps=new ArrayList<>();
-        Map<String, String> responseMap1=new HashMap<>();
-        responseMap1.put(ScsbCommonConstants.REASON_FOR_BIB_FAILURE,ScsbCommonConstants.REASON_FOR_BIB_FAILURE);
-        Map<String, String> responseMap=new HashMap<>();
-        responseMap.put(ScsbCommonConstants.REASON_FOR_ITEM_FAILURE,ScsbCommonConstants.REASON_FOR_ITEM_FAILURE);
+    public void processRecordsAccession() {
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        List<Map<String, String>> responseMaps = new ArrayList<>();
+        Map<String, String> responseMap1 = new HashMap<>();
+        responseMap1.put(ScsbCommonConstants.REASON_FOR_BIB_FAILURE, ScsbCommonConstants.REASON_FOR_BIB_FAILURE);
+        Map<String, String> responseMap = new HashMap<>();
+        responseMap.put(ScsbCommonConstants.REASON_FOR_ITEM_FAILURE, ScsbCommonConstants.REASON_FOR_ITEM_FAILURE);
         responseMaps.add(responseMap);
         responseMaps.add(responseMap1);
-        AccessionRequest accessionRequest=new AccessionRequest();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setItemBarcode("12345");
         accessionRequest.setCustomerCode("PA");
-        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
-        InstitutionEntity institutionEntity=new InstitutionEntity();
+        List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setInstitutionCode("PUL");
-        List<ItemEntity> itemEntities=new ArrayList<>();
-        ItemEntity itemEntity=new ItemEntity();
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
         itemEntity.setBarcode("12345");
         itemEntity.setInstitutionEntity(institutionEntity);
-        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
-        Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(), Mockito.anyString())).thenReturn(itemEntities);
+        Mockito.lenient().when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);;
+        Mockito.lenient().when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         ilsConfigProperties.setIlsRefileEndpointProtocol("REST");
-        Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
-        Mockito.when(formatResolver.getBibData(Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenReturn("test");
-        Mockito.when(accessionResolverFactory.getFormatResolver(Mockito.anyString())).thenReturn(formatResolver);
-        Mockito.when(formatResolver.getItemEntityFromRecord(null,null)).thenReturn(itemEntity);
-        List<InstitutionEntity> institutionEntities =new ArrayList<>();
-        Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
-        assertEquals(accessionResponses,accessionResponse);
+        Mockito.lenient().when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
+        Mockito.lenient().when(formatResolver.getBibData(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn("test");
+        Mockito.lenient().when(accessionResolverFactory.getFormatResolver(Mockito.anyString())).thenReturn(formatResolver);
+        Mockito.lenient().when(formatResolver.getItemEntityFromRecord(null, null)).thenReturn(itemEntity);
+        List<InstitutionEntity> institutionEntities = new ArrayList<>();
+        Mockito.lenient().when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Object accessionResponse = accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, "PUL", true, imsLocationEntity);
+        assertEquals(accessionResponses, accessionResponse);
     }
 
     @Test
-    public void removeDuplicateRecord(){
-        List<AccessionRequest> trimmedAccessionRequests=new ArrayList<>();
-        List<AccessionRequest> removeDuplicateRecord=accessionProcessService.removeDuplicateRecord(trimmedAccessionRequests);
+    public void removeDuplicateRecord() {
+        List<AccessionRequest> trimmedAccessionRequests = new ArrayList<>();
+        List<AccessionRequest> removeDuplicateRecord = accessionProcessService.removeDuplicateRecord(trimmedAccessionRequests);
         assertNotNull(removeDuplicateRecord);
     }
 
     @Test
-    public void getInstitutionIdCodeMapException(){
+    public void getInstitutionIdCodeMapException() {
         Mockito.when(institutionDetailsRepository.findAll()).thenThrow(NullPointerException.class);
-        Map<String,Integer> getInstitutionIdCodeMap=accessionProcessService.getInstitutionIdCodeMap();
+        Map<String, Integer> getInstitutionIdCodeMap = accessionProcessService.getInstitutionIdCodeMap();
         assertNotNull(getInstitutionIdCodeMap);
     }
 
     @Test
-    public void getBibData(){
-        AccessionRequest accessionRequest=new AccessionRequest();
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
-        Mockito.when(formatResolver.getBibData(Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenThrow(NullPointerException.class);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        String bibData=accessionProcessService.getBibData(accessionResponses,accessionRequest,reportDataEntitys,"PUL","PA","123456",formatResolver,imsLocationEntity);
+    public void getBibData() {
+        AccessionRequest accessionRequest = new AccessionRequest();
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        Mockito.when(formatResolver.getBibData(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenThrow(NullPointerException.class);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        String bibData = accessionProcessService.getBibData(accessionResponses, accessionRequest, reportDataEntitys, "PUL", "PA", "123456", formatResolver, imsLocationEntity);
 
     }
 
     @Test
-    public void processRecordsAccessionException(){
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        List<Map<String, String>> responseMaps=new ArrayList<>();
-        Map<String, String> responseMap1=new HashMap<>();
-        responseMap1.put(ScsbCommonConstants.REASON_FOR_BIB_FAILURE,ScsbCommonConstants.REASON_FOR_BIB_FAILURE);
-        Map<String, String> responseMap=new HashMap<>();
-        responseMap.put(ScsbCommonConstants.REASON_FOR_ITEM_FAILURE,ScsbCommonConstants.REASON_FOR_ITEM_FAILURE);
+    public void processRecordsAccessionException() {
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        List<Map<String, String>> responseMaps = new ArrayList<>();
+        Map<String, String> responseMap1 = new HashMap<>();
+        responseMap1.put(ScsbCommonConstants.REASON_FOR_BIB_FAILURE, ScsbCommonConstants.REASON_FOR_BIB_FAILURE);
+        Map<String, String> responseMap = new HashMap<>();
+        responseMap.put(ScsbCommonConstants.REASON_FOR_ITEM_FAILURE, ScsbCommonConstants.REASON_FOR_ITEM_FAILURE);
         responseMaps.add(responseMap);
         responseMaps.add(responseMap1);
-        AccessionRequest accessionRequest=new AccessionRequest();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setItemBarcode("12345");
         accessionRequest.setCustomerCode("PA");
-        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
-        InstitutionEntity institutionEntity=new InstitutionEntity();
+        List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setInstitutionCode("PUL");
-        List<ItemEntity> itemEntities=new ArrayList<>();
-        ItemEntity itemEntity=new ItemEntity();
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
         itemEntity.setBarcode("12345");
         itemEntity.setInstitutionEntity(institutionEntity);
-        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
-        Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(), Mockito.anyString())).thenReturn(itemEntities);
+        Mockito.lenient().when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        Mockito.lenient().when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         ilsConfigProperties.setIlsRefileEndpointProtocol("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties);
-        Mockito.when(formatResolver.getBibData(Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenReturn("test");
+        Mockito.when(formatResolver.getBibData(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn("test");
         Mockito.when(accessionResolverFactory.getFormatResolver(Mockito.anyString())).thenReturn(formatResolver);
-        Mockito.when(formatResolver.getItemEntityFromRecord(null,null)).thenReturn(itemEntity);
-        List<InstitutionEntity> institutionEntities =new ArrayList<>();
+        Mockito.when(formatResolver.getItemEntityFromRecord(null, null)).thenReturn(itemEntity);
+        List<InstitutionEntity> institutionEntities = new ArrayList<>();
         institutionEntities.add(institutionEntity);
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
-        assertEquals(accessionResponses,accessionResponse);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Object accessionResponse = accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, "PUL", true, imsLocationEntity);
+        assertEquals(accessionResponses, accessionResponse);
     }
 
     @Test
-    public void processRecordsException(){
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        List<Map<String, String>> responseMaps=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void processRecordsException() {
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        List<Map<String, String>> responseMaps = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setItemBarcode("12345");
         accessionRequest.setCustomerCode("PA");
-        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
-        InstitutionEntity institutionEntity=new InstitutionEntity();
+        List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setInstitutionCode("PUL");
-        List<ItemEntity> itemEntities=new ArrayList<>();
-        ItemEntity itemEntity=new ItemEntity();
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
         itemEntity.setBarcode("12345");
         itemEntity.setInstitutionEntity(institutionEntity);
-        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
-        Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(), Mockito.anyString())).thenReturn(itemEntities);
+        Mockito.lenient().when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        Mockito.lenient().when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties).thenThrow(NullPointerException.class);
-        Mockito.when(formatResolver.getBibData(Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenReturn("test");
+        Mockito.when(formatResolver.getBibData(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn("test");
         Mockito.when(accessionResolverFactory.getFormatResolver(Mockito.anyString())).thenReturn(formatResolver);
-        Mockito.when(formatResolver.getItemEntityFromRecord(null,null)).thenReturn(itemEntity);
-        List<InstitutionEntity> institutionEntities =new ArrayList<>();
+        Mockito.when(formatResolver.getItemEntityFromRecord(null, null)).thenReturn(itemEntity);
+        List<InstitutionEntity> institutionEntities = new ArrayList<>();
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
         Mockito.when(itemBarcodeHistoryDetailsRepository.save(Mockito.any())).thenThrow(NullPointerException.class);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
-        assertEquals(accessionResponses,accessionResponse);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Object accessionResponse = accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, "PUL", true, imsLocationEntity);
+        assertEquals(accessionResponses, accessionResponse);
     }
 
     @Test
-    public void processException(){
-        String[] errors={ScsbConstants.ITEM_BARCODE_NOT_FOUND, ScsbConstants.MARC_FORMAT_PARSER_ERROR};
-        for (String error: errors) {
-        AccessionRequest accessionRequest=new AccessionRequest();
-        accessionRequest.setItemBarcode("12345");
-        accessionRequest.setCustomerCode("PA");
-        Mockito.when(ex.getMessage()).thenReturn(error);
-            ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-            accessionProcessService.processException(new HashSet<>(),accessionRequest,new ArrayList<>(),"PUL",imsLocationEntity,ex);
-        assertNotNull(accessionRequest);
+    public void processException() {
+        String[] errors = {ScsbConstants.ITEM_BARCODE_NOT_FOUND, ScsbConstants.MARC_FORMAT_PARSER_ERROR};
+        for (String error : errors) {
+            AccessionRequest accessionRequest = new AccessionRequest();
+            accessionRequest.setItemBarcode("12345");
+            accessionRequest.setCustomerCode("PA");
+            Mockito.when(ex.getMessage()).thenReturn(error);
+            ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+            accessionProcessService.processException(new HashSet<>(), accessionRequest, new ArrayList<>(), "PUL", imsLocationEntity, ex);
+            assertNotNull(accessionRequest);
         }
     }
+
     @Test
-    public void processRecordsAccessionedProcess(){
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        List<Map<String, String>> responseMaps=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void processRecordsAccessionedProcess() {
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        List<Map<String, String>> responseMaps = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setItemBarcode("12345");
         accessionRequest.setCustomerCode("PA");
-        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
-        InstitutionEntity institutionEntity=new InstitutionEntity();
+        List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setInstitutionCode("PUL");
-        List<ItemEntity> itemEntities=new ArrayList<>();
-        ItemEntity itemEntity=new ItemEntity();
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
         itemEntity.setBarcode("12345");
         itemEntity.setInstitutionEntity(institutionEntity);
-        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
-        Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(), Mockito.anyString())).thenReturn(itemEntities);
+        Mockito.lenient().when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        Mockito.lenient().when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties).thenThrow(NullPointerException.class);
-        Mockito.when(formatResolver.getBibData(Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenReturn("test");
+        Mockito.when(formatResolver.getBibData(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn("test");
         Mockito.when(accessionResolverFactory.getFormatResolver(Mockito.anyString())).thenReturn(formatResolver);
-        Mockito.when(formatResolver.getItemEntityFromRecord(null,null)).thenReturn(itemEntity);
-        List<InstitutionEntity> institutionEntities =new ArrayList<>();
+        Mockito.when(formatResolver.getItemEntityFromRecord(null, null)).thenReturn(itemEntity);
+        List<InstitutionEntity> institutionEntities = new ArrayList<>();
         Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
-        Mockito.when(itemBarcodeHistoryDetailsRepository.save(Mockito.any())).thenThrow(NullPointerException.class);
-        Mockito.when(formatResolver.isAccessionProcess(Mockito.any(),Mockito.anyString())).thenReturn(true);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",true,imsLocationEntity);
-        assertEquals(accessionResponses,accessionResponse);
+        Mockito.lenient().when(itemBarcodeHistoryDetailsRepository.save(Mockito.any())).thenThrow(NullPointerException.class);;
+        Mockito.when(formatResolver.isAccessionProcess(Mockito.any(), Mockito.anyString())).thenReturn(true);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Object accessionResponse = accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, "PUL", true, imsLocationEntity);
+        assertEquals(accessionResponses, accessionResponse);
     }
 
     @Test
-    public void processRecordsException1(){
-        Set<AccessionResponse> accessionResponses=new HashSet<>();
-        List<Map<String, String>> responseMaps=new ArrayList<>();
-        AccessionRequest accessionRequest=new AccessionRequest();
+    public void processRecordsException1() {
+        Set<AccessionResponse> accessionResponses = new HashSet<>();
+        List<Map<String, String>> responseMaps = new ArrayList<>();
+        AccessionRequest accessionRequest = new AccessionRequest();
         accessionRequest.setItemBarcode("12345");
         accessionRequest.setCustomerCode("PA");
-        List<ReportDataEntity> reportDataEntitys=new ArrayList<>();
-        InstitutionEntity institutionEntity=new InstitutionEntity();
+        List<ReportDataEntity> reportDataEntitys = new ArrayList<>();
+        InstitutionEntity institutionEntity = new InstitutionEntity();
         institutionEntity.setInstitutionCode("PUL");
-        List<ItemEntity> itemEntities=new ArrayList<>();
-        ItemEntity itemEntity=new ItemEntity();
+        List<ItemEntity> itemEntities = new ArrayList<>();
+        ItemEntity itemEntity = new ItemEntity();
         itemEntity.setBarcode("12345");
         itemEntity.setInstitutionEntity(institutionEntity);
-        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(),Mockito.anyString())).thenReturn(itemEntities);
-        Mockito.when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        Mockito.when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
-        ILSConfigProperties ilsConfigProperties=new ILSConfigProperties();
+        Mockito.when(itemDetailsRepository.findByBarcodeAndCustomerCode(Mockito.anyString(), Mockito.anyString())).thenReturn(itemEntities);
+        Mockito.lenient().when(accessionUtil.reAccessionItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);
+        Mockito.lenient().when(accessionUtil.indexReaccessionedItem(Mockito.anyList())).thenReturn(ScsbCommonConstants.SUCCESS);;
+        ILSConfigProperties ilsConfigProperties = new ILSConfigProperties();
         ilsConfigProperties.setBibDataFormat("test");
         Mockito.when(propertyUtil.getILSConfigProperties(Mockito.anyString())).thenReturn(ilsConfigProperties).thenThrow(NullPointerException.class);
         Mockito.when(accessionResolverFactory.getFormatResolver(Mockito.anyString())).thenReturn(formatResolver);
-        Mockito.when(formatResolver.getItemEntityFromRecord(null,null)).thenReturn(itemEntity);
-        List<InstitutionEntity> institutionEntities =new ArrayList<>();
-        Mockito.when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
-        Mockito.when(itemBarcodeHistoryDetailsRepository.save(Mockito.any())).thenThrow(NullPointerException.class);
-        ImsLocationEntity imsLocationEntity=new ImsLocationEntity();
-        Object accessionResponse=accessionProcessService.processRecords(accessionResponses,responseMaps,accessionRequest,reportDataEntitys,"PUL",false,imsLocationEntity);
+        Mockito.lenient().when(formatResolver.getItemEntityFromRecord(null, null)).thenReturn(itemEntity);
+        List<InstitutionEntity> institutionEntities = new ArrayList<>();
+        Mockito.lenient().when(institutionDetailsRepository.findAll()).thenReturn(institutionEntities);
+        Mockito.lenient().when(itemBarcodeHistoryDetailsRepository.save(Mockito.any())).thenThrow(NullPointerException.class);
+        ImsLocationEntity imsLocationEntity = new ImsLocationEntity();
+        Object accessionResponse = accessionProcessService.processRecords(accessionResponses, responseMaps, accessionRequest, reportDataEntitys, "PUL", false, imsLocationEntity);
         assertNotNull(accessionResponse);
     }
 }

@@ -1,6 +1,6 @@
 package org.recap.service.partnerservice;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.recap.BaseTestCaseUT;
@@ -19,6 +19,6 @@ public class SCSBSimpleClientHttpRequestFactoryUT extends BaseTestCaseUT {
 
     @Test
     public void testprepareConnection() throws IOException {
-        mockSCSBSimpleClientHttpRequestFactory.prepareConnection(connection,"");
+        mockSCSBSimpleClientHttpRequestFactory.prepareConnection(connection, "");
     }
 }

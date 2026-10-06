@@ -7,8 +7,8 @@ import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultExchange;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -38,11 +38,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import jakarta.persistence.EntityManager;
+
 import java.util.*;
 import java.util.concurrent.Future;
 
 import static org.apache.camel.builder.Builder.simple;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
 
@@ -132,9 +133,9 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
     @Mock
     EntityManager entityManager;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        ReflectionTestUtils.setField(submitCollectionProcessor, "submitCollectionEmailSubject","Submit collection completed" );
+        ReflectionTestUtils.setField(submitCollectionProcessor, "submitCollectionEmailSubject", "Submit collection completed");
         MockitoAnnotations.initMocks(this);
     }
 
@@ -253,12 +254,12 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
     @Test
     public void testSubmitCollectionProcessor() {
         SubmitCollectionProcessor submitCollectionProcessor = new SubmitCollectionProcessor("NYPL", false, "cgd_no_protection");
-        ReflectionTestUtils.setField(submitCollectionProcessor,"propertyUtil",propertyUtil);
-        ReflectionTestUtils.setField(submitCollectionProcessor,"setupDataService",setupDataService);
-        ReflectionTestUtils.setField(submitCollectionProcessor,"submitCollectionBatchService",submitCollectionBatchService);
-        ReflectionTestUtils.setField(submitCollectionProcessor,"submitCollectionReportGenerator",submitCollectionReportGenerator);
-        ReflectionTestUtils.setField(submitCollectionProcessor,"producer",producer);
-        ReflectionTestUtils.setField(submitCollectionProcessor,"awsS3Client",awsS3Client);
+        ReflectionTestUtils.setField(submitCollectionProcessor, "propertyUtil", propertyUtil);
+        ReflectionTestUtils.setField(submitCollectionProcessor, "setupDataService", setupDataService);
+        ReflectionTestUtils.setField(submitCollectionProcessor, "submitCollectionBatchService", submitCollectionBatchService);
+        ReflectionTestUtils.setField(submitCollectionProcessor, "submitCollectionReportGenerator", submitCollectionReportGenerator);
+        ReflectionTestUtils.setField(submitCollectionProcessor, "producer", producer);
+        ReflectionTestUtils.setField(submitCollectionProcessor, "awsS3Client", awsS3Client);
         CamelContext ctx = new DefaultCamelContext();
         Exchange ex = new DefaultExchange(ctx);
         ex.getIn().setHeader(ScsbConstants.CAMEL_AWS_KEY, simple("CamelAwsS3Key/CamelAwsS3Key/CamelAwsS3Key"));
@@ -270,63 +271,66 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         Exception e = new Exception();
         Throwable t = new ArithmeticException();
         e.addSuppressed(t);
-        ex.setProperty("CamelExceptionCaught",e);
-        Map institutionCodeIdMap=new HashMap();
-        institutionCodeIdMap.put("NYPL",1);
+        ex.setProperty("CamelExceptionCaught", e);
+        Map institutionCodeIdMap = new HashMap();
+        institutionCodeIdMap.put("NYPL", 1);
         Mockito.when(setupDataService.getInstitutionCodeIdMap()).thenReturn(institutionCodeIdMap);
-        Mockito.when(awsS3Client.doesObjectExist(Mockito.anyString(),Mockito.anyString())).thenReturn(true);
+        Mockito.when(awsS3Client.doesObjectExist(Mockito.anyString(), Mockito.anyString())).thenReturn(true);
         Mockito.when(awsS3Client.doesBucketExistV2(Mockito.anyString())).thenReturn(true);
 
         try {
-            submitCollectionProcessor.processInput(ex); } catch (Exception ef) {}
-        try{
+            submitCollectionProcessor.processInput(ex);
+        } catch (Exception ef) {
+        }
+        try {
             submitCollectionProcessor.caughtException(ex);
-        } catch (Exception ef) {}
+        } catch (Exception ef) {
+        }
         assertTrue(true);
     }
 
     @Test
-    public void processInputForCUL(){
-        ReflectionTestUtils.setField(submitCollectionProcessor, "institutionCode","CUL" );
-        ReflectionTestUtils.setField(submitCollectionProcessor, "bucketName",bucketName );
-        ReflectionTestUtils.setField(submitCollectionBatchService, "validationService",validationService);
-        ReflectionTestUtils.setField(submitCollectionBatchService, "marcUtil",marcUtil);
-        ReflectionTestUtils.setField(submitCollectionBatchService, "partitionSize",5000);
-        ReflectionTestUtils.setField(submitCollectionBatchService, "marcToBibEntityConverter",marcToBibEntityConverter);
-        ReflectionTestUtils.setField(submitCollectionBatchService, "submitCollectionDAOService",submitCollectionDAOService);
-        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionValidationService",submitCollectionValidationService);
-        ReflectionTestUtils.setField(submitCollectionDAOService, "repositoryService",repositoryService);
-        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionReportHelperService",submitCollectionReportHelperService);
-        ReflectionTestUtils.setField(submitCollectionDAOService, "bibliographicRepositoryDAO",bibliographicRepositoryDAO);
-        ReflectionTestUtils.setField(submitCollectionDAOService, "entityManager",entityManager);
-        ReflectionTestUtils.setField(marcUtil, "inputLimit",10);
+    public void processInputForCUL() {
+        ReflectionTestUtils.setField(submitCollectionProcessor, "institutionCode", "CUL");
+        ReflectionTestUtils.setField(submitCollectionProcessor, "bucketName", bucketName);
+        ReflectionTestUtils.setField(submitCollectionBatchService, "validationService", validationService);
+        ReflectionTestUtils.setField(submitCollectionBatchService, "marcUtil", marcUtil);
+        ReflectionTestUtils.setField(submitCollectionBatchService, "partitionSize", 5000);
+        ReflectionTestUtils.setField(submitCollectionBatchService, "marcToBibEntityConverter", marcToBibEntityConverter);
+        ReflectionTestUtils.setField(submitCollectionBatchService, "submitCollectionDAOService", submitCollectionDAOService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionValidationService", submitCollectionValidationService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "repositoryService", repositoryService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "submitCollectionReportHelperService", submitCollectionReportHelperService);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "bibliographicRepositoryDAO", bibliographicRepositoryDAO);
+        ReflectionTestUtils.setField(submitCollectionDAOService, "entityManager", entityManager);
+        ReflectionTestUtils.setField(marcUtil, "inputLimit", 10);
         Mockito.when(bibliographicRepositoryDAO.saveOrUpdate(any())).thenReturn(incomingBibliographicEntity);
         Mockito.when(repositoryService.getBibliographicDetailsRepository()).thenReturn(bibliographicDetailsRepository);
-        StringBuilder errorMessage=new StringBuilder();
+        StringBuilder errorMessage = new StringBuilder();
         Mockito.when(repositoryService.getItemDetailsRepository()).thenReturn(itemDetailsRepository);
         Mockito.when(responseMap.get("errorMessage")).thenReturn(errorMessage);
-        List<ItemEntity> itemEntities=new ArrayList<>();
+        List<ItemEntity> itemEntities = new ArrayList<>();
         itemEntities.add(itemEntity);
         Set<Integer> bibIds = new HashSet<>();
         bibIds.add(1);
-        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(),Mockito.anyInt())).thenReturn(itemEntities);
-        List<ItemEntity> fetchedItemBasedOnOwningInstitutionItemId=new ArrayList<>();
+        Mockito.when(itemDetailsRepository.findByBarcodeInAndOwningInstitutionId(Mockito.anyList(), Mockito.anyInt())).thenReturn(itemEntities);
+        List<ItemEntity> fetchedItemBasedOnOwningInstitutionItemId = new ArrayList<>();
         Mockito.when(submitCollectionReportHelperService.getItemBasedOnOwningInstitutionItemIdAndOwningInstitutionId(Mockito.anyList())).thenReturn(fetchedItemBasedOnOwningInstitutionItemId);
 
         Mockito.when(submitCollectionValidationService.isExistingBoundWithItem(any())).thenReturn(false);
         Mockito.when(itemEntity.getBarcode()).thenReturn("123456");
-        Mockito.when(itemEntity.getImsLocationEntity()).thenReturn(TestUtil.getImsLocationEntity(1,"RECAP","RECAP"));
+        Mockito.when(itemEntity.getImsLocationEntity()).thenReturn(TestUtil.getImsLocationEntity(1, "RECAP", "RECAP"));
         Mockito.when(itemEntity.getCollectionGroupId()).thenReturn(1);
-        List<BibliographicEntity> bibliographicEntityList=new ArrayList<>();
+        List<BibliographicEntity> bibliographicEntityList = new ArrayList<>();
         bibliographicEntityList.add(incomingBibliographicEntity);
         Mockito.when(institutionEntity.getId()).thenReturn(2);
-        Mockito.when(submitCollectionDAOService.updateDummyRecordForNonBoundWith(any(),Mockito.anyMap(),Mockito.anyList(),Mockito.anySet(), any(), any(),Mockito.anyList(), any(),Mockito.anyList())).thenCallRealMethod();
+        Mockito.when(submitCollectionDAOService.updateDummyRecordForNonBoundWith(any(), Mockito.anyMap(), Mockito.anyList(), Mockito.anySet(), any(), any(), Mockito.anyList(), any(), Mockito.anyList())).thenCallRealMethod();
         Mockito.when(submitCollectionDAOService.getBarcodeSetFromItemEntityList(Mockito.anyList())).thenCallRealMethod();
         Mockito.when(submitCollectionDAOService.getBarcodeItemEntityMap(Mockito.anyList())).thenCallRealMethod();
-        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(Mockito.anyList(),Mockito.anyInt(),Mockito.anyMap(),Mockito.anySet(),Mockito.anyList(),Mockito.anySet(), any(),Mockito.anyList())).thenCallRealMethod();
+        Mockito.when(submitCollectionDAOService.updateBibliographicEntityInBatchForNonBoundWith(Mockito.anyList(), Mockito.anyInt(), Mockito.anyMap(), Mockito.anySet(), Mockito.anyList(), Mockito.anySet(), any(), Mockito.anyList())).thenCallRealMethod();
         Mockito.when(submitCollectionDAOService.getBarcodeSetFromNonBoundWithBibliographicEntity(Mockito.anyList())).thenCallRealMethod();
         Mockito.when(submitCollectionDAOService.getBarcodeItemEntityMapFromNonBoundWithBibliographicEntityList(Mockito.anyList())).thenCallRealMethod();
-        Mockito.when(submitCollectionDAOService.getItemEntityListUsingBarcodeList(Mockito.anyList(),Mockito.anyInt())).thenCallRealMethod();
+        Mockito.when(submitCollectionDAOService.getItemEntityListUsingBarcodeList(Mockito.anyList(), Mockito.anyInt())).thenCallRealMethod();
         Mockito.when(itemEntity.getBibliographicEntities()).thenReturn(bibliographicEntityList);
         Mockito.when(incomingBibliographicEntity.getItemEntities()).thenReturn(itemEntities);
         Mockito.when(incomingBibliographicEntity.getId()).thenReturn(1);
@@ -335,7 +339,7 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         Mockito.when(incomingBibliographicEntity.getOwningInstitutionBibId()).thenReturn("d34645");
         Mockito.when(responseMap.get("bibliographicEntity")).thenReturn(incomingBibliographicEntity);
         Mockito.when(marcToBibEntityConverter.convert(any(), any())).thenReturn(responseMap);
-        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(),Mockito.anyBoolean(),Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
+        Mockito.when(marcUtil.convertAndValidateXml(Mockito.anyString(), Mockito.anyBoolean(), Mockito.anyList(), Mockito.anyBoolean())).thenCallRealMethod();
         Mockito.when(marcUtil.convertMarcXmlToRecord(Mockito.anyString())).thenCallRealMethod();
         Mockito.when(submitCollectionBatchService.getMarcToBibEntityConverter()).thenCallRealMethod();
         Mockito.when(setupDataService.getInstitutionCodeIdMap()).thenReturn(getMap());
@@ -343,29 +347,30 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         Mockito.when(institutionDetailsRepository.findByInstitutionCode(Mockito.anyString())).thenReturn(institutionEntity);
         Mockito.when(exchange.getIn()).thenReturn(message);
         Mockito.when(commonUtil.collectFuturesAndUpdateMAQualifier(any())).thenReturn(bibIds);
-        Mockito.when(submitCollectionBatchService.processMarc(Mockito.anyString(),Mockito.anySet(),Mockito.anyMap(),Mockito.anyList(),Mockito.anyList(),Mockito.anyBoolean(),Mockito.anyBoolean(), any(),Mockito.anySet(), any(),Mockito.anyList())).thenCallRealMethod();
+        Mockito.when(submitCollectionBatchService.processMarc(Mockito.anyString(), Mockito.anySet(), Mockito.anyMap(), Mockito.anyList(), Mockito.anyList(), Mockito.anyBoolean(), Mockito.anyBoolean(), any(), Mockito.anySet(), any(), Mockito.anyList())).thenCallRealMethod();
         Mockito.when(message.getBody(String.class)).thenReturn(updatedMarcXml);
         Mockito.when(message.getHeader(ScsbConstants.CAMEL_FILE_NAME_ONLY)).thenReturn("xmlFileName");
-        Mockito.when(awsS3Client.doesObjectExist(Mockito.anyString(),Mockito.anyString())).thenReturn(true);
+        Mockito.when(awsS3Client.doesObjectExist(Mockito.anyString(), Mockito.anyString())).thenReturn(true);
         Mockito.when(submitCollectionBatchService.getValidationService()).thenCallRealMethod();
         Mockito.when(submitCollectionBatchService.getMarcUtil()).thenCallRealMethod();
         Mockito.when(submitCollectionBatchService.getSubmitCollectionDAOService()).thenCallRealMethod();
         Mockito.when(submitCollectionBatchService.getConverter(Mockito.anyString())).thenCallRealMethod();
         Mockito.when(submitCollectionBatchService.getRepositoryService()).thenReturn(repositoryService);
         Mockito.when(repositoryService.getInstitutionDetailsRepository()).thenReturn(institutionDetailsRepository);
-        Mockito.when(submitCollectionBatchService.process(Mockito.anyString(),Mockito.anyString(),Mockito.anySet(),Mockito.anyList(),Mockito.anyList(),Mockito.anyString(),Mockito.anyList(),Mockito.anyBoolean(),Mockito.anyBoolean(),Mockito.anySet(), any(), any(),Mockito.anyList())).thenCallRealMethod();
+        Mockito.when(submitCollectionBatchService.process(Mockito.anyString(), Mockito.anyString(), Mockito.anySet(), Mockito.anyList(), Mockito.anyList(), Mockito.anyString(), Mockito.anyList(), Mockito.anyBoolean(), Mockito.anyBoolean(), Mockito.anySet(), any(), any(), Mockito.anyList())).thenCallRealMethod();
         submitCollectionProcessor.processInput(exchange);
     }
 
 
     @Test
-    public void sendEmailForEmptyDirectory(){
+    public void sendEmailForEmptyDirectory() {
         submitCollectionProcessor.sendEmailForEmptyDirectory();
         assertTrue(true);
     }
+
     @Test
-    public void processInputForPUL(){
-        ReflectionTestUtils.setField(submitCollectionProcessor, "institutionCode","PUL" );
+    public void processInputForPUL() {
+        ReflectionTestUtils.setField(submitCollectionProcessor, "institutionCode", "PUL");
         CamelContext ctx = new DefaultCamelContext();
         Exchange ex = new DefaultExchange(ctx);
         ex.getIn().setHeader("CamelFileName", "PUL");
@@ -375,9 +380,10 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
         Mockito.when(setupDataService.getInstitutionCodeIdMap()).thenReturn(getMap());
         submitCollectionProcessor.processInput(ex);
     }
+
     @Test
-    public void processInputForNYPL(){
-        ReflectionTestUtils.setField(submitCollectionProcessor, "institutionCode","NYPL" );
+    public void processInputForNYPL() {
+        ReflectionTestUtils.setField(submitCollectionProcessor, "institutionCode", "NYPL");
         CamelContext ctx = new DefaultCamelContext();
         Exchange ex = new DefaultExchange(ctx);
         ex.getIn().setHeader("CamelFileName", "NYPL");
@@ -389,97 +395,97 @@ public class SubmitCollectionProcessorUT extends BaseTestCaseUT {
     }
 
     @Test
-    public void performIndexingToRemoveBibs(){
+    public void performIndexingToRemoveBibs() {
         Map<String, String> idMap = new HashMap<>();
-        idMap.put("1","1");
+        idMap.put("1", "1");
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         idMapToRemoveIndexList.add(idMap);
         List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
         bibIdMapToRemoveIndexList.add(idMap);
-        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"performIndexingToRemoveBibs",idMapToRemoveIndexList,bibIdMapToRemoveIndexList);
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor, "performIndexingToRemoveBibs", idMapToRemoveIndexList, bibIdMapToRemoveIndexList);
     }
 
     @Test
-    public void performIndexingToRemoveBibsTest(){
+    public void performIndexingToRemoveBibsTest() {
         Map<String, String> idMap = new HashMap<>();
-        idMap.put("1","1");
+        idMap.put("1", "1");
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
         bibIdMapToRemoveIndexList.add(idMap);
-        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"performIndexingToRemoveBibs",idMapToRemoveIndexList,bibIdMapToRemoveIndexList);
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor, "performIndexingToRemoveBibs", idMapToRemoveIndexList, bibIdMapToRemoveIndexList);
     }
 
     @Test
-    public void performIndexingToRemoveBibsException(){
+    public void performIndexingToRemoveBibsException() {
         Map<String, String> idMap = new HashMap<>();
-        idMap.put("1","1");
+        idMap.put("1", "1");
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         idMapToRemoveIndexList.add(idMap);
         List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
         bibIdMapToRemoveIndexList.add(idMap);
         Mockito.doThrow(new NullPointerException()).when(submitCollectionBatchService).removeBibFromSolrIndex(bibIdMapToRemoveIndexList);
-        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"performIndexingToRemoveBibs",idMapToRemoveIndexList,bibIdMapToRemoveIndexList);
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor, "performIndexingToRemoveBibs", idMapToRemoveIndexList, bibIdMapToRemoveIndexList);
     }
 
     @Test
-    public void performIndexingToRemoveBibsExceptionTest(){
+    public void performIndexingToRemoveBibsExceptionTest() {
         Map<String, String> idMap = new HashMap<>();
-        idMap.put("1","1");
+        idMap.put("1", "1");
         List<Map<String, String>> idMapToRemoveIndexList = new ArrayList<>();
         idMapToRemoveIndexList.add(idMap);
         List<Map<String, String>> bibIdMapToRemoveIndexList = new ArrayList<>();
         Mockito.doThrow(new NullPointerException()).when(submitCollectionBatchService).removeBibFromSolrIndex(bibIdMapToRemoveIndexList);
-        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"performIndexingToRemoveBibs",idMapToRemoveIndexList,bibIdMapToRemoveIndexList);
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor, "performIndexingToRemoveBibs", idMapToRemoveIndexList, bibIdMapToRemoveIndexList);
     }
 
     @Test
-    public void performIndexingByOwningInstitutionBibIds(){
+    public void performIndexingByOwningInstitutionBibIds() {
         Set<String> updatedBoundWithDummyRecordOwnInstBibIdSet = new HashSet<>();
         updatedBoundWithDummyRecordOwnInstBibIdSet.add("test");
         Integer institutionId = 1;
-        Mockito.when(submitCollectionService.indexDataUsingOwningInstBibId(any(),any())).thenReturn("test");
-        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"performIndexingByOwningInstitutionBibIds",updatedBoundWithDummyRecordOwnInstBibIdSet,institutionId);
+        Mockito.when(submitCollectionService.indexDataUsingOwningInstBibId(any(), any())).thenReturn("test");
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor, "performIndexingByOwningInstitutionBibIds", updatedBoundWithDummyRecordOwnInstBibIdSet, institutionId);
     }
 
     @Test
-    public void collectFuturesAndProcess(){
+    public void collectFuturesAndProcess() {
         List<Future> futures = new ArrayList<>();
         Set<Integer> bibIds = new HashSet<>();
         bibIds.add(1);
-        ReflectionTestUtils.setField(submitCollectionProcessor,"solrMaxDocSizeToUsePartialIndex",3);
+        ReflectionTestUtils.setField(submitCollectionProcessor, "solrMaxDocSizeToUsePartialIndex", 3);
         Mockito.when(submitCollectionBatchService.indexData(any())).thenReturn("test");
         Mockito.when(commonUtil.collectFuturesAndUpdateMAQualifier(futures)).thenReturn(bibIds);
-        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"collectFuturesAndProcess",futures);
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor, "collectFuturesAndProcess", futures);
     }
 
     @Test
-    public void collectFuturesAndProcessTest(){
+    public void collectFuturesAndProcessTest() {
         List<Future> futures = new ArrayList<>();
         Set<Integer> bibIds = new HashSet<>();
-        ReflectionTestUtils.setField(submitCollectionProcessor,"solrMaxDocSizeToUsePartialIndex",3);
+        ReflectionTestUtils.setField(submitCollectionProcessor, "solrMaxDocSizeToUsePartialIndex", 3);
         Mockito.when(submitCollectionBatchService.indexData(any())).thenReturn("test");
         Mockito.when(commonUtil.collectFuturesAndUpdateMAQualifier(futures)).thenReturn(bibIds);
-        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"collectFuturesAndProcess",futures);
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor, "collectFuturesAndProcess", futures);
     }
 
 
     @Test
-    public void getReportDataRequest(){
+    public void getReportDataRequest() {
         String xmlFileName = "test";
-        ReflectionTestUtils.setField(submitCollectionProcessor,"institutionCode","PUL");
-        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"getReportDataRequest",xmlFileName);
+        ReflectionTestUtils.setField(submitCollectionProcessor, "institutionCode", "PUL");
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor, "getReportDataRequest", xmlFileName);
     }
 
     @Test
-    public void getEmailPayLoad(){
+    public void getEmailPayLoad() {
         String xmlFileName = "test";
         String reportFileName = "test";
-        ReflectionTestUtils.setField(submitCollectionProcessor,"submitCollectionEmailSubject","test@gmail.com");
-        ReflectionTestUtils.setField(submitCollectionProcessor,"institutionCode","PUL");
-        ReflectionTestUtils.setField(submitCollectionProcessor,"submitCollectionReportS3Dir","test");
+        ReflectionTestUtils.setField(submitCollectionProcessor, "submitCollectionEmailSubject", "test@gmail.com");
+        ReflectionTestUtils.setField(submitCollectionProcessor, "institutionCode", "PUL");
+        ReflectionTestUtils.setField(submitCollectionProcessor, "submitCollectionReportS3Dir", "test");
         Mockito.when(propertyUtil.getPropertyByInstitutionAndKey("PUL", PropertyKeyConstants.ILS.ILS_EMAIL_SUBMIT_COLLECTION_TO)).thenReturn("test@gmail.com");
         Mockito.when(propertyUtil.getPropertyByInstitutionAndKey("PUL", PropertyKeyConstants.ILS.ILS_EMAIL_SUBMIT_COLLECTION_CC)).thenReturn("test@gmail.com");
-        ReflectionTestUtils.invokeMethod(submitCollectionProcessor,"getEmailPayLoad",xmlFileName,reportFileName);
+        ReflectionTestUtils.invokeMethod(submitCollectionProcessor, "getEmailPayLoad", xmlFileName, reportFileName);
     }
 
     private Map getMap() {

@@ -1,12 +1,12 @@
 package org.recap.model.submitcollection;
 
-import org.junit.Test;
-import org.recap.BaseTestCase;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
-public class BarcodeBibliographicEntityObjectUT{
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+public class BarcodeBibliographicEntityObjectUT {
     @Test
     public void BarcodeBibliographicEntityObject() {
         BarcodeBibliographicEntityObject barcodeBibliographicEntityObject = new BarcodeBibliographicEntityObject();
