@@ -28,6 +28,8 @@ public class ActivemqRegistrar {
     public ActivemqRegistrar(CamelContext camelContext , @Value("${" + PropertyKeyConstants.ACTIVEMQ_BROKER_URL + "}") String defaultBrokerURL) throws JMSException {
         ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(defaultBrokerURL);
         ActiveMQComponent activeMQComponent = new ActiveMQComponent();
+        activeMQComponent.setObjectMessageEnabled(true);
+        activeMQComponent.setDeserializationFilter("org.apache.camel.support.ObjectHelper;java.util.*;org.recap.model.*");
         activeMQComponent.setConnectionFactory(connectionFactory);
         activeMQComponent.setTrustAllPackages(true);
         camelContext.addComponent("scsbactivemq", activeMQComponent);
